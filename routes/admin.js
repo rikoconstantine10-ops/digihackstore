@@ -90,8 +90,15 @@ router.post('/products/add', auth, upload.fields([{name:'image',maxCount:1},{nam
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') + '-' + Date.now();
   const image = req.files.image ? '/uploads/' + req.files.image[0].filename : null;
   const file_path = req.files.file ? req.files.file[0].filename : null;
-  db.prepare('INSERT INTO products (name,slug,category,description,price,discount_price,image,file_path,badge,countdown_end) VALUES (?,?,?,?,?,?,?,?,?,?)'
+  const insertResult = db.prepare('INSERT INTO products (name,slug,category,description,price,discount_price,image,file_path,badge,countdown_end) VALUES (?,?,?,?,?,?,?,?,?,?)'
   ).run(name, slug, category, description, parseInt(price), discount_price ? parseInt(discount_price) : null, image, file_path, badge||null, countdown_end||null);
+  const newProductId = insertResult.lastInsertRowid;
+  const rawAddonIds = req.body['addon_ids[]'];
+  const addonIds = rawAddonIds ? (Array.isArray(rawAddonIds) ? rawAddonIds : [rawAddonIds]) : [];
+  for (const addonId of addonIds) {
+    const addonPrice = req.body['addon_price_' + addonId] ? parseInt(req.body['addon_price_' + addonId]) : null;
+    db.prepare('INSERT OR IGNORE INTO product_addons (product_id, addon_product_id, addon_price) VALUES (?,?,?)').run(newProductId, parseInt(addonId), addonPrice);
+  }
   res.redirect('/admin/products');
 });
 
@@ -117,6 +124,21 @@ router.post('/products/edit/:id', auth, upload.fields([{name:'image',maxCount:1}
 router.post('/products/delete/:id', auth, (req, res) => {
   db.prepare('UPDATE products SET is_active=0 WHERE id=?').run(req.params.id);
   res.redirect('/admin/products');
+});
+
+// VMP Connection Test
+router.get('/test-vmp', auth, async (req, res) => {
+  const { getChannels } = require('../services/payment');
+  const result = { vmp_api_key: process.env.VMP_API_KEY ? '✅ SET (' + process.env.VMP_API_KEY.slice(0,8) + '...)' : '❌ NOT SET', vmp_secret_key: process.env.VMP_SECRET_KEY ? '✅ SET' : '❌ NOT SET', vmp_base_url: process.env.VMP_BASE_URL || 'https://violetmediapay.com/api/live (default)', callback_url: process.env.CALLBACK_URL || '❌ NOT SET', redirect_url: process.env.REDIRECT_URL || '❌ NOT SET' };
+  if (!process.env.VMP_API_KEY || !process.env.VMP_SECRET_KEY) {
+    return res.json({ status: 'error', message: 'VMP credentials tidak di-set di .env', config: result });
+  }
+  try {
+    const channels = await getChannels();
+    res.json({ status: 'success', message: 'Koneksi VMP berhasil!', config: result, channels });
+  } catch(e) {
+    res.json({ status: 'error', message: 'Gagal konek ke VMP: ' + e.message, config: result });
+  }
 });
 
 // Orders

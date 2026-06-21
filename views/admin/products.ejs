@@ -45,6 +45,24 @@
             <div class="form-group"><label>Gambar Produk</label><input type="file" name="image" accept="image/*"></div>
             <div class="form-group"><label>File Produk (PDF/ZIP/dll)</label><input type="file" name="file"></div>
           </div>
+
+          <% if(allProducts.length > 0) { %>
+          <div style="border-top:1px solid #e2e8f0;margin:16px 0;padding-top:16px">
+            <h4 style="margin:0 0 8px;font-size:0.95rem;color:var(--text-dark)">🎁 Add-on Products (opsional)</h4>
+            <div style="font-size:0.8rem;color:var(--text-light);margin-bottom:10px">Pilih produk yang akan ditawarkan sebagai add-on sebelum pembayaran. Isi harga override jika ingin berbeda dari harga produk asli.</div>
+            <div id="addAddonList" style="display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto">
+              <% allProducts.forEach(ap => { %>
+              <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:6px;background:#fafafa">
+                <input type="checkbox" name="addon_ids[]" value="<%= ap.id %>" style="margin:0;cursor:pointer">
+                <span style="flex:1;font-size:0.85rem"><%= ap.name %></span>
+                <span style="font-size:0.75rem;color:var(--text-light)">Rp <%= (ap.discount_price||ap.price).toLocaleString('id-ID') %></span>
+                <input type="number" name="addon_price_<%= ap.id %>" placeholder="Override harga" style="width:140px;padding:4px 8px;border:1px solid #e2e8f0;border-radius:4px;font-size:0.8rem" min="0">
+              </div>
+              <% }) %>
+            </div>
+          </div>
+          <% } %>
+
           <button type="submit" class="admin-btn admin-btn-primary" style="padding:10px 24px">+ Tambah Produk</button>
         </form>
       </div>
