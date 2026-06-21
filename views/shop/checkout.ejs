@@ -107,16 +107,16 @@
       <div style="background:#f8f9ff;border-radius:8px;padding:14px;margin-bottom:20px;font-size:0.85rem">
         <div style="display:flex;justify-content:space-between;margin-bottom:6px">
           <span style="color:var(--text-light)">Harga produk</span>
-          <span style="font-weight:600">Rp <%= (product.discount_price || product.price).toLocaleString('id-ID') %></span>
+          <span style="font-weight:600" id="base-price-display">Rp <%= (product.discount_price || product.price).toLocaleString('id-ID') %></span>
         </div>
         <div style="display:flex;justify-content:space-between;margin-bottom:6px">
           <span style="color:var(--text-light)">Biaya payment</span>
-          <span style="color:var(--text-light)">Sesuai metode</span>
+          <span id="fee-display" style="color:var(--text-light)">— Pilih metode</span>
         </div>
         <hr style="border:none;border-top:1px solid var(--border);margin:8px 0">
         <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1rem">
           <span>Total</span>
-          <span style="color:var(--primary)">Rp <%= (product.discount_price || product.price).toLocaleString('id-ID') %> + fee</span>
+          <span style="color:var(--primary)" id="total-display">Rp <%= (product.discount_price || product.price).toLocaleString('id-ID') %></span>
         </div>
       </div>
 
@@ -124,11 +124,71 @@
     </form>
   </div>
 
-  <div style="text-align:center;margin-top:20px;font-size:0.8rem;color:var(--text-light)">
-    🔒 Pembayaran aman diproses oleh Violet Media Pay<br>
-    📧 Produk dikirim otomatis ke email setelah pembayaran sukses
+  <!-- Security Badges -->
+  <div style="margin-top:24px;display:flex;flex-direction:column;align-items:center;gap:14px">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center">
+      <div style="display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #e2e8f0;border-radius:30px;padding:7px 14px;font-size:0.78rem;font-weight:600;color:#374151;box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Transaksi Aman & Terenkripsi
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #e2e8f0;border-radius:30px;padding:7px 14px;font-size:0.78rem;font-weight:600;color:#374151;box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        SSL Protected
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #e2e8f0;border-radius:30px;padding:7px 14px;font-size:0.78rem;font-weight:600;color:#374151;box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Produk Terkirim Otomatis
+      </div>
+    </div>
+    <div style="font-size:0.75rem;color:#94a3b8;text-align:center">
+      Powered by <strong style="color:#7c3aed">Violet Media Pay</strong> · Pembayaran diproses secara aman
+    </div>
   </div>
 </div>
+
+<script>
+const BASE_PRICE = <%= product.discount_price || product.price %>;
+
+const FEE_CONFIG = {
+  'QRIS':       { type: 'pct', value: 0.007,  label: '0.7%' },
+  'BRIVA':      { type: 'flat', value: 3000,   label: 'Rp 3.000' },
+  'BCAVA':      { type: 'flat', value: 4500,   label: 'Rp 4.500' },
+  'MANDIRIVA':  { type: 'flat', value: 3000,   label: 'Rp 3.000' },
+  'BNIVA':      { type: 'flat', value: 3500,   label: 'Rp 3.500' },
+  'DANA':       { type: 'pct', value: 0.0167,  label: '1.67%' },
+  'Shopee Pay': { type: 'pct', value: 0.04,    label: '4%' },
+  'ALFAMART':   { type: 'flat', value: 3500,   label: 'Rp 3.500' },
+};
+
+function formatRp(n) {
+  return 'Rp ' + Math.round(n).toLocaleString('id-ID');
+}
+
+function updateTotal() {
+  const selected = document.querySelector('input[name="channel"]:checked');
+  const feeEl = document.getElementById('fee-display');
+  const totalEl = document.getElementById('total-display');
+
+  if (!selected) {
+    feeEl.textContent = '— Pilih metode';
+    feeEl.style.color = 'var(--text-light)';
+    totalEl.textContent = formatRp(BASE_PRICE);
+    return;
+  }
+
+  const cfg = FEE_CONFIG[selected.value];
+  if (!cfg) return;
+
+  const fee = cfg.type === 'pct' ? BASE_PRICE * cfg.value : cfg.value;
+  const total = BASE_PRICE + fee;
+
+  feeEl.textContent = formatRp(fee) + ' (' + cfg.label + ')';
+  feeEl.style.color = '#374151';
+  totalEl.textContent = formatRp(total);
+}
+
+document.querySelectorAll('input[name="channel"]').forEach(r => r.addEventListener('change', updateTotal));
+</script>
 
 <footer style="margin-top:60px">
   <p>&copy; 2026 <strong><%= settings.store_name %></strong></p>
