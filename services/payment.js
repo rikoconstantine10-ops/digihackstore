@@ -1,7 +1,7 @@
 
 const crypto = require('crypto');
 const https = require('https');
-const http = require('http');
+const qs = require('querystring');
 const { URL } = require('url');
 
 const API_KEY = process.env.VMP_API_KEY;
@@ -15,12 +15,12 @@ function makeSignature(refKode, amount) {
 function postRequest(endpoint, data) {
   return new Promise((resolve, reject) => {
     const url = new URL(`${BASE_URL}/${endpoint}`);
-    const postData = JSON.stringify(data);
+    const postData = qs.stringify(data);
     const options = {
       hostname: url.hostname,
       path: url.pathname,
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(postData) },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(postData) },
     };
     const req = https.request(options, (res) => {
       let body = '';
