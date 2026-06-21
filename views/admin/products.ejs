@@ -58,15 +58,18 @@
 
           <% if(allProducts.length > 0) { %>
           <div style="border-top:1px solid #e2e8f0;margin:16px 0;padding-top:16px">
-            <h4 style="margin:0 0 8px;font-size:0.95rem;color:var(--text-dark)">🎁 Add-on Products (opsional)</h4>
-            <div style="font-size:0.8rem;color:var(--text-light);margin-bottom:10px">Pilih produk yang akan ditawarkan sebagai add-on sebelum pembayaran. Isi harga override jika ingin berbeda dari harga produk asli.</div>
-            <div id="addAddonList" style="display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto">
-              <% allProducts.forEach(ap => { %>
-              <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:6px;background:#fafafa">
-                <input type="checkbox" name="addon_ids[]" value="<%= ap.id %>" style="margin:0;cursor:pointer">
-                <span style="flex:1;font-size:0.85rem"><%= ap.name %></span>
-                <span style="font-size:0.75rem;color:var(--text-light)">Rp <%= (ap.discount_price||ap.price).toLocaleString('id-ID') %></span>
-                <input type="number" name="addon_price_<%= ap.id %>" placeholder="Override harga" style="width:140px;padding:4px 8px;border:1px solid #e2e8f0;border-radius:4px;font-size:0.8rem" min="0">
+            <h4 style="margin:0 0 4px;font-size:0.95rem;color:var(--text-dark)">🎁 Add-on Products (opsional)</h4>
+            <p style="font-size:0.8rem;color:var(--text-light);margin:0 0 10px">Pilih produk yang ditawarkan sebagai add-on sebelum pembayaran.</p>
+            <div style="display:grid;grid-template-columns:32px 1fr 120px 150px;gap:0;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden">
+              <div style="grid-column:1/-1;display:grid;grid-template-columns:32px 1fr 120px 150px;background:#f1f5f9;padding:6px 12px;font-size:0.75rem;font-weight:600;color:var(--text-light);gap:12px">
+                <div></div><div>Nama Produk</div><div>Harga</div><div>Override Harga</div>
+              </div>
+              <% allProducts.forEach((ap, i) => { %>
+              <div style="grid-column:1/-1;display:grid;grid-template-columns:32px 1fr 120px 150px;align-items:center;gap:12px;padding:8px 12px;border-top:1px solid #f1f5f9;background:<%= i%2===0?'#fff':'#fafafa' %>">
+                <input type="checkbox" name="addon_ids[]" value="<%= ap.id %>" style="margin:0;cursor:pointer;justify-self:center">
+                <span style="font-size:0.85rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><%= ap.name %></span>
+                <span style="font-size:0.8rem;color:var(--primary);font-weight:600">Rp <%= (ap.discount_price||ap.price).toLocaleString('id-ID') %></span>
+                <input type="number" name="addon_price_<%= ap.id %>" placeholder="Kosong = pakai harga asli" style="width:100%;padding:4px 8px;border:1px solid #e2e8f0;border-radius:4px;font-size:0.78rem" min="0">
               </div>
               <% }) %>
             </div>
@@ -147,15 +150,18 @@
       <div class="form-group"><label><input type="checkbox" name="is_active" id="editActive" value="1"> Aktif</label></div>
 
       <div style="border-top:1px solid #e2e8f0;margin:20px 0;padding-top:16px">
-        <h4 style="margin:0 0 12px;font-size:0.95rem;color:var(--text-dark)">🎁 Add-on Products</h4>
-        <div style="font-size:0.8rem;color:var(--text-light);margin-bottom:12px">Pilih produk yang akan ditawarkan sebagai add-on sebelum pembayaran. Isi harga override jika berbeda dari harga produk.</div>
-        <div id="addonList" style="display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto">
-          <% allProducts.forEach(ap => { %>
-          <div class="addon-item" data-pid="<%= ap.id %>" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:6px;background:#fafafa">
-            <input type="checkbox" class="addon-check" name="addon_ids[]" value="<%= ap.id %>" style="margin:0;cursor:pointer">
-            <span style="flex:1;font-size:0.85rem"><%= ap.name %></span>
-            <span style="font-size:0.75rem;color:var(--text-light)">Rp <%= (ap.discount_price||ap.price).toLocaleString('id-ID') %></span>
-            <input type="number" name="addon_price_<%= ap.id %>" class="addon-price" placeholder="Override harga" style="width:140px;padding:4px 8px;border:1px solid #e2e8f0;border-radius:4px;font-size:0.8rem" min="0">
+        <h4 style="margin:0 0 4px;font-size:0.95rem;color:var(--text-dark)">🎁 Add-on Products</h4>
+        <p style="font-size:0.8rem;color:var(--text-light);margin:0 0 10px">Centang produk yang akan muncul sebagai penawaran add-on sebelum pembayaran.</p>
+        <div id="addonList" style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;max-height:220px;overflow-y:auto">
+          <div style="display:grid;grid-template-columns:32px 1fr 110px 130px;background:#f1f5f9;padding:6px 12px;font-size:0.72rem;font-weight:600;color:var(--text-light);gap:10px">
+            <div></div><div>Nama Produk</div><div>Harga</div><div>Override Harga</div>
+          </div>
+          <% allProducts.forEach((ap, i) => { %>
+          <div class="addon-item" data-pid="<%= ap.id %>" style="display:grid;grid-template-columns:32px 1fr 110px 130px;align-items:center;gap:10px;padding:8px 12px;border-top:1px solid #f1f5f9;background:<%= i%2===0?'#fff':'#fafafa' %>">
+            <input type="checkbox" class="addon-check" name="addon_ids[]" value="<%= ap.id %>" style="margin:0;cursor:pointer;justify-self:center">
+            <span style="font-size:0.84rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="<%= ap.name %>"><%= ap.name %></span>
+            <span style="font-size:0.8rem;color:var(--primary);font-weight:600">Rp <%= (ap.discount_price||ap.price).toLocaleString('id-ID') %></span>
+            <input type="number" name="addon_price_<%= ap.id %>" class="addon-price" placeholder="Harga asli" style="width:100%;padding:4px 8px;border:1px solid #e2e8f0;border-radius:4px;font-size:0.78rem" min="0">
           </div>
           <% }) %>
         </div>
