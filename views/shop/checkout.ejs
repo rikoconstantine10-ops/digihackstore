@@ -7,7 +7,22 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
   <% if(settings.meta_pixel_id) { %><script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','<%= settings.meta_pixel_id %>');fbq('track','InitiateCheckout',{value:<%= product.discount_price || product.price %>,currency:'IDR'});</script><% } %>
-<% if(settings && settings.ga4_id) { %><script async src="https://www.googletagmanager.com/gtag/js?id=<%= settings.ga4_id %>"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","<%= settings.ga4_id %>");</script><% } %></head>
+  <% if(settings && settings.ga4_id) { %><script async src="https://www.googletagmanager.com/gtag/js?id=<%= settings.ga4_id %>"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","<%= settings.ga4_id %>");</script><% } %>
+  <style>
+    .pm-group { margin-bottom: 18px; }
+    .pm-group-label { font-size: 0.75rem; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .payment-methods { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    @media (max-width: 480px) { .payment-methods { grid-template-columns: repeat(2, 1fr); } }
+    .payment-option { position: relative; cursor: pointer; }
+    .payment-option input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+    .pm-card { border: 2px solid var(--border); border-radius: 10px; padding: 10px 8px; text-align: center; transition: all 0.18s; background: #fff; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 80px; justify-content: center; }
+    .payment-option input:checked + .pm-card { border-color: var(--primary); background: #f5f3ff; box-shadow: 0 2px 8px rgba(102,126,234,0.18); }
+    .payment-option:hover .pm-card { border-color: #a5b4fc; }
+    .pm-icon { font-size: 1.4rem; line-height: 1; }
+    .pm-name { font-size: 0.78rem; font-weight: 700; color: var(--text-dark); }
+    .pm-fee { font-size: 0.68rem; color: var(--text-light); margin-top: 1px; }
+  </style>
+</head>
 <body>
 <nav class="navbar">
   <a href="/" class="navbar-brand">Digi<span>hack</span></a>
@@ -52,55 +67,129 @@
 
       <div class="form-group">
         <label>Metode Pembayaran *</label>
-        <div class="payment-methods">
-          <label class="payment-option">
-            <input type="radio" name="channel" value="QRIS" required>
-            <div style="font-size:1.5rem">📱</div>
-            <div class="pm-name">QRIS</div>
-            <div class="pm-fee">Fee 0.7%</div>
-          </label>
-          <label class="payment-option">
-            <input type="radio" name="channel" value="BRIVA">
-            <div style="font-size:1.5rem">🏦</div>
-            <div class="pm-name">BRI VA</div>
-            <div class="pm-fee">Fee Rp 3.000</div>
-          </label>
-          <label class="payment-option">
-            <input type="radio" name="channel" value="BCAVA">
-            <div style="font-size:1.5rem">🏦</div>
-            <div class="pm-name">BCA VA</div>
-            <div class="pm-fee">Fee Rp 4.500</div>
-          </label>
-          <label class="payment-option">
-            <input type="radio" name="channel" value="MANDIRIVA">
-            <div style="font-size:1.5rem">🏦</div>
-            <div class="pm-name">Mandiri VA</div>
-            <div class="pm-fee">Fee Rp 3.000</div>
-          </label>
-          <label class="payment-option">
-            <input type="radio" name="channel" value="BNIVA">
-            <div style="font-size:1.5rem">🏦</div>
-            <div class="pm-name">BNI VA</div>
-            <div class="pm-fee">Fee Rp 3.500</div>
-          </label>
-          <label class="payment-option">
-            <input type="radio" name="channel" value="DANA">
-            <div style="font-size:1.5rem">💳</div>
-            <div class="pm-name">DANA</div>
-            <div class="pm-fee">Fee 1.67%</div>
-          </label>
-          <label class="payment-option">
-            <input type="radio" name="channel" value="Shopee Pay">
-            <div style="font-size:1.5rem">🛒</div>
-            <div class="pm-name">ShopeePay</div>
-            <div class="pm-fee">Fee 4%</div>
-          </label>
-          <label class="payment-option">
-            <input type="radio" name="channel" value="ALFAMART">
-            <div style="font-size:1.5rem">🏪</div>
-            <div class="pm-name">Alfamart</div>
-            <div class="pm-fee">Fee Rp 3.500</div>
-          </label>
+
+        <!-- QRIS -->
+        <div class="pm-group">
+          <div class="pm-group-label">QRIS</div>
+          <div class="payment-methods">
+            <label class="payment-option">
+              <input type="radio" name="channel" value="QRIS" required>
+              <div class="pm-card"><div class="pm-icon">📱</div><div class="pm-name">QRIS</div><div class="pm-fee">0.7% + Rp 1.000</div></div>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="channel" value="QRIS1">
+              <div class="pm-card"><div class="pm-icon">📱</div><div class="pm-name">QRIS 1</div><div class="pm-fee">0.7% + Rp 500</div></div>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="channel" value="QRIS2">
+              <div class="pm-card"><div class="pm-icon">📱</div><div class="pm-name">QRIS 2</div><div class="pm-fee">0.8% + Rp 200</div></div>
+            </label>
+          </div>
+        </div>
+
+        <!-- E-Wallet -->
+        <div class="pm-group">
+          <div class="pm-group-label">E-Wallet</div>
+          <div class="payment-methods">
+            <label class="payment-option">
+              <input type="radio" name="channel" value="DANA">
+              <div class="pm-card"><div class="pm-icon">💙</div><div class="pm-name">DANA</div><div class="pm-fee">1.67% + Rp 1.500</div></div>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="channel" value="OVO">
+              <div class="pm-card"><div class="pm-icon">💜</div><div class="pm-name">OVO</div><div class="pm-fee">3.03% + Rp 500</div></div>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="channel" value="Shopee Pay">
+              <div class="pm-card"><div class="pm-icon">🛒</div><div class="pm-name">ShopeePay</div><div class="pm-fee">4% + Rp 500</div></div>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="channel" value="Link Aja">
+              <div class="pm-card"><div class="pm-icon">🔴</div><div class="pm-name">LinkAja</div><div class="pm-fee">1.67% + Rp 500</div></div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Virtual Account -->
+        <div class="pm-group">
+          <div class="pm-group-label">Virtual Account</div>
+          <div class="payment-methods">
+            <label class="payment-option">
+              <input type="radio" name="channel" value="BRIVA">
+              <div class="pm-card"><div class="pm-icon">🏦</div><div class="pm-name">BRI VA</div><div class="pm-fee">Rp 3.000</div></div>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="channel" value="BCAVA">
+              <div class="pm-card"><div class="pm-icon">🏦</div><div class="pm-name">BCA VA</div><div class="pm-fee">Rp 4.500</div></div>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="channel" value="MANDIRIVA">
+              <div class="pm-card"><div class="pm-icon">🏦</div><div class="pm-name">Mandiri VA</div><div class="pm-fee">Rp 3.000</div></div>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="channel" value="BNIVA">
+              <div class="pm-card"><div class="pm-icon">🏦</div><div class="pm-name">BNI VA</div><div class="pm-fee">Rp 3.500</div></div>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="channel" value="BSI">
+              <div class="pm-card"><div class="pm-icon">🏦</div><div class="pm-name">BSI VA</div><div class="pm-fee">Rp 3.500</div></div>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="channel" value="CIMBNIAGA">
+              <div class="pm-card"><div class="pm-icon">🏦</div><div class="pm-name">CIMB VA</div><div class="pm-fee">Rp 3.500</div></div>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="channel" value="DANAMON">
+              <div class="pm-card"><div class="pm-icon">🏦</div><div class="pm-name">Danamon VA</div><div class="pm-fee">Rp 2.500</div></div>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="channel" value="PERMATAVA">
+              <div class="pm-card"><div class="pm-icon">🏦</div><div class="pm-name">Permata VA</div><div class="pm-fee">Rp 2.500</div></div>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="channel" value="MAYBANK">
+              <div class="pm-card"><div class="pm-icon">🏦</div><div class="pm-name">Maybank VA</div><div class="pm-fee">Rp 4.500</div></div>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="channel" value="BNCVA">
+              <div class="pm-card"><div class="pm-icon">🏦</div><div class="pm-name">BNC VA</div><div class="pm-fee">Rp 4.500</div></div>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="channel" value="OCBC">
+              <div class="pm-card"><div class="pm-icon">🏦</div><div class="pm-name">OCBC VA</div><div class="pm-fee">Rp 2.500</div></div>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="channel" value="SINARMAS">
+              <div class="pm-card"><div class="pm-icon">🏦</div><div class="pm-name">Sinarmas VA</div><div class="pm-fee">Rp 2.500</div></div>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="channel" value="PANIN">
+              <div class="pm-card"><div class="pm-icon">🏦</div><div class="pm-name">Panin VA</div><div class="pm-fee">Rp 3.500</div></div>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="channel" value="SAMPOERNAVA">
+              <div class="pm-card"><div class="pm-icon">🏦</div><div class="pm-name">Sahabat VA</div><div class="pm-fee">Rp 2.500</div></div>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="channel" value="ATMBERSAMA">
+              <div class="pm-card"><div class="pm-icon">🏧</div><div class="pm-name">ATM Bersama</div><div class="pm-fee">Rp 4.500</div></div>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="channel" value="ARTAGRAHA">
+              <div class="pm-card"><div class="pm-icon">🏦</div><div class="pm-name">Artagraha VA</div><div class="pm-fee">Rp 2.500</div></div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Retail -->
+        <div class="pm-group">
+          <div class="pm-group-label">Gerai Retail</div>
+          <div class="payment-methods">
+            <label class="payment-option">
+              <input type="radio" name="channel" value="ALFAMART">
+              <div class="pm-card"><div class="pm-icon">🏪</div><div class="pm-name">Alfamart</div><div class="pm-fee">Rp 3.500</div></div>
+            </label>
+          </div>
         </div>
       </div>
 
@@ -147,14 +236,30 @@
 const BASE_PRICE = <%= product.discount_price || product.price %>;
 
 const FEE_CONFIG = {
-  'QRIS':       { type: 'pct', value: 0.007,  label: '0.7%' },
-  'BRIVA':      { type: 'flat', value: 3000,   label: 'Rp 3.000' },
-  'BCAVA':      { type: 'flat', value: 4500,   label: 'Rp 4.500' },
-  'MANDIRIVA':  { type: 'flat', value: 3000,   label: 'Rp 3.000' },
-  'BNIVA':      { type: 'flat', value: 3500,   label: 'Rp 3.500' },
-  'DANA':       { type: 'pct', value: 0.0167,  label: '1.67%' },
-  'Shopee Pay': { type: 'pct', value: 0.04,    label: '4%' },
-  'ALFAMART':   { type: 'flat', value: 3500,   label: 'Rp 3.500' },
+  'QRIS':        { type: 'pct_flat', pct: 0.007,   flat: 1000, label: '0.7% + Rp 1.000' },
+  'QRIS1':       { type: 'pct_flat', pct: 0.007,   flat: 500,  label: '0.7% + Rp 500' },
+  'QRIS2':       { type: 'pct_flat', pct: 0.008,   flat: 200,  label: '0.8% + Rp 200' },
+  'DANA':        { type: 'pct_flat', pct: 0.0167,  flat: 1500, label: '1.67% + Rp 1.500' },
+  'OVO':         { type: 'pct_flat', pct: 0.0303,  flat: 500,  label: '3.03% + Rp 500' },
+  'Shopee Pay':  { type: 'pct_flat', pct: 0.04,    flat: 500,  label: '4% + Rp 500' },
+  'Link Aja':    { type: 'pct_flat', pct: 0.0167,  flat: 500,  label: '1.67% + Rp 500' },
+  'BRIVA':       { type: 'flat', value: 3000,  label: 'Rp 3.000' },
+  'BCAVA':       { type: 'flat', value: 4500,  label: 'Rp 4.500' },
+  'MANDIRIVA':   { type: 'flat', value: 3000,  label: 'Rp 3.000' },
+  'BNIVA':       { type: 'flat', value: 3500,  label: 'Rp 3.500' },
+  'BSI':         { type: 'flat', value: 3500,  label: 'Rp 3.500' },
+  'CIMBNIAGA':   { type: 'flat', value: 3500,  label: 'Rp 3.500' },
+  'DANAMON':     { type: 'flat', value: 2500,  label: 'Rp 2.500' },
+  'PERMATAVA':   { type: 'flat', value: 2500,  label: 'Rp 2.500' },
+  'MAYBANK':     { type: 'flat', value: 4500,  label: 'Rp 4.500' },
+  'BNCVA':       { type: 'flat', value: 4500,  label: 'Rp 4.500' },
+  'OCBC':        { type: 'flat', value: 2500,  label: 'Rp 2.500' },
+  'SINARMAS':    { type: 'flat', value: 2500,  label: 'Rp 2.500' },
+  'PANIN':       { type: 'flat', value: 3500,  label: 'Rp 3.500' },
+  'SAMPOERNAVA': { type: 'flat', value: 2500,  label: 'Rp 2.500' },
+  'ATMBERSAMA':  { type: 'flat', value: 4500,  label: 'Rp 4.500' },
+  'ARTAGRAHA':   { type: 'flat', value: 2500,  label: 'Rp 2.500' },
+  'ALFAMART':    { type: 'flat', value: 3500,  label: 'Rp 3.500' },
 };
 
 function formatRp(n) {
@@ -176,7 +281,12 @@ function updateTotal() {
   const cfg = FEE_CONFIG[selected.value];
   if (!cfg) return;
 
-  const fee = cfg.type === 'pct' ? BASE_PRICE * cfg.value : cfg.value;
+  let fee;
+  if (cfg.type === 'pct_flat') {
+    fee = Math.round(BASE_PRICE * cfg.pct) + cfg.flat;
+  } else {
+    fee = cfg.value;
+  }
   const total = BASE_PRICE + fee;
 
   feeEl.textContent = formatRp(fee) + ' (' + cfg.label + ')';
