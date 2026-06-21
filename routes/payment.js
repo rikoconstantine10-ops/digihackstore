@@ -51,7 +51,7 @@ router.post('/:slug', async (req, res) => {
     const result = await createTransaction({ refKode, amount, channel, cusName: name, cusEmail: email, cusPhone: phone, produk: product.name });
     if (!result.status) return res.render('shop/checkout', { product, settings, error: 'Gagal membuat transaksi. Coba lagi.' });
 
-    const data = result.data[0];
+    const data = result.data;
     db.prepare('INSERT INTO orders (ref_kode,id_reference,product_id,product_name,customer_name,customer_email,customer_phone,amount,payment_method,status,checkout_url) VALUES (?,?,?,?,?,?,?,?,?,?,?)'
     ).run(refKode, data.id_reference, product.id, product.name, name, email, phone, amount, channel, 'pending', data.checkout_url);
 
@@ -118,7 +118,7 @@ router.post('/:slug/addon', async (req, res) => {
       return res.render('shop/addon', { product, settings, addons, pending, error: 'Gagal membuat transaksi, coba lagi.' });
     }
 
-    const data = result.data[0];
+    const data = result.data;
     db.prepare('INSERT INTO orders (ref_kode,id_reference,product_id,product_name,customer_name,customer_email,customer_phone,amount,payment_method,status,checkout_url,addon_product_id,addon_product_name,addon_amount) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
     ).run(refKode, data.id_reference, product.id, product.name, name, email, phone, amount, channel, 'pending', data.checkout_url, addonProductId, addonProductName, addonAmount || 0);
 
