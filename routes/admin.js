@@ -124,8 +124,9 @@ router.post('/products/edit/:id', auth, upload.fields([{name:'image',maxCount:1}
   if (req.files.file) updates.file_path = req.files.file[0].filename;
   const cols = Object.keys(updates).map(k => `${k}=?`).join(',');
   db.prepare(`UPDATE products SET ${cols} WHERE id=?`).run(...Object.values(updates), req.params.id);
+  console.log('[ADDON DEBUG]', JSON.stringify(req.body).substring(0, 300));
   db.prepare('DELETE FROM product_addons WHERE product_id = ?').run(req.params.id);
-  const editAddonIds = req.body['addon_ids[]'];
+  const editAddonIds = req.body['addon_ids[]'] || req.body['addon_ids'];
   const editAddonArr = editAddonIds ? (Array.isArray(editAddonIds) ? editAddonIds : [editAddonIds]) : [];
   for (const aid of editAddonArr) {
     const ap = req.body['addon_price_' + aid] ? parseInt(req.body['addon_price_' + aid]) : null;
