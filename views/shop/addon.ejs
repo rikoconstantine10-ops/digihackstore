@@ -24,7 +24,6 @@
     .addon-card { display: block; border: 2px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; background: var(--card); overflow: hidden; box-sizing: border-box; width: 100%; }
     .addon-card:hover { border-color: var(--primary); box-shadow: 0 4px 16px rgba(102,126,234,0.15); }
     .addon-card.selected { border-color: var(--primary); background: #f5f3ff; box-shadow: 0 4px 16px rgba(102,126,234,0.2); }
-    .addon-card input[type="radio"] { display: none; }
     .addon-card-inner { display: flex; gap: 12px; align-items: center; }
     .addon-card-img { width: 64px; height: 64px; min-width: 64px; object-fit: cover; border-radius: 8px; display: block; }
     .addon-card-icon { width: 64px; height: 64px; min-width: 64px; background: #f0f0ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; }
@@ -84,8 +83,7 @@
       <input type="hidden" name="addon_product_id" id="selectedAddonId" value="">
 
       <% addons.forEach(addon => { %>
-      <label class="addon-card" onclick="selectAddon(<%= addon.id %>)" id="addon-card-<%= addon.id %>">
-        <input type="radio" name="_addon_radio" value="<%= addon.id %>">
+      <div class="addon-card" onclick="selectAddon(<%= addon.id %>)" id="addon-card-<%= addon.id %>">
         <div class="addon-card-inner">
           <% if(addon.image) { %>
           <img class="addon-card-img" src="<%= addon.image %>" alt="<%= addon.name %>">
@@ -101,7 +99,7 @@
           </div>
           <div class="addon-card-check" id="check-<%= addon.id %>"></div>
         </div>
-      </label>
+      </div>
       <% }) %>
 
       <% if(typeof error !== 'undefined' && error) { %>
