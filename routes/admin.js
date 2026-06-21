@@ -3,6 +3,11 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
 const bcrypt = require('bcryptjs');
+
+// Migrations
+try { db.exec("ALTER TABLE leads ADD COLUMN status TEXT DEFAULT 'new'"); } catch(e) {}
+try { db.exec("ALTER TABLE leads ADD COLUMN notes TEXT DEFAULT ''"); } catch(e) {}
+try { db.exec("ALTER TABLE products ADD COLUMN bundle_discount INTEGER DEFAULT 0"); } catch(e) {}
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -341,6 +346,57 @@ router.get('/leads', auth, (req, res) => {
   const settings = getSettings();
   const leads = db.prepare('SELECT * FROM leads ORDER BY created_at DESC LIMIT 500').all();
   res.render('admin/leads', { settings, leads, admin: req.session.admin });
+});
+
+// Lead status update
+router.post('/leads/:id/status', auth, (req, res) => {
+  const { status } = req.body;
+  db.prepare('UPDATE leads SET status=? WHERE id=?').run(status, req.params.id);
+  res.json({ success: true });
+});
+
+// Lead notes update
+router.post('/leads/:id/notes', auth, (req, res) => {
+  const { notes } = req.body;
+  db.prepare('UPDATE leads SET notes=? WHERE id=?').run(notes, req.params.id);
+  res.json({ success: true });
+});
+
+// WA Blast to all leads
+router.post('/leads/blast', auth, async (req, res) => {
+  const { message } = req.body;
+  if (!message) return res.json({ success: false, error: 'Message kosong' });
+  const leads = db.prepare("SELECT * FROM leads WHERE customer_phone != ''").all();
+  let sent = 0, failed = 0;
+  const http = require('http');
+  for (const lead of leads) {
+    const phone = lead.customer_phone.replace(/\D/g,'').replace(/^0/,'62');
+    const personalizedMsg = message
+      .replace('{name}', lead.customer_name)
+      .replace('{product}', lead.product_name || '');
+    try {
+      await new Promise((resolve, reject) => {
+        const body = JSON.stringify({ phone, message: personalizedMsg });
+        const r = http.request({ host:'localhost', port:3001, path:'/send', method:'POST', headers:{'Content-Type':'application/json','Content-Length':Buffer.byteLength(body)} }, (res2) => { res2.resume(); resolve(); });
+        r.on('error', reject); r.write(body); r.end();
+      });
+      db.prepare('UPDATE leads SET wa_sent=1 WHERE id=?').run(lead.id);
+      sent++;
+    } catch(e) { failed++; }
+  }
+  res.json({ success: true, sent, failed });
+});
+
+// Funnel analytics
+router.get('/funnel', auth, (req, res) => {
+  const settings = getSettings();
+  const funnel = {
+    product_views: db.prepare("SELECT COUNT(*) as c FROM page_views WHERE page LIKE '/product/%'").get().c,
+    checkout_starts: db.prepare("SELECT COUNT(*) as c FROM leads").get().c,
+    payment_reached: db.prepare("SELECT COUNT(*) as c FROM orders").get().c,
+    payment_success: db.prepare("SELECT COUNT(*) as c FROM orders WHERE status='success'").get().c,
+  };
+  res.render('admin/funnel', { settings, funnel, admin: req.session.admin });
 });
 
 module.exports = router;

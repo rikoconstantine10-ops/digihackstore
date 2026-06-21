@@ -11,6 +11,7 @@
       <a href="/admin/orders">📝 Orders</a>
       <a href="/admin/leads" class="active">🎯 Leads</a>
       <a href="/admin/analytics">📈 Analytics</a>
+      <a href="/admin/funnel">📊 Funnel</a>
       <a href="/admin/settings">⚙️ Settings</a>
       <a href="/admin/wa">💬 WhatsApp</a>
       <a href="/" target="_blank">🌍 Lihat Store</a>
@@ -30,9 +31,35 @@
           🎯 Leads adalah calon pembeli yang sudah mengisi data diri namun belum menyelesaikan pembayaran. Kamu bisa follow-up mereka via WhatsApp atau Email.
         </p>
       </div>
-      <div class="admin-table">
-        <table>
-          <thead><tr><th>#</th><th>Nama</th><th>Email</th><th>WhatsApp</th><th>Produk</th><th>Waktu</th><th>Aksi</th></tr></thead>
+
+      <!-- WA Blast Section -->
+      <div style="background:#fff;border-radius:12px;padding:20px;margin-bottom:20px;border:1px solid var(--border);box-shadow:var(--shadow)">
+        <h3 style="margin:0 0 12px;font-size:1rem;font-weight:700">📣 WA Blast ke Semua Leads</h3>
+        <p style="font-size:0.82rem;color:var(--text-light);margin:0 0 12px">Gunakan <code>{name}</code> untuk nama lead dan <code>{product}</code> untuk nama produk.</p>
+        <textarea id="blastMsg" rows="3" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:10px;font-family:Inter,sans-serif;font-size:0.88rem;resize:vertical;box-sizing:border-box" placeholder="Halo {name}! Ada penawaran spesial untuk {product} hari ini..."></textarea>
+        <div style="display:flex;gap:10px;margin-top:10px;align-items:center">
+          <button onclick="sendBlast()" class="admin-btn admin-btn-primary" style="background:#25d366;border:none;color:#fff;display:flex;align-items:center;gap:6px">
+            📣 Kirim ke Semua Leads
+          </button>
+          <span id="blastStatus" style="font-size:0.85rem;color:var(--text-light)"></span>
+        </div>
+      </div>
+
+      <div class="admin-table" style="overflow-x:auto">
+        <table style="min-width:900px">
+          <thead><tr>
+            <th>#</th>
+            <th>Nama</th>
+            <th>Email</th>
+            <th>WhatsApp</th>
+            <th>Domisili</th>
+            <th>Produk</th>
+            <th>Status</th>
+            <th>WA Sent</th>
+            <th>Notes</th>
+            <th>Waktu</th>
+            <th>Aksi</th>
+          </tr></thead>
           <tbody>
           <% leads.forEach((l, i) => { %>
           <tr>
@@ -44,7 +71,25 @@
                 <%= l.customer_phone %>
               </a>
             </td>
-            <td style="font-size:0.85rem;max-width:180px"><%= l.product_name %></td>
+            <td style="font-size:0.85rem"><%= l.domisili || '-' %></td>
+            <td style="font-size:0.85rem;max-width:160px"><%= l.product_name %></td>
+            <td>
+              <%
+                const st = l.status || 'new';
+                const stColor = st === 'converted' ? '#16a34a' : st === 'contacted' ? '#d97706' : '#2563eb';
+                const stBg = st === 'converted' ? '#dcfce7' : st === 'contacted' ? '#fef3c7' : '#dbeafe';
+              %>
+              <span id="badge-<%= l.id %>" style="display:inline-block;padding:2px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;background:<%= stBg %>;color:<%= stColor %>"><%= st.toUpperCase() %></span>
+              <select onchange="updateStatus(<%= l.id %>, this.value)" style="display:block;margin-top:4px;font-size:0.72rem;border:1px solid var(--border);border-radius:6px;padding:2px 4px;cursor:pointer">
+                <option value="new" <%= !l.status || l.status === 'new' ? 'selected' : '' %>>New</option>
+                <option value="contacted" <%= l.status === 'contacted' ? 'selected' : '' %>>Contacted</option>
+                <option value="converted" <%= l.status === 'converted' ? 'selected' : '' %>>Converted</option>
+              </select>
+            </td>
+            <td style="text-align:center;font-size:1.1rem"><%= l.wa_sent ? '✅' : '⏳' %></td>
+            <td>
+              <input type="text" value="<%= l.notes || '' %>" placeholder="Tambah catatan..." onblur="updateNotes(<%= l.id %>, this.value)" style="width:140px;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:0.78rem;font-family:Inter,sans-serif">
+            </td>
             <td style="font-size:0.75rem;color:var(--text-light)"><%= l.created_at.slice(0,16) %></td>
             <td>
               <a href="https://wa.me/<%= l.customer_phone.replace(/^0/, '62').replace(/\D/g,'') %>?text=<%= encodeURIComponent('Halo ' + l.customer_name + '! Kamu tadi sempat mau beli ' + l.product_name + ' di Digihack Store. Ada yang bisa kami bantu? 😊') %>" target="_blank">
@@ -54,7 +99,7 @@
           </tr>
           <% }) %>
           <% if(!leads.length) { %>
-          <tr><td colspan="7" style="text-align:center;color:var(--text-light);padding:32px">Belum ada leads</td></tr>
+          <tr><td colspan="11" style="text-align:center;color:var(--text-light);padding:32px">Belum ada leads</td></tr>
           <% } %>
           </tbody>
         </table>
@@ -62,4 +107,58 @@
     </div>
   </main>
 </div>
+<script>
+function updateStatus(id, status) {
+  const badge = document.getElementById('badge-' + id);
+  const colors = { new: { bg:'#dbeafe', color:'#2563eb' }, contacted: { bg:'#fef3c7', color:'#d97706' }, converted: { bg:'#dcfce7', color:'#16a34a' } };
+  if (badge && colors[status]) {
+    badge.textContent = status.toUpperCase();
+    badge.style.background = colors[status].bg;
+    badge.style.color = colors[status].color;
+  }
+  fetch('/admin/leads/' + id + '/status', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status })
+  });
+}
+
+function updateNotes(id, notes) {
+  fetch('/admin/leads/' + id + '/notes', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ notes })
+  });
+}
+
+function sendBlast() {
+  const message = document.getElementById('blastMsg').value.trim();
+  if (!message) { alert('Pesan tidak boleh kosong'); return; }
+  const btn = event.target;
+  const status = document.getElementById('blastStatus');
+  btn.disabled = true;
+  btn.textContent = '⏳ Mengirim...';
+  status.textContent = '';
+  fetch('/admin/leads/blast', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message })
+  }).then(r => r.json()).then(d => {
+    btn.disabled = false;
+    btn.innerHTML = '📣 Kirim ke Semua Leads';
+    if (d.success) {
+      status.style.color = '#16a34a';
+      status.textContent = '✅ Terkirim: ' + d.sent + ', Gagal: ' + d.failed;
+    } else {
+      status.style.color = '#dc2626';
+      status.textContent = '❌ ' + (d.error || 'Gagal');
+    }
+  }).catch(() => {
+    btn.disabled = false;
+    btn.innerHTML = '📣 Kirim ke Semua Leads';
+    status.style.color = '#dc2626';
+    status.textContent = '❌ Koneksi gagal';
+  });
+}
+</script>
 </body></html>
