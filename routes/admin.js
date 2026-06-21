@@ -108,7 +108,7 @@ router.post('/products/add', auth, upload.fields([{name:'image',maxCount:1},{nam
   ).run(name, slug, category, description, parseInt(price), discount_price ? parseInt(discount_price) : null, image, file_path, badge||null, countdown_end||null);
   const newId = insertResult.lastInsertRowid;
   db.prepare('DELETE FROM product_addons WHERE product_id = ?').run(newId);
-  const newAddonIds = req.body['addon_ids[]'];
+  const newAddonIds = req.body.addon_ids;
   const newAddonArr = newAddonIds ? (Array.isArray(newAddonIds) ? newAddonIds : [newAddonIds]) : [];
   for (const aid of newAddonArr) {
     const ap = req.body['addon_price_' + aid] ? parseInt(req.body['addon_price_' + aid]) : null;
@@ -124,9 +124,8 @@ router.post('/products/edit/:id', auth, upload.fields([{name:'image',maxCount:1}
   if (req.files.file) updates.file_path = req.files.file[0].filename;
   const cols = Object.keys(updates).map(k => `${k}=?`).join(',');
   db.prepare(`UPDATE products SET ${cols} WHERE id=?`).run(...Object.values(updates), req.params.id);
-  console.log('[ADDON DEBUG]', JSON.stringify(req.body).substring(0, 300));
   db.prepare('DELETE FROM product_addons WHERE product_id = ?').run(req.params.id);
-  const editAddonIds = req.body['addon_ids[]'] || req.body['addon_ids'];
+  const editAddonIds = req.body.addon_ids;
   const editAddonArr = editAddonIds ? (Array.isArray(editAddonIds) ? editAddonIds : [editAddonIds]) : [];
   for (const aid of editAddonArr) {
     const ap = req.body['addon_price_' + aid] ? parseInt(req.body['addon_price_' + aid]) : null;
@@ -151,7 +150,7 @@ router.get('/products/:id/upsell', auth, (req, res) => {
 
 router.post('/products/:id/upsell', auth, (req, res) => {
   db.prepare('DELETE FROM product_addons WHERE product_id = ?').run(req.params.id);
-  const rawAddonIds = req.body['addon_ids[]'];
+  const rawAddonIds = req.body.addon_ids;
   const addonIds = rawAddonIds ? (Array.isArray(rawAddonIds) ? rawAddonIds : [rawAddonIds]) : [];
   for (const addonId of addonIds) {
     const price = req.body['addon_price_' + addonId] ? parseInt(req.body['addon_price_' + addonId]) : null;

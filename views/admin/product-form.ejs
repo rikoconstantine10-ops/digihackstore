@@ -148,7 +148,7 @@
           <% allProducts.forEach(ap => { %>
           <% const isActive = addonMap.hasOwnProperty(ap.id); %>
           <div class="addon-item <%= isActive ? 'checked' : '' %>" id="ai-<%= ap.id %>">
-            <input type="checkbox" name="addon_ids[]" value="<%= ap.id %>"
+            <input type="checkbox" name="addon_ids" value="<%= ap.id %>"
               <%= isActive ? 'checked' : '' %>
               onchange="toggleAddon(this,'ai-<%= ap.id %>')"
               style="width:16px;height:16px;cursor:pointer;flex-shrink:0">

@@ -106,7 +106,7 @@
             <% const isActive = addonMap.hasOwnProperty(ap.id); %>
             <div class="addon-row <%= isActive ? 'active-addon' : '' %>" id="arow-<%= ap.id %>">
               <div style="text-align:center">
-                <input type="checkbox" name="addon_ids[]" value="<%= ap.id %>"
+                <input type="checkbox" name="addon_ids" value="<%= ap.id %>"
                   <%= isActive ? 'checked' : '' %>
                   onchange="toggleRow(this, 'arow-<%= ap.id %>')"
                   style="width:16px;height:16px;cursor:pointer">
