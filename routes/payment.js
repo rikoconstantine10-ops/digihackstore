@@ -12,7 +12,7 @@ function getSettings() {
   return Object.fromEntries(rows.map(r => [r.key, r.value]));
 }
 
-router.get('/:slug', trackPage('/checkout'), (req, res) => {
+router.get('/:slug', (req, res, next) => trackPage('/checkout/' + req.params.slug)(req, res, next), (req, res) => {
   const settings = getSettings();
   const product = db.prepare('SELECT * FROM products WHERE slug=? AND is_active=1').get(req.params.slug);
   if (!product) return res.status(404).render('shop/404', { settings });
@@ -30,7 +30,7 @@ router.post('/:slug', async (req, res) => {
     return res.render('shop/checkout', { product, settings, error: 'Semua field wajib diisi.' });
   }
 
-  const refKode = Date.now().toString().slice(-8) + Math.floor(Math.random()*1000);
+  const refKode = Date.now().toString().slice(-8) + Math.floor(Math.random() * 1000);
   const amount = product.discount_price || product.price;
 
   try {

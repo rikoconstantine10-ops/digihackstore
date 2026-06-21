@@ -71,7 +71,9 @@ if (!existingAdmin) {
 
 const defaults = [
   ['store_name', 'Digihack Store'],
+  ['store_domain', 'https://digihackstore.com'],
   ['meta_pixel_id', ''],
+  ['meta_capi_token', ''],
   ['wa_number', ''],
   ['wa_followup_msg', 'Halo {name}! Terima kasih sudah order di Digihack Store. Produk {product} sudah dikirim ke email {email}. Hubungi kami jika ada pertanyaan!'],
   ['wa_pending_msg', 'Halo {name}! Pesanan {product} kamu belum dibayar. Selesaikan pembayaran sebelum {expired}. Link: {url}'],

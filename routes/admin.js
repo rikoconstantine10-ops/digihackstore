@@ -45,15 +45,30 @@ router.get('/', auth, (req, res) => {
     pending_orders: db.prepare('SELECT COUNT(*) as c FROM orders WHERE status=?').get('pending').c,
     revenue: db.prepare('SELECT COALESCE(SUM(amount),0) as s FROM orders WHERE status=?').get('success').s,
     total_products: db.prepare('SELECT COUNT(*) as c FROM products WHERE is_active=1').get().c,
+    today_views: db.prepare("SELECT COUNT(*) as c FROM page_views WHERE date(created_at)=date('now')").get().c,
   };
   const recent = db.prepare('SELECT * FROM orders ORDER BY created_at DESC LIMIT 10').all();
-  res.render('admin/dashboard', { settings, stats, recent, admin: req.session.admin });
+  const topProducts = db.prepare(`
+    SELECT p.name, p.slug,
+      COALESCE((SELECT COUNT(*) FROM page_views pv WHERE pv.page = '/product/' || p.slug), 0) as views,
+      COALESCE((SELECT COUNT(*) FROM orders o WHERE o.product_id = p.id AND o.status = 'success'), 0) as sales
+    FROM products p WHERE p.is_active = 1
+    ORDER BY views DESC LIMIT 5
+  `).all();
+  res.render('admin/dashboard', { settings, stats, recent, admin: req.session.admin, topProducts });
 });
 
 // Products
 router.get('/products', auth, (req, res) => {
   const settings = getSettings();
-  const products = db.prepare('SELECT * FROM products ORDER BY created_at DESC').all();
+  const products = db.prepare(`
+    SELECT p.*,
+      COALESCE((SELECT COUNT(*) FROM page_views pv WHERE pv.page = '/product/' || p.slug), 0) as view_count,
+      COALESCE((SELECT COUNT(*) FROM page_views pv WHERE pv.page = '/checkout/' || p.slug), 0) as checkout_count,
+      COALESCE((SELECT COUNT(*) FROM orders o WHERE o.product_id = p.id AND o.status = 'success'), 0) as sales_count
+    FROM products p
+    ORDER BY p.created_at DESC
+  `).all();
   res.render('admin/products', { settings, products, admin: req.session.admin });
 });
 
@@ -98,7 +113,7 @@ router.get('/orders', auth, (req, res) => {
 
 router.get('/orders/export', auth, (req, res) => {
   const orders = db.prepare('SELECT * FROM orders ORDER BY created_at DESC').all();
-  const csv = ['ID,Ref,Produk,Nama,Email,HP,Amount,Metode,Status,Tanggal',...orders.map(o=>`${o.id},${o.ref_kode},"${o.product_name}","${o.customer_name}",${o.customer_email},${o.customer_phone},${o.amount},${o.payment_method},${o.status},${o.created_at}`)].join('\n');
+  const csv = ['ID,Ref,Produk,Nama,Email,HP,Amount,Metode,Status,Email Sent,WA Sent,Paid At,Tanggal',...orders.map(o=>`${o.id},${o.ref_kode},"${o.product_name}","${o.customer_name}",${o.customer_email},${o.customer_phone},${o.amount},${o.payment_method},${o.status},${o.email_sent},${o.wa_sent},${o.paid_at||''},${o.created_at}`)].join('\n');
   res.setHeader('Content-Type','text/csv');
   res.setHeader('Content-Disposition','attachment; filename=orders.csv');
   res.send(csv);
@@ -111,7 +126,7 @@ router.get('/settings', auth, (req, res) => {
 });
 
 router.post('/settings', auth, (req, res) => {
-  const allowed = ['store_name','meta_pixel_id','meta_capi_token','wa_number','wa_followup_msg','wa_pending_msg'];
+  const allowed = ['store_name','store_domain','meta_pixel_id','meta_capi_token','wa_number','wa_followup_msg','wa_pending_msg'];
   for (const key of allowed) {
     if (req.body[key] !== undefined) {
       db.prepare('INSERT OR REPLACE INTO settings (key,value) VALUES (?,?)').run(key, req.body[key]);
@@ -132,7 +147,6 @@ router.post('/orders/resend-email/:id', auth, async (req, res) => {
 });
 
 router.get('/analytics', auth, (req, res) => {
-  const today = new Date().toISOString().slice(0, 10);
   const week = new Date(Date.now() - 7*24*60*60*1000).toISOString().slice(0, 10);
   const month = new Date(Date.now() - 30*24*60*60*1000).toISOString().slice(0, 10);
 
@@ -147,9 +161,22 @@ router.get('/analytics', auth, (req, res) => {
   const successOrders = db.prepare("SELECT COUNT(*) as c FROM orders WHERE status='success'").get().c;
   const convRate = checkoutVisits > 0 ? ((successOrders / checkoutVisits) * 100).toFixed(1) : 0;
 
+  const productStats = db.prepare(`
+    SELECT p.id, p.name, p.slug, p.category,
+      COALESCE((SELECT COUNT(*) FROM page_views pv WHERE pv.page = '/product/' || p.slug), 0) as page_views,
+      COALESCE((SELECT COUNT(*) FROM page_views pv WHERE pv.page = '/checkout/' || p.slug), 0) as checkout_views,
+      COALESCE((SELECT COUNT(*) FROM orders o WHERE o.product_id = p.id), 0) as total_orders,
+      COALESCE((SELECT COUNT(*) FROM orders o WHERE o.product_id = p.id AND o.status = 'success'), 0) as success_orders
+    FROM products p
+    WHERE p.is_active = 1
+    ORDER BY page_views DESC
+  `).all();
+
   res.render('admin/analytics', {
     admin: req.session.admin,
     stats: { todayViews, weekViews, monthViews, totalViews, convRate, successOrders },
-    topPages, topRefs, daily
+    topPages, topRefs, daily, productStats
   });
-});module.exports = router;
+});
+
+module.exports = router;

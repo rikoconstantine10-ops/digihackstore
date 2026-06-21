@@ -22,18 +22,68 @@
       <span style="color:var(--text-light);font-size:0.85rem">Halo, <strong><%= admin.username %></strong></span>
     </div>
     <div class="admin-content">
+
       <div class="stat-grid">
         <div class="stat-card"><div class="stat-icon">👁️</div><div class="stat-label">Visitor Hari Ini</div><div class="stat-value"><%= stats.todayViews %></div></div>
         <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-label">Visitor 7 Hari</div><div class="stat-value"><%= stats.weekViews %></div></div>
         <div class="stat-card"><div class="stat-icon">📆</div><div class="stat-label">Visitor 30 Hari</div><div class="stat-value"><%= stats.monthViews %></div></div>
         <div class="stat-card"><div class="stat-icon">🌐</div><div class="stat-label">Total Page Views</div><div class="stat-value"><%= stats.totalViews %></div></div>
-        <div class="stat-card"><div class="stat-icon">💳</div><div class="stat-label">Order Sukses</div><div class="stat-value"><%= stats.successOrders %></div></div>
-        <div class="stat-card"><div class="stat-icon">🎯</div><div class="stat-label">Conversion Rate</div><div class="stat-value"><%= stats.convRate %>%</div></div>
+        <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-label">Order Sukses</div><div class="stat-value"><%= stats.successOrders %></div></div>
+        <div class="stat-card"><div class="stat-icon">🎯</div><div class="stat-label">Conv. Rate (Checkout)</div><div class="stat-value"><%= stats.convRate %>%</div></div>
       </div>
 
       <div class="admin-table" style="margin-bottom:24px">
         <div style="padding:16px 20px;font-weight:700;border-bottom:1px solid var(--border)">📊 Visitor 7 Hari Terakhir</div>
         <div style="padding:20px"><canvas id="visitorChart" height="80"></canvas></div>
+      </div>
+
+      <div class="admin-table" style="margin-bottom:24px">
+        <div style="padding:16px 20px;font-weight:700;border-bottom:1px solid var(--border)">📦 Performa Per Produk</div>
+        <div style="padding:8px 16px;font-size:0.8rem;color:var(--text-light);border-bottom:1px solid var(--border)">Views = kunjungan halaman produk &nbsp;|&nbsp; Checkout = klik beli &nbsp;|&nbsp; Terjual = order sukses &nbsp;|&nbsp; Conv = checkout → sukses</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Produk</th>
+              <th style="text-align:center">👁 Views</th>
+              <th style="text-align:center">🛒 Checkout</th>
+              <th style="text-align:center">✅ Terjual</th>
+              <th style="text-align:center">🎯 Conv</th>
+              <th>Funnel View→Checkout</th>
+            </tr>
+          </thead>
+          <tbody>
+          <% productStats.forEach(p => { %>
+          <% const pConv = p.checkout_views > 0 ? ((p.success_orders / p.checkout_views) * 100).toFixed(1) : 0; %>
+          <% const v2c = p.page_views > 0 ? Math.min(100, Math.round((p.checkout_views / p.page_views) * 100)) : 0; %>
+          <tr>
+            <td>
+              <div style="font-weight:600;font-size:0.9rem"><%= p.name %></div>
+              <div style="font-size:0.75rem;color:var(--text-light)">
+                <span style="background:#f1f5f9;padding:2px 6px;border-radius:4px"><%= p.category %></span>
+                &nbsp;<a href="/product/<%= p.slug %>" target="_blank" style="color:var(--primary)">↗ lihat</a>
+              </div>
+            </td>
+            <td style="text-align:center;font-weight:700;color:var(--primary);font-size:1.1rem"><%= p.page_views %></td>
+            <td style="text-align:center;font-weight:700;color:#f59e0b;font-size:1.1rem"><%= p.checkout_views %></td>
+            <td style="text-align:center;font-weight:700;color:#10b981;font-size:1.1rem"><%= p.success_orders %></td>
+            <td style="text-align:center">
+              <span style="background:<%= pConv >= 5 ? '#dcfce7' : pConv >= 2 ? '#fef9c3' : '#f3f4f6' %>;color:<%= pConv >= 5 ? '#166534' : pConv >= 2 ? '#854d0e' : '#6b7280' %>;padding:3px 10px;border-radius:20px;font-size:0.82rem;font-weight:700"><%= pConv %>%</span>
+            </td>
+            <td style="min-width:140px">
+              <div style="display:flex;gap:6px;align-items:center">
+                <div style="flex:1;background:#e0e7ff;border-radius:4px;height:10px;overflow:hidden">
+                  <div style="width:<%= v2c %>%;background:linear-gradient(90deg,#6c63ff,#a78bfa);height:100%;border-radius:4px"></div>
+                </div>
+                <span style="font-size:0.75rem;color:var(--text-light);min-width:32px"><%= v2c %>%</span>
+              </div>
+            </td>
+          </tr>
+          <% }) %>
+          <% if (!productStats.length) { %>
+          <tr><td colspan="6" style="text-align:center;color:var(--text-light);padding:24px">Belum ada produk aktif</td></tr>
+          <% } %>
+          </tbody>
+        </table>
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
@@ -62,6 +112,7 @@
           </table>
         </div>
       </div>
+
     </div>
   </main>
 </div>

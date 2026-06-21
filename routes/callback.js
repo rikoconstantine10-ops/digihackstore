@@ -29,11 +29,10 @@ router.post('/', express.json(), async (req, res) => {
         } catch(e) { console.error('Email failed:', e.message); }
       }
 
-      // CAPI Purchase
+      const settings = Object.fromEntries(db.prepare('SELECT key,value FROM settings').all().map(r => [r.key, r.value]));
+
       try { capiPurchase(settings, order); } catch(e) { console.error('CAPI:', e.message); }
 
-      // WA followup - fire and forget
-      const settings = Object.fromEntries(db.prepare('SELECT key,value FROM settings').all().map(r=>[r.key,r.value]));
       if (settings.wa_number && settings.wa_followup_msg) {
         const msg = settings.wa_followup_msg
           .replace('{name}', order.customer_name)
@@ -42,7 +41,7 @@ router.post('/', express.json(), async (req, res) => {
         try {
           const http = require('http');
           const body = JSON.stringify({ number: order.customer_phone, message: msg });
-          const req2 = http.request({ host:'localhost', port:3001, path:'/send', method:'POST', headers:{'Content-Type':'application/json','Content-Length':Buffer.byteLength(body)} });
+          const req2 = http.request({ host: 'localhost', port: 3001, path: '/send', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) } });
           req2.write(body); req2.end();
           db.prepare('UPDATE orders SET wa_sent=1 WHERE ref_kode=?').run(String(ref));
         } catch(e) { console.error('WA failed:', e.message); }

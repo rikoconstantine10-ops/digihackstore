@@ -1,4 +1,3 @@
-
 <!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Produk - Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css"></head>
@@ -13,11 +12,14 @@
       <a href="/admin/analytics">📈 Analytics</a>
       <a href="/admin/settings">⚙️ Settings</a>
       <a href="/" target="_blank">🌍 Lihat Store</a>
-      <a href="/admin/logout">🚪 Logout</a>
+      <a href="/admin/logout" style="margin-top:auto;color:#fc8181">🚪 Logout</a>
     </nav>
   </aside>
   <main class="admin-main">
-    <div class="admin-topbar"><h1>📦 Manajemen Produk</h1></div>
+    <div class="admin-topbar">
+      <h1>📦 Manajemen Produk</h1>
+      <span style="color:var(--text-light);font-size:0.85rem">Halo, <strong><%= admin.username %></strong></span>
+    </div>
     <div class="admin-content">
 
       <div class="form-admin">
@@ -47,9 +49,12 @@
       </div>
 
       <div class="admin-table">
-        <div style="padding:16px 20px;font-weight:700;border-bottom:1px solid var(--border)">Daftar Produk (<%= products.length %>)</div>
+        <div style="padding:16px 20px;font-weight:700;border-bottom:1px solid var(--border)">
+          Daftar Produk (<%= products.length %>)
+          <span style="font-size:0.75rem;font-weight:400;color:var(--text-light);margin-left:12px">👁 = views &nbsp; 🛒 = checkout &nbsp; ✅ = terjual</span>
+        </div>
         <table>
-          <thead><tr><th>Gambar</th><th>Nama</th><th>Kategori</th><th>Harga</th><th>Status</th><th>Aksi</th></tr></thead>
+          <thead><tr><th>Gambar</th><th>Nama</th><th>Kategori</th><th>Harga</th><th style="text-align:center">👁</th><th style="text-align:center">🛒</th><th style="text-align:center">✅</th><th>Status</th><th>Aksi</th></tr></thead>
           <tbody>
           <% products.forEach(p => { %>
           <tr>
@@ -64,6 +69,9 @@
               <div style="font-weight:700;color:var(--primary)">Rp <%= (p.discount_price||p.price).toLocaleString('id-ID') %></div>
               <% if(p.discount_price) { %><div style="text-decoration:line-through;font-size:0.75rem;color:var(--text-light)">Rp <%= p.price.toLocaleString('id-ID') %></div><% } %>
             </td>
+            <td style="text-align:center;font-weight:700;color:var(--primary)"><%= p.view_count || 0 %></td>
+            <td style="text-align:center;font-weight:700;color:#f59e0b"><%= p.checkout_count || 0 %></td>
+            <td style="text-align:center;font-weight:700;color:#10b981"><%= p.sales_count || 0 %></td>
             <td><span class="badge <%= p.is_active ? 'badge-success' : 'badge-expired' %>"><%= p.is_active ? 'Aktif' : 'Nonaktif' %></span></td>
             <td style="display:flex;gap:6px;flex-wrap:wrap">
               <a href="/product/<%= p.slug %>" target="_blank"><button class="admin-btn" style="background:#e0e7ff;color:var(--primary)">👁</button></a>
@@ -81,7 +89,6 @@
   </main>
 </div>
 
-<!-- Edit Modal -->
 <div id="editModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
   <div style="background:white;border-radius:16px;padding:32px;width:600px;max-width:90vw;max-height:90vh;overflow-y:auto">
     <h3 style="margin-bottom:20px">Edit Produk</h3>
