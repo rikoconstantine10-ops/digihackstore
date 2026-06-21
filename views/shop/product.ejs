@@ -73,8 +73,11 @@
 <% if(product.countdown_end) { %>
 <script>
 const end = new Date('<%= product.countdown_end %>').getTime();
+const serverTime = <%= serverTime || Date.now() %>;
+const clientTime = Date.now();
+const offset = serverTime - clientTime;
 function tick() {
-  const now = Date.now();
+  const now = Date.now() + offset;
   const diff = end - now;
   if (diff <= 0) { document.getElementById('countdown').style.display='none'; return; }
   const h = Math.floor(diff/3600000);

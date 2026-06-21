@@ -32,6 +32,7 @@
       <a href="/admin/orders">📝 Orders</a>
       <a href="/admin/leads">🎯 Leads</a>
       <a href="/admin/analytics">📈 Analytics</a>
+      <a href="/admin/funnel">📊 Funnel</a>
       <a href="/admin/settings">⚙️ Settings</a>
       <a href="/admin/wa">💬 WhatsApp</a>
       <a href="/" target="_blank">🌍 Lihat Store</a>
@@ -89,6 +90,11 @@
               <label>Countdown Diskon</label>
               <input type="datetime-local" name="countdown_end" value="<%= product && product.countdown_end ? product.countdown_end.slice(0,16) : '' %>">
             </div>
+          </div>
+          <div class="form-group" style="margin-bottom:14px">
+            <label>Bundle Discount (%)</label>
+            <input type="number" name="bundle_discount" min="0" max="90" placeholder="0" value="<%= product && product.bundle_discount ? product.bundle_discount : 0 %>">
+            <small>Diskon jika beli 2+ produk sekaligus (fitur bundle)</small>
           </div>
           <div class="form-row">
             <div class="form-group">

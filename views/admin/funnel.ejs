@@ -1,0 +1,94 @@
+<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Funnel Analytics - Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+.funnel-wrap { max-width:680px; margin:0 auto; padding:28px; }
+.funnel-step { display:flex; align-items:center; gap:16px; background:#fff; border-radius:14px; box-shadow:var(--shadow); padding:20px 24px; margin-bottom:0; border:1px solid var(--border); }
+.funnel-icon { font-size:2rem; flex-shrink:0; }
+.funnel-label { font-size:0.88rem; font-weight:600; color:var(--text-light); }
+.funnel-num { font-size:1.8rem; font-weight:800; color:var(--text); line-height:1; }
+.funnel-arrow { text-align:center; padding:8px 0; font-size:1.3rem; color:var(--text-light); position:relative; }
+.funnel-conv { display:inline-block; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:20px; font-size:0.78rem; font-weight:700; padding:2px 12px; margin-left:8px; }
+.funnel-bar-bg { background:#f1f5f9; border-radius:20px; height:8px; width:100%; margin-top:8px; overflow:hidden; }
+.funnel-bar-fill { height:100%; border-radius:20px; background:linear-gradient(90deg,#6366f1,#818cf8); transition:width .5s; }
+</style>
+</head>
+<body>
+<div class="admin-wrap">
+  <aside class="admin-sidebar">
+    <div class="admin-logo">🚀 Digihack</div>
+    <nav class="admin-nav">
+      <a href="/admin">📊 Dashboard</a>
+      <a href="/admin/products">📦 Produk</a>
+      <a href="/admin/orders">📝 Orders</a>
+      <a href="/admin/leads">🎯 Leads</a>
+      <a href="/admin/analytics">📈 Analytics</a>
+      <a href="/admin/funnel" class="active">📊 Funnel</a>
+      <a href="/admin/settings">⚙️ Settings</a>
+      <a href="/admin/wa">💬 WhatsApp</a>
+      <a href="/" target="_blank">🌍 Lihat Store</a>
+      <a href="/admin/logout" style="margin-top:auto;color:#fc8181">🚪 Logout</a>
+    </nav>
+  </aside>
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>📊 Funnel Analytics</h1>
+      <span style="color:var(--text-light);font-size:0.85rem">Halo, <strong><%= admin.username %></strong></span>
+    </div>
+    <div class="admin-content">
+      <%
+        const steps = [
+          { icon: '👁️', label: 'Product Views', key: 'product_views', desc: 'Pengunjung melihat halaman produk' },
+          { icon: '📝', label: 'Checkout Form', key: 'checkout_starts', desc: 'Mengisi form checkout (leads)' },
+          { icon: '💳', label: 'Payment Page', key: 'payment_reached', desc: 'Sampai ke halaman pembayaran' },
+          { icon: '✅', label: 'Paid', key: 'payment_success', desc: 'Pembayaran berhasil' },
+        ];
+        const top = funnel.product_views || 1;
+      %>
+      <div class="funnel-wrap">
+        <% steps.forEach((step, i) => { %>
+          <div class="funnel-step">
+            <div class="funnel-icon"><%= step.icon %></div>
+            <div style="flex:1">
+              <div class="funnel-label"><%= step.label %></div>
+              <div class="funnel-num"><%= funnel[step.key].toLocaleString('id-ID') %></div>
+              <div style="font-size:0.78rem;color:var(--text-light);margin-top:2px"><%= step.desc %></div>
+              <div class="funnel-bar-bg">
+                <div class="funnel-bar-fill" style="width:<%= Math.min(100, Math.round((funnel[step.key]/top)*100)) %>%"></div>
+              </div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div style="font-size:1.2rem;font-weight:800;color:var(--primary)"><%= Math.min(100, Math.round((funnel[step.key]/top)*100)) %>%</div>
+              <div style="font-size:0.72rem;color:var(--text-light)">dari views</div>
+            </div>
+          </div>
+          <% if(i < steps.length - 1) { %>
+          <%
+            const curr = funnel[step.key] || 0;
+            const next = funnel[steps[i+1].key] || 0;
+            const conv = curr > 0 ? Math.round((next/curr)*100) : 0;
+          %>
+          <div class="funnel-arrow">
+            ↓ <span class="funnel-conv"><%= conv %>% lanjut ke tahap berikutnya</span>
+          </div>
+          <% } %>
+        <% }) %>
+
+        <div style="background:#fff;border-radius:14px;box-shadow:var(--shadow);padding:20px 24px;margin-top:24px;border:1px solid var(--border)">
+          <h3 style="margin:0 0 12px;font-size:0.95rem;font-weight:700">📈 Ringkasan Konversi</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div style="background:#f8faff;border-radius:10px;padding:14px;text-align:center">
+              <div style="font-size:0.78rem;color:var(--text-light);font-weight:600">View → Bayar</div>
+              <div style="font-size:1.5rem;font-weight:800;color:var(--primary)"><%= funnel.product_views > 0 ? ((funnel.payment_success/funnel.product_views)*100).toFixed(1) : 0 %>%</div>
+            </div>
+            <div style="background:#f0fdf4;border-radius:10px;padding:14px;text-align:center">
+              <div style="font-size:0.78rem;color:#166534;font-weight:600">Checkout → Bayar</div>
+              <div style="font-size:1.5rem;font-weight:800;color:#16a34a"><%= funnel.checkout_starts > 0 ? ((funnel.payment_success/funnel.checkout_starts)*100).toFixed(1) : 0 %>%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body></html>

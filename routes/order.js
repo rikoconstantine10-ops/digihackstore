@@ -29,4 +29,12 @@ router.post('/check', (req, res) => {
   res.json({ order });
 });
 
+router.get('/success/:refKode', (req, res) => {
+  const settings = getSettings();
+  const order = db.prepare('SELECT * FROM orders WHERE ref_kode=?').get(req.params.refKode);
+  if (!order) return res.redirect('/');
+  const products = db.prepare('SELECT * FROM products WHERE is_active=1 AND id != ? ORDER BY RANDOM() LIMIT 3').all(order.product_id || 0);
+  res.render('shop/upsell', { order, settings, products });
+});
+
 module.exports = router;

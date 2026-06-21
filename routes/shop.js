@@ -45,7 +45,7 @@ router.get('/product/:slug', (req, res) => {
     const allSettings = Object.fromEntries(db.prepare('SELECT key,value FROM settings').all().map(r=>[r.key,r.value]));
     capiViewContent(allSettings, product, req);
   } catch(e) {}
-  res.render('shop/product', { product, settings });
+  res.render('shop/product', { product, settings, serverTime: Date.now() });
 });
 
 module.exports = router;
