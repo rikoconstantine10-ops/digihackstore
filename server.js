@@ -38,7 +38,15 @@ app.use('/order', require('./routes/order'));
 app.use('/admin', require('./routes/admin'));
 
 // 404
-app.use((req, res) => res.status(404).render('shop/404'));
+app.use((req, res) => {
+  try {
+    const db = require('./db/database');
+    const settings = Object.fromEntries(db.prepare('SELECT key,value FROM settings').all().map(r => [r.key, r.value]));
+    res.status(404).render('shop/404', { settings });
+  } catch(e) {
+    res.status(404).render('shop/404', { settings: { store_name: 'Digihack Store', ga4_id: '' } });
+  }
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Digihack Store running on port ${PORT}`));

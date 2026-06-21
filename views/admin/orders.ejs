@@ -49,9 +49,12 @@
               <div><%= o.created_at.slice(0,16) %></div>
               <% if(o.paid_at) { %><div style="color:#10b981;font-size:0.7rem">Paid: <%= o.paid_at.slice(0,16) %></div><% } %>
             </td>
-            <td>
+            <td style="display:flex;gap:4px;flex-wrap:wrap">
               <% if(o.status === 'success') { %>
               <button onclick="resendEmail(<%= o.id %>)" class="admin-btn" style="background:#e0f2fe;color:#0284c7;font-size:0.75rem">📧 Resend</button>
+              <% } %>
+              <% if(o.status === 'pending') { %>
+              <button onclick="sendReminder(<%= o.id %>)" class="admin-btn" style="background:#fef9c3;color:#854d0e;font-size:0.75rem">💬 WA</button>
               <% } %>
             </td>
           </tr>
@@ -76,6 +79,12 @@ async function resendEmail(id) {
   const r = await fetch('/admin/orders/resend-email/' + id, {method:'POST'});
   const d = await r.json();
   alert(d.success ? '✅ Email berhasil dikirim!' : '❌ Gagal: ' + d.error);
+}
+async function sendReminder(id) {
+  if (!confirm('Kirim reminder WA ke customer ini?')) return;
+  const r = await fetch('/admin/orders/send-reminder/' + id, {method:'POST'});
+  const d = await r.json();
+  alert(d.success ? '✅ WA reminder terkirim!' : '❌ Gagal: ' + d.error);
 }
 </script>
 </body></html>

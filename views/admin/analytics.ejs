@@ -86,6 +86,27 @@
         </table>
       </div>
 
+      <div class="admin-table" style="margin-bottom:24px">
+        <div style="padding:16px 20px;font-weight:700;border-bottom:1px solid var(--border)">🔗 UTM Campaign Tracking</div>
+        <table>
+          <thead><tr><th>Source</th><th>Medium</th><th>Campaign</th><th>Kunjungan</th></tr></thead>
+          <tbody>
+          <% if(typeof utmStats !== 'undefined' && utmStats.length) { %>
+          <% utmStats.forEach(u => { %>
+          <tr>
+            <td><code style="font-size:0.8rem"><%= u.utm_source %></code></td>
+            <td style="font-size:0.85rem;color:var(--text-light)"><%= u.utm_medium || '-' %></td>
+            <td style="font-size:0.85rem"><%= u.utm_campaign || '-' %></td>
+            <td><strong><%= u.visits %></strong></td>
+          </tr>
+          <% }) %>
+          <% } else { %>
+          <tr><td colspan="4" style="text-align:center;color:var(--text-light);padding:20px">Belum ada data UTM. Contoh: tambahkan <code>?utm_source=instagram&utm_medium=bio&utm_campaign=promo</code> ke link kampanye kamu.</td></tr>
+          <% } %>
+          </tbody>
+        </table>
+      </div>
+
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
         <div class="admin-table">
           <div style="padding:16px 20px;font-weight:700;border-bottom:1px solid var(--border)">🔥 Top Pages</div>

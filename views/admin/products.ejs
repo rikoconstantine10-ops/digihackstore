@@ -75,6 +75,7 @@
             <td><span class="badge <%= p.is_active ? 'badge-success' : 'badge-expired' %>"><%= p.is_active ? 'Aktif' : 'Nonaktif' %></span></td>
             <td style="display:flex;gap:6px;flex-wrap:wrap">
               <a href="/product/<%= p.slug %>" target="_blank"><button class="admin-btn" style="background:#e0e7ff;color:var(--primary)">👁</button></a>
+              <button onclick="copyLink('<%= p.slug %>')" class="admin-btn" style="background:#f0fdf4;color:#16a34a" title="Copy link produk">🔗</button>
               <button onclick="editProduct(<%= JSON.stringify(p) %>)" class="admin-btn admin-btn-primary">✏️</button>
               <form method="POST" action="/admin/products/delete/<%= p.id %>" style="margin:0" onsubmit="return confirm('Nonaktifkan produk ini?')">
                 <button type="submit" class="admin-btn admin-btn-danger">🗑</button>
@@ -120,6 +121,14 @@
 </div>
 
 <script>
+function copyLink(slug) {
+  const url = window.location.origin + '/product/' + slug;
+  navigator.clipboard.writeText(url).then(() => {
+    alert('✅ Link disalin!\n' + url);
+  }).catch(() => {
+    prompt('Salin link ini:', url);
+  });
+}
 function editProduct(p) {
   document.getElementById('editName').value = p.name;
   document.getElementById('editCategory').value = p.category;

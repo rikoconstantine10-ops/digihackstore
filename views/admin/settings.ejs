@@ -38,6 +38,15 @@
         </div>
 
         <div class="form-admin">
+          <h3>📊 Google Analytics 4</h3>
+          <div class="form-group">
+            <label>GA4 Measurement ID</label>
+            <input type="text" name="ga4_id" value="<%= settings.ga4_id || '' %>" placeholder="Contoh: G-XXXXXXXXXX">
+            <div style="font-size:0.8rem;color:var(--text-light)">Kosongkan jika tidak menggunakan GA4. Didapat dari Google Analytics → Admin → Data Streams.</div>
+          </div>
+        </div>
+
+        <div class="form-admin">
           <h3>📱 Meta Ads (Pixel & Conversions API)</h3>
           <div class="form-group">
             <label>Meta Pixel ID</label>

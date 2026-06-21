@@ -77,9 +77,15 @@ const defaults = [
   ['wa_number', ''],
   ['wa_followup_msg', 'Halo {name}! Terima kasih sudah order di Digihack Store. Produk {product} sudah dikirim ke email {email}. Hubungi kami jika ada pertanyaan!'],
   ['wa_pending_msg', 'Halo {name}! Pesanan {product} kamu belum dibayar. Selesaikan pembayaran sebelum {expired}. Link: {url}'],
+  ['ga4_id', ''],
 ];
 for (const [k, v] of defaults) {
   db.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)').run(k, v);
 }
+
+try { db.exec("ALTER TABLE page_views ADD COLUMN utm_source TEXT DEFAULT ''"); } catch(e) {}
+try { db.exec("ALTER TABLE page_views ADD COLUMN utm_medium TEXT DEFAULT ''"); } catch(e) {}
+try { db.exec("ALTER TABLE page_views ADD COLUMN utm_campaign TEXT DEFAULT ''"); } catch(e) {}
+try { db.exec("ALTER TABLE page_views ADD COLUMN utm_content TEXT DEFAULT ''"); } catch(e) {}
 
 module.exports = db;

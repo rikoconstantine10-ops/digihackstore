@@ -55,7 +55,16 @@ router.get('/', auth, (req, res) => {
     FROM products p WHERE p.is_active = 1
     ORDER BY views DESC LIMIT 5
   `).all();
-  res.render('admin/dashboard', { settings, stats, recent, admin: req.session.admin, topProducts });
+  const revenueDaily = db.prepare(`
+    SELECT date(paid_at) as day, SUM(amount) as revenue
+    FROM orders WHERE status='success' AND paid_at >= date('now', '-7 days')
+    GROUP BY day ORDER BY day
+  `).all();
+  const realtimeVisitors = db.prepare(`
+    SELECT COUNT(DISTINCT ip) as c FROM page_views
+    WHERE created_at >= datetime('now', '-5 minutes') AND ip != ''
+  `).get().c;
+  res.render('admin/dashboard', { settings, stats, recent, admin: req.session.admin, topProducts, revenueDaily, realtimeVisitors });
 });
 
 // Products
@@ -126,7 +135,7 @@ router.get('/settings', auth, (req, res) => {
 });
 
 router.post('/settings', auth, (req, res) => {
-  const allowed = ['store_name','store_domain','meta_pixel_id','meta_capi_token','wa_number','wa_followup_msg','wa_pending_msg'];
+  const allowed = ['store_name','store_domain','meta_pixel_id','meta_capi_token','ga4_id','wa_number','wa_followup_msg','wa_pending_msg'];
   for (const key of allowed) {
     if (req.body[key] !== undefined) {
       db.prepare('INSERT OR REPLACE INTO settings (key,value) VALUES (?,?)').run(key, req.body[key]);
@@ -172,11 +181,44 @@ router.get('/analytics', auth, (req, res) => {
     ORDER BY page_views DESC
   `).all();
 
+  const utmStats = db.prepare(`
+    SELECT utm_source, utm_medium, utm_campaign, COUNT(*) as visits
+    FROM page_views WHERE utm_source != ''
+    GROUP BY utm_source, utm_medium, utm_campaign
+    ORDER BY visits DESC LIMIT 20
+  `).all();
+
   res.render('admin/analytics', {
     admin: req.session.admin,
     stats: { todayViews, weekViews, monthViews, totalViews, convRate, successOrders },
-    topPages, topRefs, daily, productStats
+    topPages, topRefs, daily, productStats, utmStats
   });
+});
+
+router.post('/orders/send-reminder/:id', auth, async (req, res) => {
+  const order = db.prepare('SELECT * FROM orders WHERE id=?').get(req.params.id);
+  if (!order) return res.json({ success: false, error: 'Order not found' });
+  const settings = getSettings();
+  if (!settings.wa_number || !settings.wa_pending_msg) {
+    return res.json({ success: false, error: 'WA belum dikonfigurasi di Settings' });
+  }
+  const msg = settings.wa_pending_msg
+    .replace('{name}', order.customer_name)
+    .replace('{product}', order.product_name)
+    .replace('{expired}', order.created_at ? order.created_at.slice(0,16) : '-')
+    .replace('{url}', order.checkout_url || '');
+  try {
+    const http = require('http');
+    const body = JSON.stringify({ number: order.customer_phone, message: msg });
+    await new Promise((resolve, reject) => {
+      const r2 = http.request({ host: 'localhost', port: 3001, path: '/send', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) } }, (res2) => { res2.resume(); resolve(); });
+      r2.on('error', reject);
+      r2.write(body); r2.end();
+    });
+    res.json({ success: true });
+  } catch(e) {
+    res.json({ success: false, error: e.message });
+  }
 });
 
 module.exports = router;
