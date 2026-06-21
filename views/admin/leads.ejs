@@ -1,0 +1,65 @@
+<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Leads - Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css"></head>
+<body>
+<div class="admin-wrap">
+  <aside class="admin-sidebar">
+    <div class="admin-logo">🚀 Digihack</div>
+    <nav class="admin-nav">
+      <a href="/admin">📊 Dashboard</a>
+      <a href="/admin/products">📦 Produk</a>
+      <a href="/admin/orders">📝 Orders</a>
+      <a href="/admin/leads" class="active">🎯 Leads</a>
+      <a href="/admin/analytics">📈 Analytics</a>
+      <a href="/admin/settings">⚙️ Settings</a>
+      <a href="/admin/wa">💬 WhatsApp</a>
+      <a href="/" target="_blank">🌍 Lihat Store</a>
+      <a href="/admin/logout" style="margin-top:auto;color:#fc8181">🚪 Logout</a>
+    </nav>
+  </aside>
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>🎯 Leads</h1>
+      <div style="display:flex;gap:10px;align-items:center">
+        <span style="color:var(--text-light);font-size:0.85rem">Halo, <strong><%= admin.username %></strong></span>
+      </div>
+    </div>
+    <div class="admin-content">
+      <div style="background:#fff;border-radius:12px;padding:16px 20px;margin-bottom:20px;border:1px solid var(--border)">
+        <p style="margin:0;font-size:0.88rem;color:var(--text-light)">
+          🎯 Leads adalah calon pembeli yang sudah mengisi data diri namun belum menyelesaikan pembayaran. Kamu bisa follow-up mereka via WhatsApp atau Email.
+        </p>
+      </div>
+      <div class="admin-table">
+        <table>
+          <thead><tr><th>#</th><th>Nama</th><th>Email</th><th>WhatsApp</th><th>Produk</th><th>Waktu</th><th>Aksi</th></tr></thead>
+          <tbody>
+          <% leads.forEach((l, i) => { %>
+          <tr>
+            <td style="font-size:0.8rem;color:var(--text-light)"><%= leads.length - i %></td>
+            <td style="font-weight:600;font-size:0.88rem"><%= l.customer_name %></td>
+            <td style="font-size:0.85rem"><a href="mailto:<%= l.customer_email %>" style="color:var(--primary)"><%= l.customer_email %></a></td>
+            <td style="font-size:0.85rem">
+              <a href="https://wa.me/<%= l.customer_phone.replace(/^0/, '62').replace(/\D/g,'') %>" target="_blank" style="color:#25d366;font-weight:600">
+                <%= l.customer_phone %>
+              </a>
+            </td>
+            <td style="font-size:0.85rem;max-width:180px"><%= l.product_name %></td>
+            <td style="font-size:0.75rem;color:var(--text-light)"><%= l.created_at.slice(0,16) %></td>
+            <td>
+              <a href="https://wa.me/<%= l.customer_phone.replace(/^0/, '62').replace(/\D/g,'') %>?text=<%= encodeURIComponent('Halo ' + l.customer_name + '! Kamu tadi sempat mau beli ' + l.product_name + ' di Digihack Store. Ada yang bisa kami bantu? 😊') %>" target="_blank">
+                <button class="admin-btn" style="font-size:0.78rem;padding:5px 10px;background:#25d366;color:#fff;border:none">💬 WA</button>
+              </a>
+            </td>
+          </tr>
+          <% }) %>
+          <% if(!leads.length) { %>
+          <tr><td colspan="7" style="text-align:center;color:var(--text-light);padding:32px">Belum ada leads</td></tr>
+          <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+</body></html>

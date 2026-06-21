@@ -336,4 +336,11 @@ router.post('/orders/send-reminder/:id', auth, async (req, res) => {
   }
 });
 
+// Leads
+router.get('/leads', auth, (req, res) => {
+  const settings = getSettings();
+  const leads = db.prepare('SELECT * FROM leads ORDER BY created_at DESC LIMIT 500').all();
+  res.render('admin/leads', { settings, leads, admin: req.session.admin });
+});
+
 module.exports = router;
