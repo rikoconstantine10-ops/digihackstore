@@ -16,6 +16,13 @@ router.get('/status', (req, res) => {
   res.render('shop/order-status', { order, settings, ref });
 });
 
+router.get('/status/:refKode', (req, res) => {
+  const settings = getSettings();
+  const order = db.prepare('SELECT o.*, p.file_path FROM orders o LEFT JOIN products p ON p.id = o.product_id WHERE o.ref_kode = ?').get(req.params.refKode);
+  if (!order) return res.render('shop/404', { settings });
+  res.render('shop/order-status', { order, settings, ref: req.params.refKode });
+});
+
 router.post('/check', (req, res) => {
   const { ref, email } = req.body;
   const order = db.prepare('SELECT * FROM orders WHERE ref_kode=? AND customer_email=?').get(ref, email);

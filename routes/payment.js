@@ -6,6 +6,9 @@ const { createTransaction } = require('../services/payment');
 const { trackPage } = require('../middleware/analytics');
 const { capiInitiateCheckout } = require('../services/capi');
 
+let abandonedCart;
+try { abandonedCart = require('../services/abandoned-cart'); } catch(e) {}
+
 function getSettings() {
   const rows = db.prepare('SELECT key, value FROM settings').all();
   return Object.fromEntries(rows.map(r => [r.key, r.value]));
@@ -20,11 +23,17 @@ function getProductAddons(productId) {
   `).all(productId);
 }
 
-function saveLead(productId, productName, name, email, phone) {
+function saveLead(productId, productName, name, email, phone, domisili) {
   try {
-    db.prepare('INSERT INTO leads (product_id, product_name, customer_name, customer_email, customer_phone) VALUES (?,?,?,?,?)')
-      .run(productId, productName, name, email, phone);
-  } catch(e) {}
+    db.prepare('INSERT INTO leads (product_id, product_name, customer_name, customer_email, customer_phone, domisili) VALUES (?,?,?,?,?,?)')
+      .run(productId, productName, name, email, phone, domisili || '');
+  } catch(e) {
+    // fallback without domisili if column doesn't exist yet
+    try {
+      db.prepare('INSERT INTO leads (product_id, product_name, customer_name, customer_email, customer_phone) VALUES (?,?,?,?,?)')
+        .run(productId, productName, name, email, phone);
+    } catch(e2) {}
+  }
 }
 
 // ── Step 1: Form (data diri) ──────────────────────────────────────────────────
@@ -42,19 +51,24 @@ router.post('/:slug', (req, res) => {
   const product = db.prepare('SELECT * FROM products WHERE slug=? AND is_active=1').get(req.params.slug);
   if (!product) return res.status(404).render('shop/404', { settings });
 
-  const { name, email, phone } = req.body;
-  if (!name || !email || !phone) {
+  const { name, email, phone, domisili } = req.body;
+  if (!name || !email || !phone || !domisili) {
     return res.render('shop/checkout', { product, settings, error: 'Semua field wajib diisi.' });
   }
 
   // Save lead immediately so it's never lost
-  saveLead(product.id, product.name, name, email, phone);
+  saveLead(product.id, product.name, name, email, phone, domisili);
+
+  // Schedule abandoned cart WA reminder
+  if (abandonedCart) {
+    abandonedCart.schedule({ name, phone, productName: product.name }, settings);
+  }
 
   const baseAmount = product.discount_price || product.price;
   const refKode = Date.now().toString().slice(-8) + Math.floor(Math.random() * 1000);
 
   req.session.pendingCheckout = {
-    name, email, phone, refKode,
+    name, email, phone, domisili, refKode,
     productId: product.id, productName: product.name,
     baseAmount, amount: baseAmount,
     addonProductId: null, addonProductName: null, addonAmount: 0,
@@ -141,6 +155,9 @@ router.post('/:slug/payment', async (req, res) => {
 
   const { refKode, amount, name, email, phone, addonProductId, addonProductName, addonAmount } = pending;
   const produkLabel = addonProductName ? `${product.name} + ${addonProductName}` : product.name;
+
+  // Cancel abandoned cart timer since they're paying
+  if (abandonedCart) abandonedCart.cancel(pending.phone);
 
   try {
     const result = await createTransaction({ refKode, amount, channel, cusName: name, cusEmail: email, cusPhone: phone, produk: produkLabel });

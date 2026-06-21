@@ -20,6 +20,9 @@
     <div style="font-size:2rem;margin-bottom:8px">🛒</div>
     <h1 style="font-size:1.5rem;font-weight:800">Data Diri</h1>
     <p style="color:var(--text-light);font-size:0.9rem">Isi informasi kamu untuk melanjutkan pembelian</p>
+    <div id="checkout-timer" style="display:inline-flex;align-items:center;gap:6px;background:#fff3cd;border:1px solid #ffc107;border-radius:20px;padding:5px 14px;font-size:0.8rem;font-weight:700;color:#856404;margin-top:8px">
+      ⏱ Sesi berakhir dalam <span id="timer-display">15:00</span>
+    </div>
   </div>
 
   <!-- Step indicator -->
@@ -68,6 +71,10 @@
         <label>No. WhatsApp *</label>
         <input type="tel" name="phone" placeholder="08123456789" required value="<%= typeof formData !== 'undefined' ? formData.phone || '' : '' %>">
       </div>
+      <div class="form-group">
+        <label>Domisili *</label>
+        <input type="text" name="domisili" placeholder="Kota / Kabupaten" required value="<%= typeof formData !== 'undefined' ? formData.domisili || '' : '' %>">
+      </div>
 
       <button type="submit" class="btn-submit">Lanjutkan →</button>
     </form>
@@ -91,6 +98,29 @@
   </div>
 </div>
 
+<script>
+(function() {
+  const KEY = 'checkout_timer_<%= product.slug %>';
+  const DURATION = 15 * 60;
+  let end = parseInt(sessionStorage.getItem(KEY) || '0');
+  if (!end || end < Date.now() / 1000) {
+    end = Math.floor(Date.now() / 1000) + DURATION;
+    sessionStorage.setItem(KEY, end);
+  }
+  function tick() {
+    const left = Math.max(0, end - Math.floor(Date.now() / 1000));
+    const m = String(Math.floor(left / 60)).padStart(2, '0');
+    const s = String(left % 60).padStart(2, '0');
+    const el = document.getElementById('timer-display');
+    const wrap = document.getElementById('checkout-timer');
+    if (el) el.textContent = m + ':' + s;
+    if (left <= 60 && wrap) wrap.style.background = '#fee2e2', wrap.style.borderColor = '#ef4444', wrap.style.color = '#991b1b';
+    if (left === 0) { sessionStorage.removeItem(KEY); window.location.href = '/'; }
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
+</script>
 <footer style="margin-top:60px">
   <p>&copy; 2026 <strong><%= settings.store_name %></strong></p>
 </footer>
