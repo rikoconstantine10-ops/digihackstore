@@ -23,8 +23,9 @@ router.post('/', express.json(), async (req, res) => {
 
       if (!order.email_sent) {
         const product = db.prepare('SELECT * FROM products WHERE id=?').get(order.product_id);
+        const addonProduct = order.addon_product_id ? db.prepare('SELECT * FROM products WHERE id=?').get(order.addon_product_id) : null;
         try {
-          await sendProductEmail(order, product || { name: order.product_name, file_path: null });
+          await sendProductEmail(order, product || { name: order.product_name, file_path: null }, addonProduct);
           db.prepare('UPDATE orders SET email_sent=1 WHERE ref_kode=?').run(String(ref));
         } catch(e) { console.error('Email failed:', e.message); }
       }

@@ -78,7 +78,11 @@ router.get('/products', auth, (req, res) => {
     FROM products p
     ORDER BY p.created_at DESC
   `).all();
-  res.render('admin/products', { settings, products, admin: req.session.admin });
+  for (const p of products) {
+    p.addons = db.prepare('SELECT addon_product_id, addon_price FROM product_addons WHERE product_id = ?').all(p.id);
+  }
+  const allProducts = db.prepare('SELECT id, name, price, discount_price FROM products WHERE is_active = 1 ORDER BY name').all();
+  res.render('admin/products', { settings, products, admin: req.session.admin, allProducts });
 });
 
 router.post('/products/add', auth, upload.fields([{name:'image',maxCount:1},{name:'file',maxCount:1}]), (req, res) => {
@@ -98,6 +102,15 @@ router.post('/products/edit/:id', auth, upload.fields([{name:'image',maxCount:1}
   if (req.files.file) updates.file_path = req.files.file[0].filename;
   const cols = Object.keys(updates).map(k => `${k}=?`).join(',');
   db.prepare(`UPDATE products SET ${cols} WHERE id=?`).run(...Object.values(updates), req.params.id);
+
+  db.prepare('DELETE FROM product_addons WHERE product_id = ?').run(req.params.id);
+  const rawAddonIds = req.body['addon_ids[]'];
+  const addonIds = rawAddonIds ? (Array.isArray(rawAddonIds) ? rawAddonIds : [rawAddonIds]) : [];
+  for (const addonId of addonIds) {
+    const price = req.body['addon_price_' + addonId] ? parseInt(req.body['addon_price_' + addonId]) : null;
+    db.prepare('INSERT OR IGNORE INTO product_addons (product_id, addon_product_id, addon_price) VALUES (?,?,?)').run(parseInt(req.params.id), parseInt(addonId), price);
+  }
+
   res.redirect('/admin/products');
 });
 
@@ -148,8 +161,9 @@ router.post('/orders/resend-email/:id', auth, async (req, res) => {
   const { sendProductEmail } = require('../services/email');
   const order = db.prepare('SELECT * FROM orders WHERE id=?').get(req.params.id);
   const product = db.prepare('SELECT * FROM products WHERE id=?').get(order.product_id);
+  const addonProduct = order.addon_product_id ? db.prepare('SELECT * FROM products WHERE id=?').get(order.addon_product_id) : null;
   try {
-    await sendProductEmail(order, product || { name: order.product_name, file_path: null });
+    await sendProductEmail(order, product || { name: order.product_name, file_path: null }, addonProduct);
     db.prepare('UPDATE orders SET email_sent=1 WHERE id=?').run(req.params.id);
     res.json({ success: true });
   } catch(e) { res.json({ success: false, error: e.message }); }

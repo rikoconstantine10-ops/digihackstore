@@ -61,6 +61,12 @@ db.exec(`
     name TEXT UNIQUE NOT NULL,
     slug TEXT UNIQUE NOT NULL
   );
+  CREATE TABLE IF NOT EXISTS product_addons (
+    product_id INTEGER NOT NULL,
+    addon_product_id INTEGER NOT NULL,
+    addon_price INTEGER,
+    PRIMARY KEY (product_id, addon_product_id)
+  );
 `);
 
 const existingAdmin = db.prepare('SELECT id FROM admins WHERE username = ?').get(process.env.ADMIN_USERNAME || 'admin');
@@ -83,6 +89,9 @@ for (const [k, v] of defaults) {
   db.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)').run(k, v);
 }
 
+try { db.exec("ALTER TABLE orders ADD COLUMN addon_product_id INTEGER DEFAULT NULL"); } catch(e) {}
+try { db.exec("ALTER TABLE orders ADD COLUMN addon_product_name TEXT DEFAULT NULL"); } catch(e) {}
+try { db.exec("ALTER TABLE orders ADD COLUMN addon_amount INTEGER DEFAULT 0"); } catch(e) {}
 try { db.exec("ALTER TABLE page_views ADD COLUMN utm_source TEXT DEFAULT ''"); } catch(e) {}
 try { db.exec("ALTER TABLE page_views ADD COLUMN utm_medium TEXT DEFAULT ''"); } catch(e) {}
 try { db.exec("ALTER TABLE page_views ADD COLUMN utm_campaign TEXT DEFAULT ''"); } catch(e) {}

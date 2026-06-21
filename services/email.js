@@ -13,10 +13,19 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-async function sendProductEmail(order, product) {
+async function sendProductEmail(order, product, addonProduct = null) {
   const storeName = process.env.STORE_NAME || 'Digihack Store';
   const filePath = path.join(__dirname, '../public/uploads', product.file_path || '');
   const fileExists = product.file_path && fs.existsSync(filePath);
+
+  const addonFilePath = addonProduct ? path.join(__dirname, '../public/uploads', addonProduct.file_path || '') : null;
+  const addonFileExists = addonProduct && addonProduct.file_path && fs.existsSync(addonFilePath);
+
+  const addonSection = addonProduct ? `
+    <div class='product-card' style='border-color:#d1fae5;background:#f0fdf4;margin-top:10px'>
+      <h3 style='margin:0 0 10px;color:#065f46'>🎁 Add-on: ${addonProduct.name}</h3>
+      ${addonFileExists ? '<p>📂 File add-on terlampir di email ini.</p>' : addonProduct.file_path ? `<p>🔗 Link download add-on: <a href='${addonProduct.file_path}'>Klik di sini</a></p>` : ''}
+    </div>` : '';
 
   const html = `
   <!DOCTYPE html>
@@ -28,7 +37,6 @@ async function sendProductEmail(order, product) {
     .header h1 { margin: 0; font-size: 24px; }
     .body { padding: 30px; }
     .product-card { background: #f8f9ff; border: 1px solid #e0e4ff; border-radius: 8px; padding: 20px; margin: 20px 0; }
-    .btn { display: inline-block; background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 12px 30px; border-radius: 25px; text-decoration: none; font-weight: bold; margin: 15px 0; }
     .footer { background: #f8f8f8; padding: 20px; text-align: center; color: #888; font-size: 12px; border-top: 1px solid #eee; }
   </style></head>
   <body>
@@ -48,6 +56,7 @@ async function sendProductEmail(order, product) {
         <p><strong>Metode:</strong> ${order.payment_method}</p>
       </div>
       ${fileExists ? '<p>📂 File produk terlampir di email ini. Silakan download.</p>' : `<p>🔗 Link download produk: <a href='${product.file_path}'>Klik di sini</a></p>`}
+      ${addonSection}
       <p>Jika ada pertanyaan, balas email ini atau hubungi kami.</p>
       <p>Salam,<br><strong>${storeName}</strong></p>
     </div>
@@ -64,13 +73,14 @@ async function sendProductEmail(order, product) {
     to: order.email || order.customer_email,
     subject: `🎁 Produk Kamu Sudah Siap - ${order.product_name} | ${storeName}`,
     html,
+    attachments: [],
   };
 
   if (fileExists) {
-    mailOptions.attachments = [{
-      filename: path.basename(filePath),
-      path: filePath,
-    }];
+    mailOptions.attachments.push({ filename: path.basename(filePath), path: filePath });
+  }
+  if (addonFileExists) {
+    mailOptions.attachments.push({ filename: path.basename(addonFilePath), path: addonFilePath });
   }
 
   return transporter.sendMail(mailOptions);

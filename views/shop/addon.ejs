@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tambah Add-on - <%= settings.store_name || 'Digihack Store' %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <% if(settings && settings.ga4_id) { %>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=<%= settings.ga4_id %>"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","<%= settings.ga4_id %>");</script>
+  <% } %>
+  <style>
+    .addon-wrap { max-width: 680px; margin: 0 auto; padding: 20px 16px 60px; }
+    .addon-header { text-align: center; padding: 32px 20px 24px; }
+    .addon-header h1 { font-size: 1.5rem; font-weight: 800; margin: 0 0 8px; }
+    .addon-header p { color: var(--text-light); margin: 0; font-size: 0.9rem; }
+    .main-product-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; display: flex; gap: 14px; align-items: center; }
+    .main-product-card img { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
+    .main-product-card .icon { width: 64px; height: 64px; background: #e0e7ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; flex-shrink: 0; }
+    .main-product-info h3 { margin: 0 0 4px; font-size: 1rem; font-weight: 700; }
+    .main-product-info .price { color: var(--primary); font-weight: 700; font-size: 1rem; }
+    .section-title { font-size: 1rem; font-weight: 700; margin-bottom: 14px; color: var(--text-dark); }
+    .addon-card { border: 2px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; background: var(--card); position: relative; }
+    .addon-card:hover { border-color: var(--primary); box-shadow: 0 4px 16px rgba(102,126,234,0.15); }
+    .addon-card.selected { border-color: var(--primary); background: #f5f3ff; box-shadow: 0 4px 16px rgba(102,126,234,0.2); }
+    .addon-card input[type="radio"] { position: absolute; opacity: 0; }
+    .addon-card-inner { display: flex; gap: 14px; align-items: center; }
+    .addon-card-img { width: 70px; height: 70px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
+    .addon-card-icon { width: 70px; height: 70px; background: #f0f0ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 2rem; flex-shrink: 0; }
+    .addon-card-info { flex: 1; }
+    .addon-card-info h4 { margin: 0 0 4px; font-size: 0.95rem; font-weight: 700; }
+    .addon-card-info .desc { font-size: 0.8rem; color: var(--text-light); margin: 0 0 6px; line-height: 1.4; }
+    .addon-card-info .addon-price { font-size: 0.95rem; font-weight: 700; color: #10b981; }
+    .addon-card-check { width: 24px; height: 24px; border: 2px solid var(--border); border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .addon-card.selected .addon-card-check { background: var(--primary); border-color: var(--primary); color: white; }
+    .addon-actions { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; }
+    .btn-add-addon { width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s; display: none; }
+    .btn-add-addon:hover { opacity: 0.9; }
+    .btn-skip { width: 100%; padding: 12px; background: transparent; color: var(--text-light); border: 1px solid var(--border); border-radius: 10px; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    .btn-skip:hover { background: #f1f5f9; color: var(--text-dark); }
+    .steps { display: flex; justify-content: center; gap: 8px; margin-bottom: 24px; align-items: center; font-size: 0.8rem; color: var(--text-light); }
+    .step { display: flex; align-items: center; gap: 4px; }
+    .step-num { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; }
+    .step.done .step-num { background: #10b981; color: white; }
+    .step.active .step-num { background: var(--primary); color: white; }
+    .step.inactive .step-num { background: #e2e8f0; color: #94a3b8; }
+    .step-line { width: 24px; height: 2px; background: #e2e8f0; }
+  </style>
+</head>
+<body>
+  <% if(settings && settings.meta_pixel_id) { %>
+  <script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','<%= settings.meta_pixel_id %>');fbq('track','PageView');</script>
+  <% } %>
+
+  <div class="addon-wrap">
+    <div class="addon-header">
+      <div class="steps">
+        <div class="step done"><div class="step-num">✓</div><span>Data</span></div>
+        <div class="step-line"></div>
+        <div class="step active"><div class="step-num">2</div><span>Add-on</span></div>
+        <div class="step-line"></div>
+        <div class="step inactive"><div class="step-num">3</div><span>Bayar</span></div>
+      </div>
+      <h1>🎁 Lengkapi Pesanan Kamu</h1>
+      <p>Tambahkan produk pendamping dengan harga spesial sebelum lanjut ke pembayaran</p>
+    </div>
+
+    <div class="main-product-card">
+      <% if(product.image) { %>
+      <img src="<%= product.image %>" alt="<%= product.name %>">
+      <% } else { %>
+      <div class="icon">📦</div>
+      <% } %>
+      <div class="main-product-info">
+        <div style="font-size:0.75rem;color:var(--text-light);margin-bottom:2px">Produk yang kamu pilih:</div>
+        <h3><%= product.name %></h3>
+        <div class="price">Rp <%= (pending.amount).toLocaleString('id-ID') %></div>
+      </div>
+    </div>
+
+    <div class="section-title">Produk add-on yang tersedia:</div>
+
+    <form method="POST" action="/checkout/<%= product.slug %>/addon" id="addonForm">
+      <input type="hidden" name="addon_product_id" id="selectedAddonId" value="">
+
+      <% addons.forEach(addon => { %>
+      <label class="addon-card" onclick="selectAddon(<%= addon.id %>)" id="addon-card-<%= addon.id %>">
+        <input type="radio" name="_addon_radio" value="<%= addon.id %>">
+        <div class="addon-card-inner">
+          <% if(addon.image) { %>
+          <img class="addon-card-img" src="<%= addon.image %>" alt="<%= addon.name %>">
+          <% } else { %>
+          <div class="addon-card-icon">🎁</div>
+          <% } %>
+          <div class="addon-card-info">
+            <h4><%= addon.name %></h4>
+            <% if(addon.description) { %>
+            <p class="desc"><%= addon.description.substring(0, 100) %><%= addon.description.length > 100 ? '...' : '' %></p>
+            <% } %>
+            <div class="addon-price">+ Rp <%= (addon.addon_price || addon.discount_price || addon.price).toLocaleString('id-ID') %></div>
+          </div>
+          <div class="addon-card-check" id="check-<%= addon.id %>"></div>
+        </div>
+      </label>
+      <% }) %>
+
+      <% if(typeof error !== 'undefined' && error) { %>
+      <div style="background:#fee2e2;color:#991b1b;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-weight:600">❌ <%= error %></div>
+      <% } %>
+
+      <div class="addon-actions">
+        <button type="submit" class="btn-add-addon" id="btnAddAddon">✅ Tambahkan ke Pesanan Saya</button>
+        <button type="button" class="btn-skip" onclick="skipAddon()">Tidak, lanjutkan tanpa add-on →</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    let selectedId = null;
+
+    function selectAddon(id) {
+      if (selectedId === id) {
+        selectedId = null;
+        document.getElementById('selectedAddonId').value = '';
+        document.querySelectorAll('.addon-card').forEach(c => c.classList.remove('selected'));
+        document.querySelectorAll('[id^="check-"]').forEach(c => { c.innerHTML = ''; c.style.background = ''; });
+        document.getElementById('btnAddAddon').style.display = 'none';
+        return;
+      }
+      selectedId = id;
+      document.getElementById('selectedAddonId').value = id;
+      document.querySelectorAll('.addon-card').forEach(c => c.classList.remove('selected'));
+      document.querySelectorAll('[id^="check-"]').forEach(c => { c.innerHTML = ''; c.style.background = ''; });
+      const card = document.getElementById('addon-card-' + id);
+      if (card) card.classList.add('selected');
+      const check = document.getElementById('check-' + id);
+      if (check) { check.innerHTML = '✓'; check.style.background = 'var(--primary)'; check.style.color = 'white'; check.style.border = 'none'; }
+      document.getElementById('btnAddAddon').style.display = 'block';
+    }
+
+    function skipAddon() {
+      document.getElementById('selectedAddonId').value = '';
+      document.getElementById('addonForm').submit();
+    }
+  </script>
+</body>
+</html>
