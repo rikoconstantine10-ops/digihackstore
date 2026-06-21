@@ -8,6 +8,9 @@ const path = require('path');
 
 const app = express();
 
+// Trust proxy (behind nginx/cloudflare)
+app.set('trust proxy', 1);
+
 // Security
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json());
