@@ -10,6 +10,7 @@ app.use(express.json());
 
 let sock = null;
 let isConnected = false;
+let latestQR = null;
 
 async function connectToWhatsApp() {
   const { state, saveCreds } = await useMultiFileAuthState('./auth_info_baileys');
@@ -22,6 +23,7 @@ async function connectToWhatsApp() {
   sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect, qr } = update;
     if (qr) {
+      latestQR = qr;
       console.log('\n[WA] Scan QR code ini dengan WhatsApp kamu:');
       qrcode.generate(qr, { small: true });
     }
@@ -39,6 +41,7 @@ async function connectToWhatsApp() {
       }
     } else if (connection === 'open') {
       isConnected = true;
+      latestQR = null;
       console.log('[WA] Connected!');
     }
   });
@@ -61,6 +64,19 @@ app.post('/send', async (req, res) => {
 
 app.get('/status', (req, res) => {
   res.json({ connected: isConnected, timestamp: new Date().toISOString() });
+});
+
+app.get('/qr-data', (req, res) => {
+  res.json({ connected: isConnected, qr: isConnected ? null : latestQR });
+});
+
+app.post('/logout', async (req, res) => {
+  try {
+    if (sock) await sock.logout();
+  } catch(e) {}
+  latestQR = null;
+  isConnected = false;
+  res.json({ success: true });
 });
 
 app.listen(3001, () => {

@@ -1,0 +1,96 @@
+<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>WhatsApp - Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head><body>
+<div class="admin-wrap">
+  <aside class="admin-sidebar">
+    <div class="admin-logo">🚀 Digihack</div>
+    <nav class="admin-nav">
+      <a href="/admin">📊 Dashboard</a>
+      <a href="/admin/products">📦 Produk</a>
+      <a href="/admin/orders">📝 Orders</a>
+      <a href="/admin/analytics">📈 Analytics</a>
+      <a href="/admin/settings">⚙️ Settings</a>
+      <a href="/admin/wa" class="active">💬 WhatsApp</a>
+      <a href="/" target="_blank">🌍 Lihat Store</a>
+      <a href="/admin/logout" style="margin-top:auto;color:#fc8181">🚪 Logout</a>
+    </nav>
+  </aside>
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>💬 WhatsApp Baileys</h1>
+      <span style="color:var(--text-light);font-size:0.85rem">Halo, <strong><%= admin.username %></strong></span>
+    </div>
+    <div class="admin-content">
+
+      <div class="stat-grid" style="margin-bottom:24px">
+        <div class="stat-card">
+          <div class="stat-icon"><%= waStatus.connected ? '🟢' : '🔴' %></div>
+          <div class="stat-label">Status WA Service</div>
+          <div class="stat-value" style="color:<%= waStatus.connected ? '#10b981' : '#ef4444' %>">
+            <%= waStatus.connected ? 'Terhubung' : 'Tidak Terhubung' %>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📟</div>
+          <div class="stat-label">Port</div>
+          <div class="stat-value">3001</div>
+          <div style="font-size:0.75rem;color:var(--text-light);margin-top:4px">Internal only</div>
+        </div>
+      </div>
+
+      <% if(waStatus.connected) { %>
+      <div class="form-admin" style="border:2px solid #bbf7d0;background:#f0fdf4">
+        <h3 style="color:#166534">✅ WhatsApp Terhubung</h3>
+        <p style="color:#166534;margin-bottom:16px">WA service aktif dan siap kirim pesan otomatis ke customer.</p>
+        <p style="font-size:0.85rem;color:#166534;margin-bottom:20px">
+          Fitur aktif:<br>
+          ✅ WA follow-up otomatis setelah pembayaran sukses<br>
+          ✅ WA reminder manual untuk order pending (dari halaman Orders)
+        </p>
+        <form method="POST" action="/admin/wa/logout" onsubmit="return confirm('Logout WhatsApp? Kamu harus scan ulang QR code.')">
+          <button type="submit" class="admin-btn" style="background:#fee2e2;color:#ef4444">🔓 Logout / Ganti Nomor</button>
+        </form>
+      </div>
+
+      <% } else if(waStatus.qr) { %>
+      <div class="form-admin">
+        <h3>📱 Scan QR Code dengan WhatsApp</h3>
+        <p style="color:var(--text-light);margin-bottom:4px;font-size:0.9rem">Buka WhatsApp → Menu (⋮) → Perangkat Tertaut → Tautkan Perangkat</p>
+        <p style="color:#ef4444;font-size:0.82rem;margin-bottom:20px">⚠️ QR code berlaku ~60 detik. Halaman auto-refresh tiap 20 detik.</p>
+        <div id="qr-container" style="display:inline-block;padding:16px;background:white;border-radius:12px;border:2px solid var(--border);box-shadow:0 4px 16px rgba(0,0,0,0.08)"></div>
+        <div style="margin-top:16px;font-size:0.82rem;color:var(--text-light)">
+          Setelah scan, halaman akan refresh otomatis dan menampilkan status "Terhubung".
+        </div>
+      </div>
+      <script>
+      const qrStr = `<%- waStatus.qr.replace(/`/g, '\\`') %>`;
+      new QRCode(document.getElementById('qr-container'), {
+        text: qrStr,
+        width: 256,
+        height: 256,
+        correctLevel: QRCode.CorrectLevel.M
+      });
+      setTimeout(() => location.reload(), 20000);
+      </script>
+
+      <% } else { %>
+      <div class="form-admin" style="border:2px solid #fde68a;background:#fffbeb">
+        <h3 style="color:#92400e">⏳ Menunggu QR Code...</h3>
+        <p style="color:#92400e;margin-bottom:16px;font-size:0.9rem">
+          WA service sedang menghubungkan. QR code akan muncul dalam beberapa detik.<br>
+          Halaman ini auto-refresh tiap 5 detik.
+        </p>
+        <p style="font-size:0.82rem;color:var(--text-light)">
+          Jika QR tidak muncul setelah 30 detik, coba restart wa-service via PM2:
+          <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px">pm2 restart wa-service</code>
+        </p>
+      </div>
+      <script>setTimeout(() => location.reload(), 5000);</script>
+      <% } %>
+
+    </div>
+  </main>
+</div>
+</body></html>

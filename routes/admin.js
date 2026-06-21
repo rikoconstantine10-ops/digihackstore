@@ -195,6 +195,35 @@ router.get('/analytics', auth, (req, res) => {
   });
 });
 
+router.get('/wa', auth, async (req, res) => {
+  const settings = getSettings();
+  let waStatus = { connected: false, qr: null };
+  try {
+    const http = require('http');
+    waStatus = await new Promise((resolve, reject) => {
+      http.get({ host: 'localhost', port: 3001, path: '/qr-data' }, (r) => {
+        let d = '';
+        r.on('data', c => d += c);
+        r.on('end', () => { try { resolve(JSON.parse(d)); } catch(e) { resolve({ connected: false, qr: null }); } });
+      }).on('error', () => resolve({ connected: false, qr: null }));
+    });
+  } catch(e) {}
+  res.render('admin/wa', { settings, admin: req.session.admin, waStatus });
+});
+
+router.post('/wa/logout', auth, async (req, res) => {
+  try {
+    const http = require('http');
+    await new Promise((resolve) => {
+      const body = JSON.stringify({});
+      const r = http.request({ host: 'localhost', port: 3001, path: '/logout', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) } }, (r2) => { r2.resume(); resolve(); });
+      r.on('error', resolve);
+      r.write(body); r.end();
+    });
+  } catch(e) {}
+  res.redirect('/admin/wa');
+});
+
 router.post('/orders/send-reminder/:id', auth, async (req, res) => {
   const order = db.prepare('SELECT * FROM orders WHERE id=?').get(req.params.id);
   if (!order) return res.json({ success: false, error: 'Order not found' });
@@ -209,7 +238,7 @@ router.post('/orders/send-reminder/:id', auth, async (req, res) => {
     .replace('{url}', order.checkout_url || '');
   try {
     const http = require('http');
-    const body = JSON.stringify({ number: order.customer_phone, message: msg });
+    const body = JSON.stringify({ phone: order.customer_phone, message: msg });
     await new Promise((resolve, reject) => {
       const r2 = http.request({ host: 'localhost', port: 3001, path: '/send', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) } }, (res2) => { res2.resume(); resolve(); });
       r2.on('error', reject);

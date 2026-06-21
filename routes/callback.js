@@ -40,7 +40,7 @@ router.post('/', express.json(), async (req, res) => {
           .replace('{email}', order.customer_email);
         try {
           const http = require('http');
-          const body = JSON.stringify({ number: order.customer_phone, message: msg });
+          const body = JSON.stringify({ phone: order.customer_phone, message: msg });
           const req2 = http.request({ host: 'localhost', port: 3001, path: '/send', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) } });
           req2.write(body); req2.end();
           db.prepare('UPDATE orders SET wa_sent=1 WHERE ref_kode=?').run(String(ref));
