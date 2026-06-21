@@ -47,18 +47,18 @@
   <div class="products-grid">
     <% products.forEach(p => { %>
     <a href="/product/<%= p.slug %>" class="product-card">
-      <% if(p.image) { %>
-      <img class="card-img" src="<%= p.image %>" alt="<%= p.name %>" loading="lazy">
-      <% } else { %>
-      <div class="card-img-placeholder">📦</div>
-      <% } %>
+      <div class="card-img-wrap">
+        <% if(p.image) { %>
+        <img class="card-img" src="<%= p.image %>" alt="<%= p.name %>" loading="lazy">
+        <% } else { %>
+        <div class="card-img-placeholder">📦</div>
+        <% } %>
+        <% if(p.badge) { %><span class="card-badge badge-<%= p.badge.toLowerCase() %>"><%= p.badge %></span><% } %>
+      </div>
       <div class="card-body">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-          <span class="card-category"><%= p.category %></span>
-          <% if(p.badge) { %><span class="badge badge-<%= p.badge.toLowerCase() %>"><%= p.badge %></span><% } %>
-        </div>
+        <span class="card-category"><%= p.category %></span>
         <div class="card-title"><%= p.name %></div>
-        <div class="card-desc"><%= p.description %></div>
+        <div class="card-desc"><%- (p.description||'').replace(/<[^>]+>/g,'') %></div>
         <div class="card-price">
           <span class="price-main">Rp <%= (p.discount_price || p.price).toLocaleString('id-ID') %></span>
           <% if(p.discount_price) { %><span class="price-old">Rp <%= p.price.toLocaleString('id-ID') %></span><% } %>
