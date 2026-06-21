@@ -1,0 +1,167 @@
+<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title><%= product ? 'Edit' : 'Tambah' %> Produk - Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+<style>
+.pf-wrap { max-width:860px; margin:0 auto; padding:28px; }
+.pf-card { background:#fff; border-radius:14px; box-shadow:var(--shadow); padding:28px; margin-bottom:20px; }
+.pf-card h3 { font-size:0.95rem; font-weight:700; color:var(--text); margin-bottom:18px; padding-bottom:10px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
+.form-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+.ql-toolbar.ql-snow { border-radius:8px 8px 0 0; border-color:#e2e8f0; background:#f8fafc; }
+.ql-container.ql-snow { border-radius:0 0 8px 8px; border-color:#e2e8f0; min-height:120px; font-family:'Inter',sans-serif; font-size:0.9rem; }
+.ql-editor { min-height:110px; }
+.img-preview { width:100px; height:100px; object-fit:cover; border-radius:10px; border:2px solid var(--border); margin-bottom:8px; display:block; }
+.save-bar { background:#fff; border-top:1px solid var(--border); padding:16px 28px; display:flex; gap:12px; align-items:center; position:sticky; bottom:0; box-shadow:0 -2px 12px rgba(0,0,0,0.06); }
+</style>
+</head>
+<body>
+<div class="admin-wrap">
+  <aside class="admin-sidebar">
+    <div class="admin-logo">🚀 Digihack</div>
+    <nav class="admin-nav">
+      <a href="/admin">📊 Dashboard</a>
+      <a href="/admin/products" class="active">📦 Produk</a>
+      <a href="/admin/orders">📝 Orders</a>
+      <a href="/admin/analytics">📈 Analytics</a>
+      <a href="/admin/settings">⚙️ Settings</a>
+      <a href="/admin/wa">💬 WhatsApp</a>
+      <a href="/" target="_blank">🌍 Lihat Store</a>
+      <a href="/admin/logout" style="margin-top:auto;color:#fc8181">🚪 Logout</a>
+    </nav>
+  </aside>
+  <main class="admin-main" style="display:flex;flex-direction:column">
+    <div class="admin-topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <a href="/admin/products" style="color:var(--text-light);font-size:0.85rem;display:flex;align-items:center;gap:4px">← Kembali</a>
+        <h1><%= product ? '✏️ Edit Produk' : '+ Produk Baru' %></h1>
+      </div>
+      <span style="color:var(--text-light);font-size:0.85rem">Halo, <strong><%= admin.username %></strong></span>
+    </div>
+
+    <form id="prodForm" method="POST" action="<%= product ? '/admin/products/edit/' + product.id : '/admin/products/add' %>" enctype="multipart/form-data" style="flex:1;overflow:auto">
+      <div class="pf-wrap">
+
+        <% if(error) { %><div class="error-msg"><%= error %></div><% } %>
+
+        <!-- Info Produk -->
+        <div class="pf-card">
+          <h3>📋 Info Produk</h3>
+          <div class="form-row" style="margin-bottom:14px">
+            <div class="form-group">
+              <label>Nama Produk *</label>
+              <input type="text" name="name" value="<%= product ? product.name : '' %>" required placeholder="Nama produk...">
+            </div>
+            <div class="form-group">
+              <label>Kategori *</label>
+              <input type="text" name="category" value="<%= product ? product.category : '' %>" required placeholder="Contoh: Account, Ebook, Software...">
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Deskripsi</label>
+            <div id="descEditor"></div>
+            <textarea name="description" id="descHidden" style="display:none"><%= product ? product.description : '' %></textarea>
+          </div>
+        </div>
+
+        <!-- Harga & Badge -->
+        <div class="pf-card">
+          <h3>💰 Harga & Penawaran</h3>
+          <div class="form-row-3" style="margin-bottom:14px">
+            <div class="form-group">
+              <label>Harga Normal (Rp) *</label>
+              <input type="number" name="price" value="<%= product ? product.price : '' %>" required min="1000" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label>Harga Diskon (Rp)</label>
+              <input type="number" name="discount_price" value="<%= product && product.discount_price ? product.discount_price : '' %>" min="1000" placeholder="Kosongkan jika tidak ada">
+            </div>
+            <div class="form-group">
+              <label>Countdown Diskon</label>
+              <input type="datetime-local" name="countdown_end" value="<%= product && product.countdown_end ? product.countdown_end.slice(0,16) : '' %>">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Badge</label>
+              <select name="badge">
+                <option value="">Tidak ada</option>
+                <% ['new','hot','sale','best'].forEach(b => { %>
+                <option value="<%= b %>" <%= product && product.badge === b ? 'selected' : '' %>><%= b.toUpperCase() %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Prioritas Tampil</label>
+              <input type="number" name="priority" value="<%= product && product.priority ? product.priority : 0 %>" min="0" placeholder="0 = default">
+            </div>
+          </div>
+        </div>
+
+        <!-- Media -->
+        <div class="pf-card">
+          <h3>🖼️ Media</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Gambar Produk</label>
+              <% if(product && product.image) { %>
+              <img src="<%= product.image %>" class="img-preview" alt="current image">
+              <div style="font-size:0.8rem;color:var(--text-light);margin-bottom:8px">Upload baru untuk mengganti</div>
+              <% } %>
+              <input type="file" name="image" accept="image/*">
+            </div>
+            <div class="form-group">
+              <label>File Produk (PDF/ZIP/dll)</label>
+              <% if(product && product.file_path) { %>
+              <div style="font-size:0.8rem;color:#16a34a;margin-bottom:8px">✅ File tersedia: <%= product.file_path %></div>
+              <% } %>
+              <input type="file" name="file">
+            </div>
+          </div>
+        </div>
+
+        <!-- Status -->
+        <% if(product) { %>
+        <div class="pf-card">
+          <h3>⚙️ Pengaturan</h3>
+          <div class="form-group">
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.95rem">
+              <input type="checkbox" name="is_active" value="1" <%= product.is_active ? 'checked' : '' %> style="width:18px;height:18px;cursor:pointer">
+              Produk Aktif (tampil di store)
+            </label>
+          </div>
+          <div style="margin-top:14px;padding:14px;background:#f0fdf4;border-radius:8px;border:1px solid #bbf7d0">
+            <div style="font-size:0.82rem;color:#166534;font-weight:600;margin-bottom:6px">🔀 Upsell & Cross-sell</div>
+            <div style="font-size:0.8rem;color:#166534;margin-bottom:10px">Atur produk add-on yang ditawarkan setelah pelanggan memilih produk ini.</div>
+            <a href="/admin/products/<%= product.id %>/upsell" style="display:inline-block;padding:8px 16px;background:#16a34a;color:white;border-radius:8px;font-size:0.82rem;font-weight:600;text-decoration:none">→ Kelola Upsell & Cross-sell</a>
+          </div>
+        </div>
+        <% } %>
+
+      </div>
+
+      <div class="save-bar">
+        <button type="submit" class="admin-btn admin-btn-primary" style="padding:11px 28px;font-size:0.95rem">
+          💾 <%= product ? 'Simpan Perubahan' : 'Tambah Produk' %>
+        </button>
+        <a href="/admin/products" class="admin-btn" style="padding:11px 20px;background:#e2e8f0;color:var(--text);text-decoration:none">Batal</a>
+        <% if(product) { %>
+        <a href="/product/<%= product.slug %>" target="_blank" class="admin-btn" style="padding:11px 20px;background:#e0e7ff;color:var(--primary);text-decoration:none;margin-left:auto">👁 Preview Store</a>
+        <% } %>
+      </div>
+    </form>
+  </main>
+</div>
+
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+<script>
+const toolbar = [[{ header: [1,2,3,false] }], ['bold','italic','underline'], [{ color:[] }], [{ list:'ordered' }, { list:'bullet' }], ['clean']];
+const quill = new Quill('#descEditor', { theme:'snow', modules:{ toolbar }, placeholder:'Tulis deskripsi produk...' });
+
+const savedDesc = document.getElementById('descHidden').value;
+if (savedDesc) quill.root.innerHTML = savedDesc;
+
+document.getElementById('prodForm').addEventListener('submit', function() {
+  document.getElementById('descHidden').value = quill.root.innerHTML;
+});
+</script>
+</body></html>

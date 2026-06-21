@@ -1,0 +1,160 @@
+<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Upsell & Cross-sell - Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+.pf-wrap { max-width:860px; margin:0 auto; padding:28px; }
+.pf-card { background:#fff; border-radius:14px; box-shadow:var(--shadow); padding:28px; margin-bottom:20px; }
+.pf-card h3 { font-size:0.95rem; font-weight:700; color:var(--text); margin-bottom:18px; padding-bottom:10px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
+.trigger-card { display:flex; align-items:center; gap:14px; padding:14px 16px; background:#f8faff; border:1px solid var(--border); border-radius:10px; }
+.trigger-thumb { width:60px; height:60px; object-fit:cover; border-radius:8px; flex-shrink:0; }
+.trigger-thumb-ph { width:60px; height:60px; background:#e0e7ff; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; flex-shrink:0; }
+.addon-grid { display:grid; grid-template-columns:36px 60px 1fr 130px 150px; gap:0; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden; }
+.addon-grid-header { grid-column:1/-1; display:grid; grid-template-columns:36px 60px 1fr 130px 150px; background:#f1f5f9; padding:8px 12px; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-light); gap:10px; align-items:center; }
+.addon-row { grid-column:1/-1; display:grid; grid-template-columns:36px 60px 1fr 130px 150px; align-items:center; gap:10px; padding:10px 12px; border-top:1px solid #f1f5f9; background:#fff; }
+.addon-row:nth-child(even) { background:#fafafa; }
+.addon-thumb { width:44px; height:44px; object-fit:cover; border-radius:7px; }
+.addon-thumb-ph { width:44px; height:44px; background:#e0e7ff; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:1rem; }
+.addon-name { font-size:0.84rem; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.addon-price-label { font-size:0.8rem; color:var(--primary); font-weight:700; }
+.override-input { width:100%; padding:5px 8px; border:1px solid #e2e8f0; border-radius:6px; font-size:0.8rem; }
+.override-input:focus { border-color:var(--primary); outline:none; }
+.save-bar { background:#fff; border-top:1px solid var(--border); padding:16px 28px; display:flex; gap:12px; align-items:center; position:sticky; bottom:0; box-shadow:0 -2px 12px rgba(0,0,0,0.06); }
+.active-addon { background:#f0fdf4 !important; border-left:3px solid #22c55e; }
+</style>
+</head>
+<body>
+<div class="admin-wrap">
+  <aside class="admin-sidebar">
+    <div class="admin-logo">🚀 Digihack</div>
+    <nav class="admin-nav">
+      <a href="/admin">📊 Dashboard</a>
+      <a href="/admin/products" class="active">📦 Produk</a>
+      <a href="/admin/orders">📝 Orders</a>
+      <a href="/admin/analytics">📈 Analytics</a>
+      <a href="/admin/settings">⚙️ Settings</a>
+      <a href="/admin/wa">💬 WhatsApp</a>
+      <a href="/" target="_blank">🌍 Lihat Store</a>
+      <a href="/admin/logout" style="margin-top:auto;color:#fc8181">🚪 Logout</a>
+    </nav>
+  </aside>
+  <main class="admin-main" style="display:flex;flex-direction:column">
+    <div class="admin-topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <a href="/admin/products" style="color:var(--text-light);font-size:0.85rem">← Produk</a>
+        <a href="/admin/products/edit/<%= product.id %>" style="color:var(--text-light);font-size:0.85rem">/ Edit</a>
+        <h1>🔀 Upsell & Cross-sell</h1>
+      </div>
+      <span style="color:var(--text-light);font-size:0.85rem">Halo, <strong><%= admin.username %></strong></span>
+    </div>
+
+    <form method="POST" action="/admin/products/<%= product.id %>/upsell" style="flex:1;overflow:auto">
+      <div class="pf-wrap">
+
+        <% if(success) { %>
+        <div style="background:#dcfce7;color:#166534;padding:12px 16px;border-radius:10px;margin-bottom:16px;font-weight:600">✅ Pengaturan upsell berhasil disimpan!</div>
+        <% } %>
+
+        <!-- Product Trigger -->
+        <div class="pf-card">
+          <h3>🎯 Product Trigger</h3>
+          <p style="font-size:0.82rem;color:var(--text-light);margin-bottom:14px">Produk yang memicu halaman upsell ini setelah pelanggan klik "Beli Sekarang".</p>
+          <div class="trigger-card">
+            <% if(product.image) { %>
+            <img src="<%= product.image %>" class="trigger-thumb" alt="<%= product.name %>">
+            <% } else { %>
+            <div class="trigger-thumb-ph">📦</div>
+            <% } %>
+            <div>
+              <div style="font-weight:700;font-size:0.95rem"><%= product.name %></div>
+              <div style="font-size:0.8rem;color:var(--text-light);margin-top:2px"><%= product.category %></div>
+              <div style="font-size:0.9rem;font-weight:800;color:var(--primary);margin-top:4px">
+                Rp <%= (product.discount_price||product.price).toLocaleString('id-ID') %>
+                <% if(product.discount_price) { %><span style="text-decoration:line-through;font-size:0.75rem;color:var(--text-light);font-weight:400;margin-left:6px">Rp <%= product.price.toLocaleString('id-ID') %></span><% } %>
+              </div>
+            </div>
+            <a href="/product/<%= product.slug %>" target="_blank" style="margin-left:auto;padding:7px 14px;background:#e0e7ff;color:var(--primary);border-radius:8px;font-size:0.8rem;font-weight:600;text-decoration:none">👁 Preview</a>
+          </div>
+        </div>
+
+        <!-- Product Offer / Add-on -->
+        <div class="pf-card">
+          <h3>🎁 Product Offer (Add-on)</h3>
+          <p style="font-size:0.82rem;color:var(--text-light);margin-bottom:16px">
+            Centang produk yang akan ditampilkan sebagai penawaran tambahan sebelum pembayaran.
+            Pelanggan bisa memilih untuk membeli add-on atau skip langsung ke payment.
+          </p>
+
+          <% if(allProducts.length === 0) { %>
+          <div style="text-align:center;padding:32px;color:var(--text-light)">
+            <div style="font-size:2rem;margin-bottom:8px">📦</div>
+            <div>Belum ada produk lain yang bisa dijadikan add-on.</div>
+            <a href="/admin/products/new" style="display:inline-block;margin-top:12px;color:var(--primary);font-weight:600">+ Tambah Produk</a>
+          </div>
+          <% } else { %>
+
+          <% const addonMap = {}; addons.forEach(a => { addonMap[a.id] = a.addon_price; }); %>
+
+          <div class="addon-grid">
+            <div class="addon-grid-header">
+              <div></div>
+              <div>Gambar</div>
+              <div>Nama Produk</div>
+              <div>Harga Asli</div>
+              <div>Override Harga</div>
+            </div>
+            <% allProducts.forEach((ap, i) => { %>
+            <% const isActive = addonMap.hasOwnProperty(ap.id); %>
+            <div class="addon-row <%= isActive ? 'active-addon' : '' %>" id="arow-<%= ap.id %>">
+              <div style="text-align:center">
+                <input type="checkbox" name="addon_ids[]" value="<%= ap.id %>"
+                  <%= isActive ? 'checked' : '' %>
+                  onchange="toggleRow(this, 'arow-<%= ap.id %>')"
+                  style="width:16px;height:16px;cursor:pointer">
+              </div>
+              <div>
+                <% if(ap.image) { %>
+                <img src="<%= ap.image %>" class="addon-thumb" alt="<%= ap.name %>">
+                <% } else { %>
+                <div class="addon-thumb-ph">📦</div>
+                <% } %>
+              </div>
+              <div>
+                <div class="addon-name" title="<%= ap.name %>"><%= ap.name %></div>
+              </div>
+              <div class="addon-price-label">Rp <%= (ap.discount_price||ap.price).toLocaleString('id-ID') %></div>
+              <div>
+                <input type="number" name="addon_price_<%= ap.id %>" class="override-input"
+                  value="<%= isActive && addonMap[ap.id] ? addonMap[ap.id] : '' %>"
+                  placeholder="Harga asli"
+                  title="Kosong = gunakan harga produk asli" min="0">
+              </div>
+            </div>
+            <% }) %>
+          </div>
+
+          <div style="margin-top:12px;padding:10px 14px;background:#fef9c3;border-radius:8px;font-size:0.8rem;color:#713f12">
+            💡 <strong>Tips:</strong> Pilih produk yang relevan dan saling melengkapi untuk meningkatkan nilai transaksi.
+            Override harga opsional — jika dikosongkan, harga asli produk yang digunakan.
+          </div>
+          <% } %>
+        </div>
+
+      </div>
+
+      <div class="save-bar">
+        <button type="submit" class="admin-btn admin-btn-primary" style="padding:11px 28px;font-size:0.95rem">💾 Simpan Upsell</button>
+        <a href="/admin/products" class="admin-btn" style="padding:11px 20px;background:#e2e8f0;color:var(--text);text-decoration:none">← Kembali</a>
+        <a href="/admin/products/edit/<%= product.id %>" class="admin-btn" style="padding:11px 20px;background:#e0e7ff;color:var(--primary);text-decoration:none;margin-left:auto">✏️ Edit Produk</a>
+      </div>
+    </form>
+  </main>
+</div>
+
+<script>
+function toggleRow(cb, rowId) {
+  const row = document.getElementById(rowId);
+  if (cb.checked) row.classList.add('active-addon');
+  else row.classList.remove('active-addon');
+}
+</script>
+</body></html>

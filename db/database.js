@@ -69,6 +69,9 @@ db.exec(`
   );
 `);
 
+// Migrations
+try { db.exec('ALTER TABLE products ADD COLUMN priority INTEGER DEFAULT 0'); } catch(e) {}
+
 const existingAdmin = db.prepare('SELECT id FROM admins WHERE username = ?').get(process.env.ADMIN_USERNAME || 'admin');
 if (!existingAdmin) {
   const hash = bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'admin123', 10);

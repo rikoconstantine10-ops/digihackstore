@@ -1,12 +1,47 @@
 <!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Produk - Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css">
-<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
 <style>
-.ql-toolbar.ql-snow { border-radius: 8px 8px 0 0; border-color: #e2e8f0; background: #f8fafc; }
-.ql-container.ql-snow { border-radius: 0 0 8px 8px; border-color: #e2e8f0; font-family: 'Inter', sans-serif; min-height: 90px; }
-.ql-editor { min-height: 80px; font-size: 0.9rem; }
-</style></head>
+.prod-list { background:#fff; border-radius:14px; box-shadow:var(--shadow); overflow:hidden; }
+.prod-list-header { display:grid; grid-template-columns:44px 60px 1fr 130px 90px 80px 90px 130px; gap:0; padding:10px 16px; background:#f8faff; border-bottom:1px solid var(--border); font-size:0.74rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--text-light); align-items:center; }
+.prod-row { display:grid; grid-template-columns:44px 60px 1fr 130px 90px 80px 90px 130px; gap:0; padding:12px 16px; border-bottom:1px solid #f1f5f9; align-items:center; transition:background .15s; }
+.prod-row:hover { background:#fafbff; }
+.prod-row:last-child { border-bottom:none; }
+.prod-num { font-size:0.85rem; font-weight:700; color:var(--text-light); text-align:center; }
+.prod-thumb { width:48px; height:48px; object-fit:cover; border-radius:8px; }
+.prod-thumb-placeholder { width:48px; height:48px; background:#e0e7ff; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; }
+.prod-name { font-weight:700; font-size:0.9rem; color:var(--text); line-height:1.3; }
+.prod-meta { font-size:0.75rem; color:var(--text-light); margin-top:2px; }
+.prod-badges { display:flex; gap:4px; margin-top:4px; flex-wrap:wrap; }
+.tag { display:inline-block; padding:2px 8px; border-radius:20px; font-size:0.65rem; font-weight:700; text-transform:uppercase; }
+.tag-cat { background:#e0e7ff; color:#4338ca; }
+.tag-new { background:#e0f2fe; color:#0284c7; }
+.tag-hot { background:#fee2e2; color:#dc2626; }
+.tag-sale { background:#fef3c7; color:#d97706; }
+.tag-best { background:#dcfce7; color:#16a34a; }
+.prod-price { font-weight:800; color:var(--primary); font-size:0.92rem; }
+.prod-price-old { text-decoration:line-through; color:var(--text-light); font-size:0.75rem; }
+.status-dot { display:inline-flex; align-items:center; gap:5px; font-size:0.78rem; font-weight:600; }
+.status-dot::before { content:''; width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.status-active::before { background:#22c55e; }
+.status-inactive::before { background:#ef4444; }
+.priority-input { width:56px; padding:5px 8px; border:1px solid var(--border); border-radius:6px; font-size:0.82rem; text-align:center; outline:none; }
+.priority-input:focus { border-color:var(--primary); }
+.action-wrap { display:flex; gap:6px; align-items:center; position:relative; }
+.act-btn { padding:6px 12px; border-radius:7px; font-size:0.78rem; font-weight:600; cursor:pointer; border:none; white-space:nowrap; }
+.act-edit { background:var(--primary); color:white; }
+.act-more { background:#f1f5f9; color:var(--text); }
+.act-more:hover { background:#e2e8f0; }
+.dropdown { position:absolute; right:0; top:calc(100% + 4px); background:white; border-radius:10px; box-shadow:0 8px 30px rgba(0,0,0,0.15); z-index:200; min-width:160px; overflow:hidden; display:none; }
+.dropdown.open { display:block; }
+.dropdown a, .dropdown button { display:flex; align-items:center; gap:8px; width:100%; padding:10px 14px; font-size:0.83rem; font-weight:500; color:var(--text); border:none; background:none; cursor:pointer; text-decoration:none; }
+.dropdown a:hover, .dropdown button:hover { background:#f8faff; }
+.dropdown .danger { color:#dc2626; }
+.dropdown .danger:hover { background:#fef2f2; }
+.stat-pill { display:flex; gap:14px; font-size:0.75rem; }
+.stat-pill span { display:flex; align-items:center; gap:4px; color:var(--text-light); font-weight:500; }
+</style>
+</head>
 <body>
 <div class="admin-wrap">
   <aside class="admin-sidebar">
@@ -24,217 +59,117 @@
   </aside>
   <main class="admin-main">
     <div class="admin-topbar">
-      <h1>📦 Manajemen Produk</h1>
-      <span style="color:var(--text-light);font-size:0.85rem">Halo, <strong><%= admin.username %></strong></span>
+      <h1>📦 Produk</h1>
+      <div style="display:flex;align-items:center;gap:12px">
+        <% if(success) { %><span style="background:#dcfce7;color:#166534;padding:6px 14px;border-radius:8px;font-size:0.82rem;font-weight:600">✅ Disimpan!</span><% } %>
+        <span style="color:var(--text-light);font-size:0.85rem">Halo, <strong><%= admin.username %></strong></span>
+        <a href="/admin/products/new" class="admin-btn admin-btn-primary" style="padding:9px 18px;text-decoration:none;border-radius:9px">+ Produk Baru</a>
+      </div>
     </div>
     <div class="admin-content">
-
-      <div class="form-admin">
-        <h3>+ Tambah Produk Baru</h3>
-        <form method="POST" action="/admin/products/add" enctype="multipart/form-data">
-          <div class="form-row">
-            <div class="form-group"><label>Nama Produk *</label><input type="text" name="name" required></div>
-            <div class="form-group"><label>Kategori *</label><input type="text" name="category" placeholder="Contoh: Ebook, Software, Template" required></div>
-          </div>
-          <div class="form-group">
-            <label>Deskripsi</label>
-            <div id="addDescEditor"></div>
-            <textarea name="description" id="addDescHidden" style="display:none"></textarea>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label>Harga Normal (Rp) *</label><input type="number" name="price" required min="1000"></div>
-            <div class="form-group"><label>Harga Diskon (Rp) - opsional</label><input type="number" name="discount_price" min="1000"></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label>Badge</label>
-              <select name="badge"><option value="">Tidak ada</option><option value="new">NEW</option><option value="hot">HOT</option><option value="sale">SALE</option><option value="best">BEST</option></select>
-            </div>
-            <div class="form-group"><label>Countdown Diskon (opsional)</label><input type="datetime-local" name="countdown_end"></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label>Gambar Produk</label><input type="file" name="image" accept="image/*"></div>
-            <div class="form-group"><label>File Produk (PDF/ZIP/dll)</label><input type="file" name="file"></div>
-          </div>
-
-          <% if(allProducts.length > 0) { %>
-          <div style="border-top:1px solid #e2e8f0;margin:16px 0;padding-top:16px">
-            <h4 style="margin:0 0 4px;font-size:0.95rem;color:var(--text-dark)">🎁 Add-on Products (opsional)</h4>
-            <p style="font-size:0.8rem;color:var(--text-light);margin:0 0 10px">Pilih produk yang ditawarkan sebagai add-on sebelum pembayaran.</p>
-            <div style="display:grid;grid-template-columns:32px 1fr 120px 150px;gap:0;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden">
-              <div style="grid-column:1/-1;display:grid;grid-template-columns:32px 1fr 120px 150px;background:#f1f5f9;padding:6px 12px;font-size:0.75rem;font-weight:600;color:var(--text-light);gap:12px">
-                <div></div><div>Nama Produk</div><div>Harga</div><div>Override Harga</div>
-              </div>
-              <% allProducts.forEach((ap, i) => { %>
-              <div style="grid-column:1/-1;display:grid;grid-template-columns:32px 1fr 120px 150px;align-items:center;gap:12px;padding:8px 12px;border-top:1px solid #f1f5f9;background:<%= i%2===0?'#fff':'#fafafa' %>">
-                <input type="checkbox" name="addon_ids[]" value="<%= ap.id %>" style="margin:0;cursor:pointer;justify-self:center">
-                <span style="font-size:0.85rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><%= ap.name %></span>
-                <span style="font-size:0.8rem;color:var(--primary);font-weight:600">Rp <%= (ap.discount_price||ap.price).toLocaleString('id-ID') %></span>
-                <input type="number" name="addon_price_<%= ap.id %>" placeholder="Kosong = pakai harga asli" style="width:100%;padding:4px 8px;border:1px solid #e2e8f0;border-radius:4px;font-size:0.78rem" min="0">
-              </div>
-              <% }) %>
-            </div>
-          </div>
-          <% } %>
-
-          <button type="submit" class="admin-btn admin-btn-primary" style="padding:10px 24px">+ Tambah Produk</button>
-        </form>
-      </div>
-
-      <div class="admin-table">
-        <div style="padding:16px 20px;font-weight:700;border-bottom:1px solid var(--border)">
-          Daftar Produk (<%= products.length %>)
-          <span style="font-size:0.75rem;font-weight:400;color:var(--text-light);margin-left:12px">👁 = views &nbsp; 🛒 = checkout &nbsp; ✅ = terjual</span>
+      <div class="prod-list">
+        <div class="prod-list-header">
+          <div style="text-align:center">#</div>
+          <div>Gambar</div>
+          <div>Produk</div>
+          <div>Harga</div>
+          <div>Status</div>
+          <div style="text-align:center">Stats</div>
+          <div style="text-align:center">Prioritas</div>
+          <div>Aksi</div>
         </div>
-        <table>
-          <thead><tr><th>Gambar</th><th>Nama</th><th>Kategori</th><th>Harga</th><th style="text-align:center">👁</th><th style="text-align:center">🛒</th><th style="text-align:center">✅</th><th>Status</th><th>Aksi</th></tr></thead>
-          <tbody>
-          <% products.forEach(p => { %>
-          <tr>
-            <td><% if(p.image) { %><img src="<%= p.image %>" style="width:50px;height:40px;object-fit:cover;border-radius:6px"><% } else { %><div style="width:50px;height:40px;background:#e0e7ff;border-radius:6px;display:flex;align-items:center;justify-content:center">📦</div><% } %></td>
-            <td>
-              <div style="font-weight:600"><%= p.name %></div>
-              <div style="font-size:0.75rem;color:var(--text-light)"><%= p.slug %></div>
-              <% if(p.badge) { %><span class="badge badge-<%= p.badge %>"><%= p.badge %></span><% } %>
-            </td>
-            <td><%= p.category %></td>
-            <td>
-              <div style="font-weight:700;color:var(--primary)">Rp <%= (p.discount_price||p.price).toLocaleString('id-ID') %></div>
-              <% if(p.discount_price) { %><div style="text-decoration:line-through;font-size:0.75rem;color:var(--text-light)">Rp <%= p.price.toLocaleString('id-ID') %></div><% } %>
-            </td>
-            <td style="text-align:center;font-weight:700;color:var(--primary)"><%= p.view_count || 0 %></td>
-            <td style="text-align:center;font-weight:700;color:#f59e0b"><%= p.checkout_count || 0 %></td>
-            <td style="text-align:center;font-weight:700;color:#10b981"><%= p.sales_count || 0 %></td>
-            <td><span class="badge <%= p.is_active ? 'badge-success' : 'badge-expired' %>"><%= p.is_active ? 'Aktif' : 'Nonaktif' %></span></td>
-            <td style="display:flex;gap:6px;flex-wrap:wrap">
-              <a href="/product/<%= p.slug %>" target="_blank"><button class="admin-btn" style="background:#e0e7ff;color:var(--primary)">👁</button></a>
-              <button onclick="copyLink('<%= p.slug %>')" class="admin-btn" style="background:#f0fdf4;color:#16a34a" title="Copy link produk">🔗</button>
-              <button onclick="editProduct(<%= JSON.stringify(p) %>)" class="admin-btn admin-btn-primary">✏️</button>
-              <form method="POST" action="/admin/products/delete/<%= p.id %>" style="margin:0" onsubmit="return confirm('Nonaktifkan produk ini?')">
-                <button type="submit" class="admin-btn admin-btn-danger">🗑</button>
-              </form>
-            </td>
-          </tr>
-          <% }) %>
-          </tbody>
-        </table>
+        <% products.forEach((p, i) => { %>
+        <div class="prod-row" id="row-<%= p.id %>">
+          <div class="prod-num"><%= i+1 %></div>
+          <div>
+            <% if(p.image) { %>
+            <img src="<%= p.image %>" class="prod-thumb" alt="<%= p.name %>">
+            <% } else { %>
+            <div class="prod-thumb-placeholder">📦</div>
+            <% } %>
+          </div>
+          <div>
+            <div class="prod-name"><%= p.name %></div>
+            <div class="prod-badges">
+              <span class="tag tag-cat"><%= p.category %></span>
+              <% if(p.badge) { %><span class="tag tag-<%= p.badge.toLowerCase() %>"><%= p.badge %></span><% } %>
+            </div>
+            <div class="stat-pill" style="margin-top:4px">
+              <span>👁 <%= p.view_count %></span>
+              <span>🛒 <%= p.checkout_count %></span>
+              <span>✅ <%= p.sales_count %></span>
+            </div>
+          </div>
+          <div>
+            <div class="prod-price">Rp <%= (p.discount_price||p.price).toLocaleString('id-ID') %></div>
+            <% if(p.discount_price) { %><div class="prod-price-old">Rp <%= p.price.toLocaleString('id-ID') %></div><% } %>
+          </div>
+          <div>
+            <span class="status-dot <%= p.is_active ? 'status-active' : 'status-inactive' %>">
+              <%= p.is_active ? 'Aktif' : 'Nonaktif' %>
+            </span>
+          </div>
+          <div style="text-align:center">
+            <input type="number" class="priority-input" value="<%= p.priority||0 %>" min="0"
+              onchange="savePriority(<%= p.id %>, this.value)"
+              title="Prioritas tampil (lebih besar = tampil lebih atas)">
+          </div>
+          <div style="text-align:center">
+            <div class="action-wrap">
+              <a href="/admin/products/edit/<%= p.id %>" class="act-btn act-edit">✏️ Edit</a>
+              <button class="act-btn act-more" onclick="toggleDropdown(event, 'dd-<%= p.id %>')">▾ More</button>
+              <div class="dropdown" id="dd-<%= p.id %>">
+                <a href="/product/<%= p.slug %>" target="_blank">👁 Lihat Produk</a>
+                <a href="/admin/products/<%= p.id %>/upsell">🔀 Upsell & Cross-sell</a>
+                <button onclick="copyLink('<%= p.slug %>')">🔗 Salin Link</button>
+                <button onclick="toggleActive(<%= p.id %>, <%= p.is_active %>)" class="<%= !p.is_active ? '' : 'danger' %>">
+                  <%= p.is_active ? '⏸ Nonaktifkan' : '▶️ Aktifkan' %>
+                </button>
+                <form method="POST" action="/admin/products/delete/<%= p.id %>" onsubmit="return confirm('Nonaktifkan produk ini?')" style="margin:0">
+                  <button type="submit" class="danger">🗑 Hapus</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <% }) %>
+        <% if(products.length === 0) { %>
+        <div style="padding:48px;text-align:center;color:var(--text-light)">
+          <div style="font-size:3rem;margin-bottom:12px">📦</div>
+          <div style="font-weight:600;margin-bottom:8px">Belum ada produk</div>
+          <a href="/admin/products/new" class="admin-btn admin-btn-primary" style="display:inline-block;margin-top:8px;text-decoration:none">+ Tambah Produk Pertama</a>
+        </div>
+        <% } %>
       </div>
     </div>
   </main>
 </div>
 
-<div id="editModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
-  <div style="background:white;border-radius:16px;padding:32px;width:600px;max-width:90vw;max-height:90vh;overflow-y:auto">
-    <h3 style="margin-bottom:20px">Edit Produk</h3>
-    <form id="editForm" method="POST" enctype="multipart/form-data">
-      <div class="form-row">
-        <div class="form-group"><label>Nama *</label><input type="text" name="name" id="editName" required></div>
-        <div class="form-group"><label>Kategori *</label><input type="text" name="category" id="editCategory" required></div>
-      </div>
-      <div class="form-group">
-        <label>Deskripsi</label>
-        <div id="editDescEditor"></div>
-        <textarea name="description" id="editDesc" style="display:none"></textarea>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Harga Normal</label><input type="number" name="price" id="editPrice" required></div>
-        <div class="form-group"><label>Harga Diskon</label><input type="number" name="discount_price" id="editDiscountPrice"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Badge</label><select name="badge" id="editBadge"><option value="">Tidak ada</option><option value="new">NEW</option><option value="hot">HOT</option><option value="sale">SALE</option><option value="best">BEST</option></select></div>
-        <div class="form-group"><label>Countdown End</label><input type="datetime-local" name="countdown_end" id="editCountdown"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Gambar baru (opsional)</label><input type="file" name="image" accept="image/*"></div>
-        <div class="form-group"><label>File baru (opsional)</label><input type="file" name="file"></div>
-      </div>
-      <div class="form-group"><label><input type="checkbox" name="is_active" id="editActive" value="1"> Aktif</label></div>
-
-      <div style="border-top:1px solid #e2e8f0;margin:20px 0;padding-top:16px">
-        <h4 style="margin:0 0 4px;font-size:0.95rem;color:var(--text-dark)">🎁 Add-on Products</h4>
-        <p style="font-size:0.8rem;color:var(--text-light);margin:0 0 10px">Centang produk yang akan muncul sebagai penawaran add-on sebelum pembayaran.</p>
-        <div id="addonList" style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;max-height:220px;overflow-y:auto">
-          <div style="display:grid;grid-template-columns:32px 1fr 110px 130px;background:#f1f5f9;padding:6px 12px;font-size:0.72rem;font-weight:600;color:var(--text-light);gap:10px">
-            <div></div><div>Nama Produk</div><div>Harga</div><div>Override Harga</div>
-          </div>
-          <% allProducts.forEach((ap, i) => { %>
-          <div class="addon-item" data-pid="<%= ap.id %>" style="display:grid;grid-template-columns:32px 1fr 110px 130px;align-items:center;gap:10px;padding:8px 12px;border-top:1px solid #f1f5f9;background:<%= i%2===0?'#fff':'#fafafa' %>">
-            <input type="checkbox" class="addon-check" name="addon_ids[]" value="<%= ap.id %>" style="margin:0;cursor:pointer;justify-self:center">
-            <span style="font-size:0.84rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="<%= ap.name %>"><%= ap.name %></span>
-            <span style="font-size:0.8rem;color:var(--primary);font-weight:600">Rp <%= (ap.discount_price||ap.price).toLocaleString('id-ID') %></span>
-            <input type="number" name="addon_price_<%= ap.id %>" class="addon-price" placeholder="Harga asli" style="width:100%;padding:4px 8px;border:1px solid #e2e8f0;border-radius:4px;font-size:0.78rem" min="0">
-          </div>
-          <% }) %>
-        </div>
-      </div>
-
-      <div style="display:flex;gap:10px">
-        <button type="submit" class="admin-btn admin-btn-primary" style="padding:10px 24px">Simpan</button>
-        <button type="button" onclick="document.getElementById('editModal').style.display='none'" class="admin-btn" style="padding:10px 24px;background:#e2e8f0">Batal</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 <script>
-const toolbarOptions = [
-  [{ 'header': [1, 2, 3, false] }],
-  ['bold', 'italic', 'underline'],
-  [{ 'color': [] }],
-  [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-  ['clean']
-];
-
-// Quill for ADD form
-const addQuill = new Quill('#addDescEditor', { theme: 'snow', modules: { toolbar: toolbarOptions }, placeholder: 'Tulis deskripsi produk...' });
-
-// Quill for EDIT modal
-const editQuill = new Quill('#editDescEditor', { theme: 'snow', modules: { toolbar: toolbarOptions }, placeholder: 'Tulis deskripsi produk...' });
-
-// Sync Quill content to hidden textarea before form submit
-document.querySelector('form[action="/admin/products/add"]').addEventListener('submit', function() {
-  document.getElementById('addDescHidden').value = addQuill.root.innerHTML;
-});
-document.getElementById('editForm').addEventListener('submit', function() {
-  document.getElementById('editDesc').value = editQuill.root.innerHTML;
-});
+function toggleDropdown(e, id) {
+  e.stopPropagation();
+  document.querySelectorAll('.dropdown.open').forEach(d => { if(d.id !== id) d.classList.remove('open'); });
+  document.getElementById(id).classList.toggle('open');
+}
+document.addEventListener('click', () => document.querySelectorAll('.dropdown.open').forEach(d => d.classList.remove('open')));
 
 function copyLink(slug) {
-  const url = window.location.origin + '/product/' + slug;
-  navigator.clipboard.writeText(url).then(() => {
-    alert('✅ Link disalin!\n' + url);
-  }).catch(() => {
-    prompt('Salin link ini:', url);
+  const url = window.location.origin.replace('/admin','') + '/product/' + slug;
+  navigator.clipboard.writeText('https://digihackstore.com/product/' + slug).then(() => alert('✅ Link disalin!'));
+}
+
+function savePriority(id, val) {
+  fetch('/admin/products/priority/' + id, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ priority: parseInt(val)||0 })
   });
 }
 
-function editProduct(p) {
-  document.getElementById('editName').value = p.name;
-  document.getElementById('editCategory').value = p.category;
-  editQuill.root.innerHTML = p.description || '';
-  document.getElementById('editDesc').value = p.description || '';
-  document.getElementById('editPrice').value = p.price;
-  document.getElementById('editDiscountPrice').value = p.discount_price || '';
-  document.getElementById('editBadge').value = p.badge || '';
-  document.getElementById('editCountdown').value = p.countdown_end || '';
-  document.getElementById('editActive').checked = p.is_active === 1;
-  document.getElementById('editForm').action = '/admin/products/edit/' + p.id;
-
-  const addonMap = {};
-  (p.addons || []).forEach(a => { addonMap[a.addon_product_id] = a.addon_price; });
-  document.querySelectorAll('.addon-item').forEach(row => {
-    const pid = parseInt(row.dataset.pid);
-    const isself = pid === p.id;
-    row.style.display = isself ? 'none' : 'flex';
-    const chk = row.querySelector('.addon-check');
-    const priceInput = row.querySelector('.addon-price');
-    if (isself) { chk.checked = false; priceInput.value = ''; return; }
-    const hasAddon = addonMap.hasOwnProperty(pid);
-    chk.checked = hasAddon;
-    priceInput.value = hasAddon && addonMap[pid] ? addonMap[pid] : '';
-  });
-
-  document.getElementById('editModal').style.display = 'flex';
+function toggleActive(id, isActive) {
+  fetch('/admin/products/toggle/' + id, { method: 'POST' })
+    .then(r => r.json())
+    .then(d => { if(d.success) location.reload(); });
 }
 </script>
 </body></html>
