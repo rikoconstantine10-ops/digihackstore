@@ -1,0 +1,136 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Checkout - <%= product.name %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <% if(settings.meta_pixel_id) { %><script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','<%= settings.meta_pixel_id %>');fbq('track','InitiateCheckout',{value:<%= product.discount_price || product.price %>,currency:'IDR'});</script><% } %>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8HTW8H3LXR"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-8HTW8H3LXR");</script></head>
+<body>
+<nav class="navbar">
+  <a href="/" class="navbar-brand">Digi<span>hack</span></a>
+  <div class="navbar-links"><a href="/catalog">Catalog</a></div>
+</nav>
+
+<div class="checkout-wrap">
+  <div style="text-align:center;margin:32px 0 24px">
+    <div style="font-size:2rem;margin-bottom:8px">💳</div>
+    <h1 style="font-size:1.5rem;font-weight:800">Checkout</h1>
+    <p style="color:var(--text-light);font-size:0.9rem">Isi data diri kamu untuk melanjutkan</p>
+  </div>
+
+  <div class="checkout-card">
+    <div class="checkout-product">
+      <% if(product.image) { %>
+      <img src="<%= product.image %>" alt="<%= product.name %>">
+      <% } else { %>
+      <div style="width:60px;height:60px;background:linear-gradient(135deg,#e0e7ff,#c7d2fe);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.5rem">📦</div>
+      <% } %>
+      <div>
+        <div class="name"><%= product.name %></div>
+        <div class="price">Rp <%= (product.discount_price || product.price).toLocaleString('id-ID') %></div>
+      </div>
+    </div>
+
+    <% if(error) { %><div class="error-msg">❌ <%= error %></div><% } %>
+
+    <form method="POST" action="/checkout/<%= product.slug %>">
+      <div class="form-group">
+        <label>Nama Lengkap *</label>
+        <input type="text" name="name" placeholder="John Doe" required>
+      </div>
+      <div class="form-group">
+        <label>Email *</label>
+        <input type="email" name="email" placeholder="email@kamu.com" required>
+      </div>
+      <div class="form-group">
+        <label>No. WhatsApp *</label>
+        <input type="tel" name="phone" placeholder="08123456789" required>
+      </div>
+
+      <div class="form-group">
+        <label>Metode Pembayaran *</label>
+        <div class="payment-methods">
+          <label class="payment-option">
+            <input type="radio" name="channel" value="QRIS" required>
+            <div style="font-size:1.5rem">📱</div>
+            <div class="pm-name">QRIS</div>
+            <div class="pm-fee">Fee 0.7%</div>
+          </label>
+          <label class="payment-option">
+            <input type="radio" name="channel" value="BRIVA">
+            <div style="font-size:1.5rem">🏦</div>
+            <div class="pm-name">BRI VA</div>
+            <div class="pm-fee">Fee Rp 3.000</div>
+          </label>
+          <label class="payment-option">
+            <input type="radio" name="channel" value="BCAVA">
+            <div style="font-size:1.5rem">🏦</div>
+            <div class="pm-name">BCA VA</div>
+            <div class="pm-fee">Fee Rp 4.500</div>
+          </label>
+          <label class="payment-option">
+            <input type="radio" name="channel" value="MANDIRIVA">
+            <div style="font-size:1.5rem">🏦</div>
+            <div class="pm-name">Mandiri VA</div>
+            <div class="pm-fee">Fee Rp 3.000</div>
+          </label>
+          <label class="payment-option">
+            <input type="radio" name="channel" value="BNIVA">
+            <div style="font-size:1.5rem">🏦</div>
+            <div class="pm-name">BNI VA</div>
+            <div class="pm-fee">Fee Rp 3.500</div>
+          </label>
+          <label class="payment-option">
+            <input type="radio" name="channel" value="DANA">
+            <div style="font-size:1.5rem">💳</div>
+            <div class="pm-name">DANA</div>
+            <div class="pm-fee">Fee 1.67%</div>
+          </label>
+          <label class="payment-option">
+            <input type="radio" name="channel" value="Shopee Pay">
+            <div style="font-size:1.5rem">🛒</div>
+            <div class="pm-name">ShopeePay</div>
+            <div class="pm-fee">Fee 4%</div>
+          </label>
+          <label class="payment-option">
+            <input type="radio" name="channel" value="ALFAMART">
+            <div style="font-size:1.5rem">🏪</div>
+            <div class="pm-name">Alfamart</div>
+            <div class="pm-fee">Fee Rp 3.500</div>
+          </label>
+        </div>
+      </div>
+
+      <div style="background:#f8f9ff;border-radius:8px;padding:14px;margin-bottom:20px;font-size:0.85rem">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <span style="color:var(--text-light)">Harga produk</span>
+          <span style="font-weight:600">Rp <%= (product.discount_price || product.price).toLocaleString('id-ID') %></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <span style="color:var(--text-light)">Biaya payment</span>
+          <span style="color:var(--text-light)">Sesuai metode</span>
+        </div>
+        <hr style="border:none;border-top:1px solid var(--border);margin:8px 0">
+        <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1rem">
+          <span>Total</span>
+          <span style="color:var(--primary)">Rp <%= (product.discount_price || product.price).toLocaleString('id-ID') %> + fee</span>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit">🔒 Bayar Sekarang</button>
+    </form>
+  </div>
+
+  <div style="text-align:center;margin-top:20px;font-size:0.8rem;color:var(--text-light)">
+    🔒 Pembayaran aman diproses oleh Violet Media Pay<br>
+    📧 Produk dikirim otomatis ke email setelah pembayaran sukses
+  </div>
+</div>
+
+<footer style="margin-top:60px">
+  <p>&copy; 2026 <strong><%= settings.store_name %></strong></p>
+</footer>
+</body></html>

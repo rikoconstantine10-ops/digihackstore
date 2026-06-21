@@ -1,0 +1,52 @@
+
+<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Settings - Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css"></head>
+<body>
+<div class="admin-wrap">
+  <aside class="admin-sidebar">
+    <div class="admin-logo">🚀 Digihack</div>
+    <nav class="admin-nav">
+      <a href="/admin">📊 Dashboard</a>
+      <a href="/admin/products">📦 Produk</a>
+      <a href="/admin/orders">📝 Orders</a>
+      <a href="/admin/analytics">&#x1F4C8; Analytics</a>
+      <a href="/admin/settings" class="active">⚙️ Settings</a>
+      <a href="/" target="_blank">🌍 Lihat Store</a>
+      <a href="/admin/logout">🚪 Logout</a>
+    </nav>
+  </aside>
+  <main class="admin-main">
+    <div class="admin-topbar"><h1>⚙️ Pengaturan Toko</h1></div>
+    <div class="admin-content">
+      <% if(success) { %><div style="background:#dcfce7;color:#166534;padding:12px 16px;border-radius:8px;margin-bottom:20px;font-weight:600">✅ Pengaturan disimpan!</div><% } %>
+      <form method="POST" action="/admin/settings">
+        <div class="form-admin">
+          <h3>🏪 Info Toko</h3>
+          <div class="form-group"><label>Nama Toko</label><input type="text" name="store_name" value="<%= settings.store_name || '' %>"></div>
+        </div>
+        <div class="form-admin">
+          <h3>📱 Meta Pixel (Facebook Ads)</h3>
+          <div class="form-group"><label>Meta Pixel ID</label><input type="text" name="meta_pixel_id" value="<%= settings.meta_pixel_id || '' %>" placeholder="Contoh: 123456789012345"></div>
+          <div style="font-size:0.8rem;color:var(--text-light)">Kosongkan jika tidak menggunakan Meta Ads</div>
+        </div>
+        <div class="form-admin">
+          <h3>💬 WhatsApp Auto Follow-Up</h3>
+          <div class="form-group"><label>Nomor WA Admin (dengan kode negara)</label><input type="text" name="wa_number" value="<%= settings.wa_number || '' %>" placeholder="Contoh: 6281234567890"></div>
+          <div class="form-group">
+            <label>Pesan Follow-Up (setelah bayar sukses)</label>
+            <textarea name="wa_followup_msg" rows="3" style="width:100%"><%= settings.wa_followup_msg || '' %></textarea>
+            <div style="font-size:0.75rem;color:var(--text-light);margin-top:4px">Variabel: {name} {product} {email}</div>
+          </div>
+          <div class="form-group">
+            <label>Pesan Reminder Pending</label>
+            <textarea name="wa_pending_msg" rows="3" style="width:100%"><%= settings.wa_pending_msg || '' %></textarea>
+            <div style="font-size:0.75rem;color:var(--text-light);margin-top:4px">Variabel: {name} {product} {expired} {url}</div>
+          </div>
+        </div>
+        <button type="submit" class="admin-btn admin-btn-primary" style="padding:12px 32px">Simpan Pengaturan</button>
+      </form>
+    </div>
+  </main>
+</div>
+</body></html>

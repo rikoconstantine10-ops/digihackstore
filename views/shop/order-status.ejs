@@ -1,0 +1,78 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Status Order - <%= settings.store_name %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8HTW8H3LXR"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-8HTW8H3LXR");</script></head>
+<body>
+<nav class="navbar">
+  <a href="/" class="navbar-brand">Digi<span>hack</span></a>
+  <div class="navbar-links"><a href="/catalog">Catalog</a></div>
+</nav>
+
+<div class="status-wrap">
+  <% if(!order) { %>
+  <div class="status-card">
+    <div class="status-icon">🔍</div>
+    <h2 style="font-size:1.4rem;font-weight:800;margin-bottom:8px">Cek Status Order</h2>
+    <p style="color:var(--text-light);margin-bottom:24px;font-size:0.9rem">Masukkan nomor order kamu</p>
+    <form method="GET" action="/order/status">
+      <div class="form-group"><label>Nomor Order / Ref</label><input type="text" name="ref" placeholder="Contoh: 12345678" required></div>
+      <button type="submit" class="btn-submit">🔍 Cek Sekarang</button>
+    </form>
+  </div>
+  <% } else if(order.status === 'success') { %>
+  <div class="status-icon">✅</div>
+  <div class="status-card">
+    <h2 class="status-success" style="font-size:1.4rem;font-weight:800;margin-bottom:20px">🎉 Pembayaran Berhasil!</h2>
+    <div class="order-detail-row"><span>Order ID</span><strong>#<%= order.ref_kode %></strong></div>
+    <div class="order-detail-row"><span>Produk</span><strong><%= order.product_name %></strong></div>
+    <div class="order-detail-row"><span>Nama</span><strong><%= order.customer_name %></strong></div>
+    <div class="order-detail-row"><span>Email</span><strong><%= order.customer_email %></strong></div>
+    <div class="order-detail-row"><span>Total</span><strong style="color:var(--primary)">Rp <%= order.amount.toLocaleString('id-ID') %></strong></div>
+    <div class="order-detail-row"><span>Dibayar</span><strong><%= order.paid_at %></strong></div>
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin-top:20px;text-align:center;font-size:0.9rem;color:#166534">
+      📧 Produk sudah dikirim ke email <strong><%= order.customer_email %></strong><br>Cek inbox atau folder spam.
+    </div>
+    <a href="/catalog" style="display:block;text-align:center;margin-top:20px;color:var(--primary);font-weight:600">Belanja lagi →</a>
+  </div>
+  <% } else if(order.status === 'pending') { %>
+  <div class="status-icon">⏳</div>
+  <div class="status-card">
+    <h2 class="status-pending" style="font-size:1.4rem;font-weight:800;margin-bottom:20px">Menunggu Pembayaran</h2>
+    <div class="order-detail-row"><span>Order ID</span><strong>#<%= order.ref_kode %></strong></div>
+    <div class="order-detail-row"><span>Produk</span><strong><%= order.product_name %></strong></div>
+    <div class="order-detail-row"><span>Total</span><strong style="color:var(--warning)">Rp <%= order.amount.toLocaleString('id-ID') %></strong></div>
+    <% if(order.checkout_url) { %>
+    <a href="<%= order.checkout_url %>" style="display:block;margin-top:20px">
+      <button class="btn-submit">💳 Lanjutkan Pembayaran</button>
+    </a>
+    <% } %>
+  </div>
+  <% } else { %>
+  <div class="status-icon">❌</div>
+  <div class="status-card">
+    <h2 class="status-expired" style="font-size:1.4rem;font-weight:800;margin-bottom:20px">Order Expired / Refund</h2>
+    <div class="order-detail-row"><span>Order ID</span><strong>#<%= order.ref_kode %></strong></div>
+    <div class="order-detail-row"><span>Status</span><strong><%= order.status %></strong></div>
+    <a href="/catalog" style="display:block;text-align:center;margin-top:20px;color:var(--primary);font-weight:600">Order ulang →</a>
+  </div>
+  <% } %>
+</div>
+
+<footer style="margin-top:60px">
+  <p>&copy; 2026 <strong><%= settings.store_name %></strong></p>
+</footer>
+<% if (typeof settings !== 'undefined' && settings.meta_pixel_id && typeof order !== 'undefined' && order && order.status === 'success') { %>
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if((!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '<%= settings.meta_pixel_id %>');
+fbq('track', 'PageView');
+fbq('track', 'Purchase', { value: <%= order.amount %>, currency: 'IDR', content_name: '<%= order.product_name %>', content_ids: ['<%= order.product_id %>'], content_type: 'product' });
+</script>
+<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=<%= settings.meta_pixel_id %>&ev=PageView&noscript=1"/></noscript>
+<% } %>
+</body></html>

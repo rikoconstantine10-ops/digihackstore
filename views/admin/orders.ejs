@@ -1,0 +1,75 @@
+
+<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Orders - Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css"></head>
+<body>
+<div class="admin-wrap">
+  <aside class="admin-sidebar">
+    <div class="admin-logo">🚀 Digihack</div>
+    <nav class="admin-nav">
+      <a href="/admin">📊 Dashboard</a>
+      <a href="/admin/products">📦 Produk</a>
+      <a href="/admin/orders" class="active">📝 Orders</a>
+      <a href="/admin/analytics">📈 Analytics</a>
+      <a href="/admin/settings">⚙️ Settings</a>
+      <a href="/" target="_blank">🌍 Lihat Store</a>
+      <a href="/admin/logout">🚪 Logout</a>
+    </nav>
+  </aside>
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>📝 Daftar Order</h1>
+      <a href="/admin/orders/export"><button class="admin-btn admin-btn-success">💾 Export CSV</button></a>
+    </div>
+    <div class="admin-content">
+      <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+        <a href="/admin/orders" class="filter-btn <%= !status ? 'active' : '' %>">Semua</a>
+        <a href="/admin/orders?status=success" class="filter-btn <%= status==='success' ? 'active' : '' %>">Sukses</a>
+        <a href="/admin/orders?status=pending" class="filter-btn <%= status==='pending' ? 'active' : '' %>">Pending</a>
+        <a href="/admin/orders?status=expired" class="filter-btn <%= status==='expired' ? 'active' : '' %>">Expired</a>
+      </div>
+      <div class="admin-table">
+        <table>
+          <thead><tr><th>Ref</th><th>Produk</th><th>Customer</th><th>HP</th><th>Amount</th><th>Metode</th><th>Status</th><th>Email</th><th>Waktu</th><th>Aksi</th></tr></thead>
+          <tbody>
+          <% orders.forEach(o => { %>
+          <tr>
+            <td><code style="font-size:0.75rem">#<%= o.ref_kode %></code></td>
+            <td style="max-width:150px"><div style="font-size:0.85rem;font-weight:600"><%= o.product_name %></div></td>
+            <td><div style="font-size:0.85rem"><%= o.customer_name %></div><div style="font-size:0.75rem;color:var(--text-light)"><%= o.customer_email %></div></td>
+            <td style="font-size:0.85rem"><%= o.customer_phone %></td>
+            <td style="font-weight:700;font-size:0.85rem">Rp <%= o.amount.toLocaleString('id-ID') %></td>
+            <td style="font-size:0.8rem"><%= o.payment_method %></td>
+            <td><span class="badge badge-<%= o.status %>"><%= o.status %></span></td>
+            <td><span class="badge <%= o.email_sent ? 'badge-success' : 'badge-pending' %>"><%= o.email_sent ? '✅' : '⏳' %></span></td>
+            <td style="font-size:0.75rem;color:var(--text-light)"><%= o.created_at.slice(0,16) %></td>
+            <td>
+              <% if(o.status === 'success') { %>
+              <button onclick="resendEmail(<%= o.id %>)" class="admin-btn" style="background:#e0f2fe;color:#0284c7;font-size:0.75rem">📧 Resend</button>
+              <% } %>
+            </td>
+          </tr>
+          <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+      <% const totalPages = Math.ceil(total/limit); if(totalPages > 1) { %>
+      <div class="pagination">
+        <% for(let i=1;i<=totalPages;i++) { %>
+        <a href="/admin/orders?page=<%= i %><%= status ? '&status='+status : '' %>" class="<%= i===page ? 'active' : '' %>"><%= i %></a>
+        <% } %>
+      </div>
+      <% } %>
+    </div>
+  </main>
+</div>
+<script>
+async function resendEmail(id) {
+  if (!confirm('Kirim ulang email untuk order ini?')) return;
+  const r = await fetch('/admin/orders/resend-email/' + id, {method:'POST'});
+  const d = await r.json();
+  alert(d.success ? '✅ Email berhasil dikirim!' : '❌ Gagal: ' + d.error);
+}
+</script>
+</body></html>

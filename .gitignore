@@ -1,0 +1,6 @@
+node_modules/
+*.db
+*.db-shm
+*.db-wal
+.env
+wa-service/auth_info_baileys/

@@ -1,0 +1,77 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title><%= settings.store_name || 'Digihack Store' %> - Digital Products</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <% if(settings.meta_pixel_id) { %>
+  <script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','<%= settings.meta_pixel_id %>');fbq('track','PageView');</script>
+  <% } %>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8HTW8H3LXR"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-8HTW8H3LXR");</script></head>
+<body>
+<nav class="navbar">
+  <a href="/" class="navbar-brand">Digi<span>hack</span></a>
+  <div class="navbar-links">
+    <a href="/catalog">Catalog</a>
+    <a href="/order/status">Cek Order</a>
+    <a href="/catalog" class="btn-nav">Belanja Sekarang</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1>🚀 Produk Digital<br>Terbaik & Terpercaya</h1>
+  <p>Ribuan produk digital berkualitas tinggi. Bayar sekali, dapat selamanya.</p>
+  <a href="/catalog" class="btn-primary">Lihat Semua Produk →</a>
+</div>
+
+<div class="section">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px">
+    <div>
+      <h2 class="section-title">Produk Terbaru</h2>
+      <p class="section-sub">Koleksi terbaru pilihan kami</p>
+    </div>
+    <a href="/catalog" style="color:var(--primary);font-weight:600;font-size:0.9rem">Lihat semua →</a>
+  </div>
+
+  <% if(categories.length > 0) { %>
+  <div class="filter-bar" style="margin-bottom:24px">
+    <% categories.forEach(c => { %>
+    <a href="/catalog?category=<%= encodeURIComponent(c.category) %>" class="filter-btn"><%= c.category %></a>
+    <% }) %>
+  </div>
+  <% } %>
+
+  <div class="products-grid">
+    <% products.forEach(p => { %>
+    <a href="/product/<%= p.slug %>" class="product-card">
+      <% if(p.image) { %>
+      <img class="card-img" src="<%= p.image %>" alt="<%= p.name %>" loading="lazy">
+      <% } else { %>
+      <div class="card-img-placeholder">📦</div>
+      <% } %>
+      <div class="card-body">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span class="card-category"><%= p.category %></span>
+          <% if(p.badge) { %><span class="badge badge-<%= p.badge.toLowerCase() %>"><%= p.badge %></span><% } %>
+        </div>
+        <div class="card-title"><%= p.name %></div>
+        <div class="card-desc"><%= p.description %></div>
+        <div class="card-price">
+          <span class="price-main">Rp <%= (p.discount_price || p.price).toLocaleString('id-ID') %></span>
+          <% if(p.discount_price) { %><span class="price-old">Rp <%= p.price.toLocaleString('id-ID') %></span><% } %>
+        </div>
+        <button class="btn-card">Beli Sekarang</button>
+      </div>
+    </a>
+    <% }) %>
+  </div>
+</div>
+
+<footer>
+  <p>&copy; 2026 <strong><%= settings.store_name %></strong>. All rights reserved.</p>
+  <p style="margin-top:8px;font-size:0.8rem">Produk digital berkualitas tinggi</p>
+</footer>
+</body></html>

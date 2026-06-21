@@ -1,0 +1,87 @@
+<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Analytics - Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head><body>
+<div class="admin-wrap">
+  <aside class="admin-sidebar">
+    <div class="admin-logo">🚀 Digihack</div>
+    <nav class="admin-nav">
+      <a href="/admin">📊 Dashboard</a>
+      <a href="/admin/products">📦 Produk</a>
+      <a href="/admin/orders">📝 Orders</a>
+      <a href="/admin/analytics" class="active">📈 Analytics</a>
+      <a href="/admin/settings">⚙️ Settings</a>
+      <a href="/" target="_blank">🌍 Lihat Store</a>
+      <a href="/admin/logout" style="margin-top:auto;color:#fc8181">🚪 Logout</a>
+    </nav>
+  </aside>
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>📈 Analytics</h1>
+      <span style="color:var(--text-light);font-size:0.85rem">Halo, <strong><%= admin.username %></strong></span>
+    </div>
+    <div class="admin-content">
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-icon">👁️</div><div class="stat-label">Visitor Hari Ini</div><div class="stat-value"><%= stats.todayViews %></div></div>
+        <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-label">Visitor 7 Hari</div><div class="stat-value"><%= stats.weekViews %></div></div>
+        <div class="stat-card"><div class="stat-icon">📆</div><div class="stat-label">Visitor 30 Hari</div><div class="stat-value"><%= stats.monthViews %></div></div>
+        <div class="stat-card"><div class="stat-icon">🌐</div><div class="stat-label">Total Page Views</div><div class="stat-value"><%= stats.totalViews %></div></div>
+        <div class="stat-card"><div class="stat-icon">💳</div><div class="stat-label">Order Sukses</div><div class="stat-value"><%= stats.successOrders %></div></div>
+        <div class="stat-card"><div class="stat-icon">🎯</div><div class="stat-label">Conversion Rate</div><div class="stat-value"><%= stats.convRate %>%</div></div>
+      </div>
+
+      <div class="admin-table" style="margin-bottom:24px">
+        <div style="padding:16px 20px;font-weight:700;border-bottom:1px solid var(--border)">📊 Visitor 7 Hari Terakhir</div>
+        <div style="padding:20px"><canvas id="visitorChart" height="80"></canvas></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="admin-table">
+          <div style="padding:16px 20px;font-weight:700;border-bottom:1px solid var(--border)">🔥 Top Pages</div>
+          <table>
+            <thead><tr><th>Halaman</th><th>Views</th></tr></thead>
+            <tbody>
+            <% topPages.forEach(p => { %>
+            <tr><td><code style="font-size:0.8rem"><%= p.page %></code></td><td><strong><%= p.views %></strong></td></tr>
+            <% }) %>
+            <% if (!topPages.length) { %><tr><td colspan="2" style="text-align:center;color:var(--text-light)">Belum ada data</td></tr><% } %>
+            </tbody>
+          </table>
+        </div>
+        <div class="admin-table">
+          <div style="padding:16px 20px;font-weight:700;border-bottom:1px solid var(--border)">🔗 Top Referrers</div>
+          <table>
+            <thead><tr><th>Sumber</th><th>Kunjungan</th></tr></thead>
+            <tbody>
+            <% topRefs.forEach(r => { %>
+            <tr><td style="font-size:0.8rem;max-width:200px;overflow:hidden;text-overflow:ellipsis"><%= r.ref %></td><td><strong><%= r.c %></strong></td></tr>
+            <% }) %>
+            <% if (!topRefs.length) { %><tr><td colspan="2" style="text-align:center;color:var(--text-light)">Belum ada data</td></tr><% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script>
+const daily = <%- JSON.stringify(daily) %>;
+const ctx = document.getElementById('visitorChart').getContext('2d');
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: daily.map(d => d.day),
+    datasets: [{
+      label: 'Visitor',
+      data: daily.map(d => d.views),
+      borderColor: '#6c63ff',
+      backgroundColor: 'rgba(108,99,255,0.1)',
+      tension: 0.4,
+      fill: true
+    }]
+  },
+  options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+});
+</script>
+</body></html>

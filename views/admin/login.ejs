@@ -1,0 +1,20 @@
+
+<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Admin Login - Digihack Store</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>body{background:linear-gradient(135deg,#6c63ff,#a78bfa);min-height:100vh;display:flex;align-items:center;justify-content:center;}</style>
+</head><body>
+<div style="background:white;border-radius:16px;padding:40px;width:360px;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
+  <div style="text-align:center;margin-bottom:32px">
+    <div style="font-size:3rem">🔐</div>
+    <h1 style="font-size:1.5rem;font-weight:800;margin-top:8px">Admin Login</h1>
+    <p style="color:var(--text-light);font-size:0.85rem">Digihack Store</p>
+  </div>
+  <% if(error) { %><div class="error-msg"><%= error %></div><% } %>
+  <form method="POST" action="/admin/login">
+    <div class="form-group"><label>Username</label><input type="text" name="username" required autofocus></div>
+    <div class="form-group"><label>Password</label><input type="password" name="password" required></div>
+    <button type="submit" class="btn-submit" style="margin-top:8px">Masuk</button>
+  </form>
+</div>
+</body></html>

@@ -1,0 +1,55 @@
+
+<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Dashboard - Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css"></head>
+<body>
+<div class="admin-wrap">
+  <aside class="admin-sidebar">
+    <div class="admin-logo">🚀 Digihack</div>
+    <nav class="admin-nav">
+      <a href="/admin" class="active">📊 Dashboard</a>
+      <a href="/admin/products">📦 Produk</a>
+      <a href="/admin/orders">📝 Orders</a>
+      <a href="/admin/analytics">📈 Analytics</a>
+      <a href="/admin/settings">⚙️ Settings</a>
+      <a href="/" target="_blank">🌍 Lihat Store</a>
+      <a href="/admin/logout" style="margin-top:auto;color:#fc8181">🚪 Logout</a>
+    </nav>
+  </aside>
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>📊 Dashboard</h1>
+      <span style="color:var(--text-light);font-size:0.85rem">Halo, <strong><%= admin.username %></strong></span>
+    </div>
+    <div class="admin-content">
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-label">Total Revenue</div><div class="stat-value" style="font-size:1.4rem">Rp <%= stats.revenue.toLocaleString('id-ID') %></div></div>
+        <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-label">Order Sukses</div><div class="stat-value"><%= stats.success_orders %></div></div>
+        <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-label">Order Pending</div><div class="stat-value"><%= stats.pending_orders %></div></div>
+        <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-label">Total Produk</div><div class="stat-value"><%= stats.total_products %></div></div>
+        <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-label">Total Orders</div><div class="stat-value"><%= stats.total_orders %></div></div>
+      </div>
+
+      <div class="admin-table">
+        <div style="padding:16px 20px;font-weight:700;border-bottom:1px solid var(--border)">🕒 Order Terbaru</div>
+        <table>
+          <thead><tr><th>Ref</th><th>Produk</th><th>Customer</th><th>Amount</th><th>Metode</th><th>Status</th><th>Waktu</th></tr></thead>
+          <tbody>
+          <% recent.forEach(o => { %>
+          <tr>
+            <td><code style="font-size:0.75rem">#<%= o.ref_kode %></code></td>
+            <td><%= o.product_name %></td>
+            <td><div><%= o.customer_name %></div><div style="font-size:0.75rem;color:var(--text-light)"><%= o.customer_email %></div></td>
+            <td style="font-weight:700">Rp <%= o.amount.toLocaleString('id-ID') %></td>
+            <td><span style="font-size:0.8rem"><%= o.payment_method %></span></td>
+            <td><span class="badge badge-<%= o.status %>"><%= o.status %></span></td>
+            <td style="font-size:0.75rem;color:var(--text-light)"><%= o.created_at.slice(0,16) %></td>
+          </tr>
+          <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+</body></html>

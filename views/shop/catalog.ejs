@@ -1,0 +1,85 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Catalog - <%= settings.store_name %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <% if(settings.meta_pixel_id) { %><script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','<%= settings.meta_pixel_id %>');fbq('track','PageView');</script><% } %>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8HTW8H3LXR"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-8HTW8H3LXR");</script></head>
+<body>
+<nav class="navbar">
+  <a href="/" class="navbar-brand">Digi<span>hack</span></a>
+  <div class="navbar-links">
+    <a href="/catalog" class="active">Catalog</a>
+    <a href="/order/status">Cek Order</a>
+    <a href="/catalog" class="btn-nav">Belanja Sekarang</a>
+  </div>
+</nav>
+
+<div class="section">
+  <h1 class="section-title">📦 Catalog Produk</h1>
+  <p class="section-sub">Temukan produk digital impian kamu</p>
+
+  <form method="GET" action="/catalog" class="filter-bar">
+    <input type="text" name="search" placeholder="🔍 Cari produk..." value="<%= search || '' %>">
+    <button type="submit" class="filter-btn active">Cari</button>
+    <a href="/catalog" class="filter-btn">Reset</a>
+  </form>
+
+  <div class="filter-bar">
+    <a href="/catalog" class="filter-btn <%= !category ? 'active' : '' %>">Semua</a>
+    <% categories.forEach(c => { %>
+    <a href="/catalog?category=<%= encodeURIComponent(c.category) %><%= search ? '&search='+encodeURIComponent(search) : '' %>" 
+       class="filter-btn <%= category === c.category ? 'active' : '' %>"><%= c.category %></a>
+    <% }) %>
+  </div>
+
+  <% if(products.length === 0) { %>
+  <div style="text-align:center;padding:60px;color:var(--text-light)">
+    <div style="font-size:4rem;margin-bottom:16px">💭</div>
+    <h3>Produk tidak ditemukan</h3>
+    <p>Coba kata kunci lain atau <a href="/catalog" style="color:var(--primary)">lihat semua produk</a></p>
+  </div>
+  <% } else { %>
+  <div class="products-grid">
+    <% products.forEach(p => { %>
+    <a href="/product/<%= p.slug %>" class="product-card">
+      <% if(p.image) { %>
+      <img class="card-img" src="<%= p.image %>" alt="<%= p.name %>" loading="lazy">
+      <% } else { %>
+      <div class="card-img-placeholder">📦</div>
+      <% } %>
+      <div class="card-body">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span class="card-category"><%= p.category %></span>
+          <% if(p.badge) { %><span class="badge badge-<%= p.badge.toLowerCase() %>"><%= p.badge %></span><% } %>
+        </div>
+        <div class="card-title"><%= p.name %></div>
+        <div class="card-desc"><%= p.description %></div>
+        <div class="card-price">
+          <span class="price-main">Rp <%= (p.discount_price || p.price).toLocaleString('id-ID') %></span>
+          <% if(p.discount_price) { %><span class="price-old">Rp <%= p.price.toLocaleString('id-ID') %></span><% } %>
+        </div>
+        <button class="btn-card">Beli Sekarang</button>
+      </div>
+    </a>
+    <% }) %>
+  </div>
+
+  <% const totalPages = Math.ceil(total/limit); if(totalPages > 1) { %>
+  <div class="pagination">
+    <% for(let i=1;i<=totalPages;i++) { %>
+    <a href="/catalog?page=<%= i %><%= category ? '&category='+encodeURIComponent(category) : '' %><%= search ? '&search='+encodeURIComponent(search) : '' %>" 
+       class="<%= i === page ? 'active' : '' %>"><%= i %></a>
+    <% } %>
+  </div>
+  <% } %>
+  <% } %>
+</div>
+
+<footer>
+  <p>&copy; 2026 <strong><%= settings.store_name %></strong>. All rights reserved.</p>
+</footer>
+</body></html>
