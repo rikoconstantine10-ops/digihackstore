@@ -12,6 +12,14 @@
 .ql-editor { min-height:110px; }
 .img-preview { width:100px; height:100px; object-fit:cover; border-radius:10px; border:2px solid var(--border); margin-bottom:8px; display:block; }
 .save-bar { background:#fff; border-top:1px solid var(--border); padding:16px 28px; display:flex; gap:12px; align-items:center; position:sticky; bottom:0; box-shadow:0 -2px 12px rgba(0,0,0,0.06); }
+.addon-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:8px; background:#fff; transition:background .15s,border-color .15s; }
+.addon-item.checked { background:#f0fdf4; border-color:#86efac; }
+.addon-thumb { width:40px; height:40px; object-fit:cover; border-radius:6px; flex-shrink:0; }
+.addon-thumb-ph { width:40px; height:40px; background:#e0e7ff; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:0.9rem; flex-shrink:0; }
+.addon-name { flex:1; font-size:0.84rem; font-weight:600; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.addon-price-tag { font-size:0.8rem; font-weight:700; color:var(--primary); white-space:nowrap; }
+.override-input { width:110px; padding:5px 8px; border:1px solid #e2e8f0; border-radius:6px; font-size:0.8rem; flex-shrink:0; }
+.override-input:focus { border-color:var(--primary); outline:none; }
 </style>
 </head>
 <body>
@@ -42,6 +50,7 @@
       <div class="pf-wrap">
 
         <% if(error) { %><div class="error-msg"><%= error %></div><% } %>
+        <% if(success) { %><div style="background:#dcfce7;color:#166534;padding:12px 16px;border-radius:10px;margin-bottom:16px;font-weight:600">✅ Perubahan berhasil disimpan!</div><% } %>
 
         <!-- Info Produk -->
         <div class="pf-card">
@@ -119,21 +128,42 @@
           </div>
         </div>
 
-        <!-- Status -->
+        <!-- Status (hanya edit) -->
         <% if(product) { %>
         <div class="pf-card">
           <h3>⚙️ Pengaturan</h3>
-          <div class="form-group">
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.95rem">
-              <input type="checkbox" name="is_active" value="1" <%= product.is_active ? 'checked' : '' %> style="width:18px;height:18px;cursor:pointer">
-              Produk Aktif (tampil di store)
-            </label>
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.95rem">
+            <input type="checkbox" name="is_active" value="1" <%= product.is_active ? 'checked' : '' %> style="width:18px;height:18px;cursor:pointer">
+            Produk Aktif (tampil di store)
+          </label>
+        </div>
+        <% } %>
+
+        <!-- Add-on / Upsell -->
+        <% if(allProducts.length > 0) { %>
+        <% const addonMap = {}; if(product && product.addons) { product.addons.forEach(a => { addonMap[a.addon_product_id] = a.addon_price; }); } %>
+        <div class="pf-card">
+          <h3>🎁 Upsell & Cross-sell <span style="font-size:0.78rem;font-weight:400;color:var(--text-light);margin-left:4px">— opsional</span></h3>
+          <p style="font-size:0.82rem;color:var(--text-light);margin-bottom:14px">Pilih produk yang akan ditawarkan sebagai add-on setelah pelanggan memilih produk ini. Override harga jika ingin beda dari harga asli.</p>
+          <% allProducts.forEach(ap => { %>
+          <% const isActive = addonMap.hasOwnProperty(ap.id); %>
+          <div class="addon-item <%= isActive ? 'checked' : '' %>" id="ai-<%= ap.id %>">
+            <input type="checkbox" name="addon_ids[]" value="<%= ap.id %>"
+              <%= isActive ? 'checked' : '' %>
+              onchange="toggleAddon(this,'ai-<%= ap.id %>')"
+              style="width:16px;height:16px;cursor:pointer;flex-shrink:0">
+            <% if(ap.image) { %>
+            <img src="<%= ap.image %>" class="addon-thumb" alt="<%= ap.name %>">
+            <% } else { %>
+            <div class="addon-thumb-ph">📦</div>
+            <% } %>
+            <span class="addon-name" title="<%= ap.name %>"><%= ap.name %></span>
+            <span class="addon-price-tag">Rp <%= (ap.discount_price||ap.price).toLocaleString('id-ID') %></span>
+            <input type="number" name="addon_price_<%= ap.id %>" class="override-input"
+              value="<%= isActive && addonMap[ap.id] ? addonMap[ap.id] : '' %>"
+              placeholder="Override harga" min="0">
           </div>
-          <div style="margin-top:14px;padding:14px;background:#f0fdf4;border-radius:8px;border:1px solid #bbf7d0">
-            <div style="font-size:0.82rem;color:#166534;font-weight:600;margin-bottom:6px">🔀 Upsell & Cross-sell</div>
-            <div style="font-size:0.8rem;color:#166534;margin-bottom:10px">Atur produk add-on yang ditawarkan setelah pelanggan memilih produk ini.</div>
-            <a href="/admin/products/<%= product.id %>/upsell" style="display:inline-block;padding:8px 16px;background:#16a34a;color:white;border-radius:8px;font-size:0.82rem;font-weight:600;text-decoration:none">→ Kelola Upsell & Cross-sell</a>
-          </div>
+          <% }) %>
         </div>
         <% } %>
 
@@ -163,5 +193,11 @@ if (savedDesc) quill.root.innerHTML = savedDesc;
 document.getElementById('prodForm').addEventListener('submit', function() {
   document.getElementById('descHidden').value = quill.root.innerHTML;
 });
+
+function toggleAddon(cb, itemId) {
+  const el = document.getElementById(itemId);
+  if (cb.checked) el.classList.add('checked');
+  else el.classList.remove('checked');
+}
 </script>
 </body></html>
