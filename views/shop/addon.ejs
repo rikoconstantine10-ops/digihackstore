@@ -96,7 +96,8 @@
           <div class="addon-card-info">
             <h4><%= addon.name %></h4>
             <% if(addon.description) { %>
-            <p class="desc"><%= addon.description.substring(0, 100) %><%= addon.description.length > 100 ? '...' : '' %></p>
+            <% const cleanDesc = addon.description.replace(/<[^>]+>/g,'').trim(); %>
+            <p class="desc"><%= cleanDesc.substring(0, 90) %><%= cleanDesc.length > 90 ? '...' : '' %></p>
             <% } %>
             <div class="addon-price">+ Rp <%= (addon.addon_price || addon.discount_price || addon.price).toLocaleString('id-ID') %></div>
           </div>
