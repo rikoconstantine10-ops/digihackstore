@@ -200,7 +200,7 @@ router.get('/settings', auth, (req, res) => {
 });
 
 router.post('/settings', auth, (req, res) => {
-  const allowed = ['store_name','store_domain','meta_pixel_id','meta_capi_token','ga4_id','wa_number','wa_followup_msg','wa_pending_msg'];
+  const allowed = ['store_name','store_domain','meta_pixel_id','meta_capi_token','ga4_id','wa_number','wa_followup_msg','wa_pending_msg','wa_leads_msg'];
   for (const key of allowed) {
     if (req.body[key] !== undefined) {
       db.prepare('INSERT OR REPLACE INTO settings (key,value) VALUES (?,?)').run(key, req.body[key]);

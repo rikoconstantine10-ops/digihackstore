@@ -84,9 +84,14 @@
             <div style="font-size:0.75rem;color:var(--text-light);margin-top:4px">Variabel: {name} {product} {email}</div>
           </div>
           <div class="form-group">
-            <label>Pesan Reminder Pending</label>
+            <label>Pesan Reminder Pending Bayar</label>
             <textarea name="wa_pending_msg" rows="3" style="width:100%"><%= settings.wa_pending_msg || '' %></textarea>
-            <div style="font-size:0.75rem;color:var(--text-light);margin-top:4px">Variabel: {name} {product} {expired} {url}</div>
+            <div style="font-size:0.75rem;color:var(--text-light);margin-top:4px">Variabel: {name} {product} {expired} {url} — Dikirim otomatis 1 jam setelah order pending</div>
+          </div>
+          <div class="form-group">
+            <label>Pesan Auto-Reminder Leads <span style="background:#fef3c7;color:#d97706;font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:10px;vertical-align:middle">AUTO 15 MENIT</span></label>
+            <textarea name="wa_leads_msg" rows="4" style="width:100%;font-family:monospace;font-size:0.82rem"><%= settings.wa_leads_msg || 'Halo {name}! 👋\n\nKamu tadi sempat mau beli *{product}* di Digihack Store tapi sepertinya belum selesai.\n\nMasih minat? Yuk selesaikan ordernya sekarang, stok terbatas! 🔥\n\ndigihackstore.com' %></textarea>
+            <div style="font-size:0.75rem;color:var(--text-light);margin-top:4px">Variabel: {name} {product} — Dikirim <strong>otomatis 15 menit</strong> setelah calon pembeli isi form tapi tidak lanjut bayar</div>
           </div>
         </div>
 
