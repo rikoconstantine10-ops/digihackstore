@@ -122,6 +122,9 @@
                 <button onclick="togglePin(<%= p.id %>, this)" id="pin-btn-<%= p.id %>">
                   <%= p.is_pinned ? '📌 Unpin' : '📌 Pin ke Atas' %>
                 </button>
+                <form method="POST" action="/admin/products/duplicate/<%= p.id %>" style="margin:0">
+                  <button type="submit">📋 Duplikat Produk</button>
+                </form>
                 <button onclick="toggleActive(<%= p.id %>)" class="<%= !p.is_active ? '' : 'danger' %>">
                   <%= p.is_active ? '⏸ Nonaktifkan' : '▶️ Aktifkan' %>
                 </button>

@@ -149,6 +149,23 @@ router.post('/products/pin/:id', auth, (req, res) => {
   res.json({ success: true, is_pinned: !p.is_pinned });
 });
 
+router.post('/products/duplicate/:id', auth, (req, res) => {
+  const p = db.prepare('SELECT * FROM products WHERE id=?').get(req.params.id);
+  if (!p) return res.redirect('/admin/products');
+  const newName = 'Copy of ' + p.name;
+  const newSlug = newName.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') + '-' + Date.now();
+  const result = db.prepare(`
+    INSERT INTO products (name,slug,category,description,price,discount_price,image,file_path,badge,countdown_end,priority,product_link,social_proof,is_active,is_pinned)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,0,0)
+  `).run(newName, newSlug, p.category, p.description, p.price, p.discount_price, p.image, p.file_path, p.badge, p.countdown_end, p.priority, p.product_link, p.social_proof||0);
+  const newId = result.lastInsertRowid;
+  const addons = db.prepare('SELECT * FROM product_addons WHERE product_id=?').all(p.id);
+  for (const a of addons) {
+    db.prepare('INSERT OR IGNORE INTO product_addons (product_id,addon_product_id,addon_price) VALUES (?,?,?)').run(newId, a.addon_product_id, a.addon_price);
+  }
+  res.redirect('/admin/products/edit/' + newId + '?saved=1');
+});
+
 router.post('/products/delete/:id', auth, (req, res) => {
   db.prepare('UPDATE products SET is_active=0 WHERE id=?').run(req.params.id);
   res.redirect('/admin/products');
