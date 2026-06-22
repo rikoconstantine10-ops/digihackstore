@@ -41,7 +41,7 @@
       <% } %>
     </div>
     <h1><%= product.name %></h1>
-    <p class="desc" style="white-space:pre-line"><%= product.description %></p>
+    <div class="desc"><%- product.description %></div>
 
     <% if(product.countdown_end) { %>
     <div class="countdown" id="countdown">⏰ Diskon berakhir dalam: <span id="timer">...</span></div>
