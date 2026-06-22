@@ -97,7 +97,8 @@
           </div>
           <div class="form-group">
             <label>Deskripsi</label>
-            <div id="quill-editor" style="min-height:160px"><%= product ? product.description||'' : '' %></div>
+            <div id="quill-editor" style="min-height:160px"></div>
+            <textarea id="initial-desc" style="display:none"><%- product ? product.description||'' : '' %></textarea>
             <input type="hidden" name="description" id="description-val">
             <div class="hint">Deskripsi produk yang akan ditampilkan ke calon pembeli.</div>
           </div>
@@ -247,12 +248,9 @@ const quill = new Quill('#quill-editor', {
   }
 });
 
-// Set initial content
-const initialDesc = document.getElementById('description-val').value;
-if (!initialDesc) {
-  const editorDiv = document.getElementById('quill-editor');
-  // Content already set by EJS in innerHTML
-}
+// Load existing description into Quill
+const initialDesc = document.getElementById('initial-desc').value.trim();
+if (initialDesc) quill.root.innerHTML = initialDesc;
 
 function setBadge(val) {
   document.getElementById('badge-val').value = val;
