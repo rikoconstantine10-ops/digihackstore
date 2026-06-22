@@ -95,23 +95,34 @@ router.post('/:slug/addon', (req, res) => {
   const pending = req.session.pendingCheckout;
   if (!pending || pending.productId !== product.id) return res.redirect('/checkout/' + req.params.slug);
 
-  const { addon_product_id } = req.body;
+  let rawIds = req.body['addon_product_id[]'] || req.body['addon_product_id'];
+  if (!rawIds) rawIds = [];
+  if (!Array.isArray(rawIds)) rawIds = [rawIds];
 
-  if (addon_product_id) {
+  let totalAddonAmount = 0;
+  const addonNames = [];
+  const addonIds = [];
+
+  for (const aid of rawIds) {
+    const parsed = parseInt(aid);
+    if (!parsed) continue;
     const addonRow = db.prepare(`
       SELECT p.*, pa.addon_price FROM product_addons pa
       JOIN products p ON p.id = pa.addon_product_id
       WHERE pa.product_id = ? AND pa.addon_product_id = ? AND p.is_active = 1
-    `).get(product.id, parseInt(addon_product_id));
-
+    `).get(product.id, parsed);
     if (addonRow) {
       const addonAmount = addonRow.addon_price || addonRow.discount_price || addonRow.price;
-      pending.addonProductId = addonRow.id;
-      pending.addonProductName = addonRow.name;
-      pending.addonAmount = addonAmount;
-      pending.amount = pending.baseAmount + addonAmount;
+      totalAddonAmount += addonAmount;
+      addonNames.push(addonRow.name);
+      addonIds.push(addonRow.id);
     }
   }
+
+  pending.addonProductId = addonIds.length ? addonIds.join(',') : null;
+  pending.addonProductName = addonNames.length ? addonNames.join(' + ') : null;
+  pending.addonAmount = totalAddonAmount;
+  pending.amount = pending.baseAmount + totalAddonAmount;
 
   req.session.pendingCheckout = pending;
   res.redirect('/checkout/' + req.params.slug + '/payment');

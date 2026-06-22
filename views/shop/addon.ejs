@@ -21,29 +21,30 @@
     .main-product-info h3 { margin: 0 0 4px; font-size: 1rem; font-weight: 700; }
     .main-product-info .price { color: var(--primary); font-weight: 700; font-size: 1rem; }
     .section-title { font-size: 1rem; font-weight: 700; margin-bottom: 14px; color: var(--text-dark); }
-    .addon-card { border: 2px solid var(--border); border-radius: 14px; padding: 0; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; background: var(--card); position: relative; overflow: hidden; }
-    .addon-card:hover { border-color: var(--primary); box-shadow: 0 6px 20px rgba(102,126,234,0.18); transform: translateY(-1px); }
-    .addon-card.selected { border-color: var(--primary); background: #f5f3ff; box-shadow: 0 6px 20px rgba(102,126,234,0.25); }
-    .addon-card input[type="radio"] { position: absolute; opacity: 0; }
-    .addon-card-inner { display: flex; gap: 0; align-items: stretch; }
+    /* Addon cards */
+    .addon-card { border: 2px solid var(--border); border-radius: 14px; margin-bottom: 12px; cursor: pointer; transition: all 0.18s; background: var(--card); overflow: hidden; user-select: none; }
+    .addon-card:hover { border-color: #a5b4fc; box-shadow: 0 4px 18px rgba(102,126,234,0.14); transform: translateY(-1px); }
+    .addon-card.selected { border-color: var(--primary); background: #f5f3ff; box-shadow: 0 4px 20px rgba(102,126,234,0.22); }
+    .addon-card-inner { display: flex; align-items: stretch; }
     .addon-card-img { width: 90px; height: 90px; object-fit: cover; flex-shrink: 0; }
     .addon-card-icon { width: 90px; height: 90px; background: linear-gradient(135deg, #e0e7ff, #f0f0ff); display: flex; align-items: center; justify-content: center; font-size: 2.2rem; flex-shrink: 0; }
-    .addon-card-body { flex: 1; padding: 14px 12px; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
-    .addon-card-body h4 { margin: 0 0 6px; font-size: 0.9rem; font-weight: 700; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .addon-price-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .addon-card-body { flex: 1; padding: 14px 14px; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+    .addon-card-body h4 { margin: 0 0 8px; font-size: 0.92rem; font-weight: 700; line-height: 1.35; }
+    .addon-price-row { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
     .addon-price-main { font-size: 1rem; font-weight: 800; color: #10b981; }
     .addon-price-old { font-size: 0.75rem; color: var(--text-light); text-decoration: line-through; }
-    .addon-save-badge { font-size: 0.65rem; background: #dcfce7; color: #16a34a; padding: 2px 7px; border-radius: 10px; font-weight: 700; }
-    .addon-card-check { width: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-left: 1px solid var(--border); background: #fafbff; transition: all 0.2s; }
-    .addon-check-circle { width: 22px; height: 22px; border: 2px solid #cbd5e1; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s; font-size: 0.7rem; color: transparent; }
-    .addon-card.selected .addon-card-check { background: var(--primary); border-left-color: var(--primary); }
-    .addon-card.selected .addon-check-circle { border-color: white; background: white; color: var(--primary); }
+    .addon-save-badge { font-size: 0.63rem; background: #dcfce7; color: #16a34a; padding: 2px 7px; border-radius: 10px; font-weight: 700; }
+    .addon-card-check-wrap { width: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-left: 1px solid #e8ecf4; background: #f8faff; transition: all 0.18s; }
+    .addon-card.selected .addon-card-check-wrap { background: var(--primary); border-left-color: var(--primary); }
+    .addon-check-box { width: 22px; height: 22px; border: 2.5px solid #cbd5e1; border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: all 0.18s; font-size: 0.75rem; color: transparent; background: white; }
+    .addon-card.selected .addon-check-box { border-color: white; background: white; color: var(--primary); font-weight: 800; }
+    /* Actions */
     .addon-actions { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; }
     .btn-add-addon { width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: none; box-shadow: 0 4px 16px rgba(102,99,255,0.3); }
     .btn-add-addon:hover { opacity: 0.92; transform: translateY(-1px); }
     .btn-skip { width: 100%; padding: 13px; background: transparent; color: var(--text-light); border: 1.5px solid var(--border); border-radius: 12px; font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
     .btn-skip:hover { color: var(--text-dark); border-color: #94a3b8; background: #f8faff; }
-    .addon-badge { display:inline-block; background:#fef3c7; color:#d97706; font-size:0.65rem; font-weight:700; padding:2px 7px; border-radius:10px; text-transform:uppercase; margin-bottom:6px; }
+    /* Steps */
     .steps { display: flex; justify-content: center; gap: 8px; margin-bottom: 24px; align-items: center; font-size: 0.8rem; color: var(--text-light); }
     .step { display: flex; align-items: center; gap: 4px; }
     .step-num { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; }
@@ -51,6 +52,7 @@
     .step.active .step-num { background: var(--primary); color: white; }
     .step.inactive .step-num { background: #e2e8f0; color: #94a3b8; }
     .step-line { width: 24px; height: 2px; background: #e2e8f0; }
+    .multi-hint { font-size: 0.78rem; color: var(--text-light); margin-bottom: 14px; text-align: center; }
   </style>
 </head>
 <body>
@@ -85,15 +87,15 @@
     </div>
 
     <div class="section-title">Produk add-on yang tersedia:</div>
+    <div class="multi-hint">Pilih satu atau lebih add-on yang kamu inginkan</div>
 
     <form method="POST" action="/checkout/<%= product.slug %>/addon" id="addonForm">
-      <input type="hidden" name="addon_product_id" id="selectedAddonId" value="">
+      <div id="addonHiddenInputs"></div>
 
       <% addons.forEach(addon => { %>
       <% const addonPrice = addon.addon_price || addon.discount_price || addon.price; %>
       <% const basePrice = addon.discount_price || addon.price; %>
-      <label class="addon-card" onclick="selectAddon(<%= addon.id %>)" id="addon-card-<%= addon.id %>">
-        <input type="radio" name="_addon_radio" value="<%= addon.id %>">
+      <div class="addon-card" onclick="toggleAddon(<%= addon.id %>)" id="addon-card-<%= addon.id %>">
         <div class="addon-card-inner">
           <% if(addon.image) { %>
           <img class="addon-card-img" src="<%= addon.image %>" alt="<%= addon.name %>">
@@ -110,11 +112,11 @@
               <% } %>
             </div>
           </div>
-          <div class="addon-card-check" id="check-<%= addon.id %>">
-            <div class="addon-check-circle">✓</div>
+          <div class="addon-card-check-wrap">
+            <div class="addon-check-box" id="check-<%= addon.id %>">✓</div>
           </div>
         </div>
-      </label>
+      </div>
       <% }) %>
 
       <% if(typeof error !== 'undefined' && error) { %>
@@ -122,33 +124,53 @@
       <% } %>
 
       <div class="addon-actions">
-        <button type="submit" class="btn-add-addon" id="btnAddAddon">✅ Tambahkan ke Pesanan Saya</button>
+        <button type="submit" class="btn-add-addon" id="btnAddAddon">✅ Tambahkan ke Pesanan</button>
         <button type="button" class="btn-skip" onclick="skipAddon()">Tidak, lanjutkan tanpa add-on →</button>
       </div>
     </form>
   </div>
 
   <script>
-    let selectedId = null;
+    const selectedIds = new Set();
 
-    function selectAddon(id) {
-      if (selectedId === id) {
-        selectedId = null;
-        document.getElementById('selectedAddonId').value = '';
-        document.querySelectorAll('.addon-card').forEach(c => c.classList.remove('selected'));
-        document.getElementById('btnAddAddon').style.display = 'none';
-        return;
-      }
-      selectedId = id;
-      document.getElementById('selectedAddonId').value = id;
-      document.querySelectorAll('.addon-card').forEach(c => c.classList.remove('selected'));
+    function toggleAddon(id) {
       const card = document.getElementById('addon-card-' + id);
-      if (card) card.classList.add('selected');
-      document.getElementById('btnAddAddon').style.display = 'block';
+      if (selectedIds.has(id)) {
+        selectedIds.delete(id);
+        card.classList.remove('selected');
+      } else {
+        selectedIds.add(id);
+        card.classList.add('selected');
+      }
+      updateHiddenInputs();
+      updateButton();
+    }
+
+    function updateHiddenInputs() {
+      const container = document.getElementById('addonHiddenInputs');
+      container.innerHTML = '';
+      selectedIds.forEach(function(sid) {
+        const inp = document.createElement('input');
+        inp.type = 'hidden';
+        inp.name = 'addon_product_id[]';
+        inp.value = sid;
+        container.appendChild(inp);
+      });
+    }
+
+    function updateButton() {
+      const btn = document.getElementById('btnAddAddon');
+      if (selectedIds.size > 0) {
+        btn.style.display = 'block';
+        btn.textContent = selectedIds.size === 1
+          ? '✅ Tambahkan 1 Add-on ke Pesanan'
+          : '✅ Tambahkan ' + selectedIds.size + ' Add-on ke Pesanan';
+      } else {
+        btn.style.display = 'none';
+      }
     }
 
     function skipAddon() {
-      document.getElementById('selectedAddonId').value = '';
       document.getElementById('addonForm').submit();
     }
   </script>
