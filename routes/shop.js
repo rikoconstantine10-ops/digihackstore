@@ -55,4 +55,46 @@ router.get('/product/:slug', (req, res) => {
   res.render('shop/product', { product, settings, salesCount, vcEventId });
 });
 
+router.get('/sitemap.xml', (req, res) => {
+  const settings = getSettings();
+  const base = (settings.store_domain || 'https://digihackstore.com').replace(/\/$/, '');
+  const products = db.prepare('SELECT slug, updated_at, created_at FROM products WHERE is_active=1 ORDER BY created_at DESC').all();
+  const today = new Date().toISOString().slice(0, 10);
+
+  const staticPages = [
+    { url: '/', changefreq: 'daily', priority: '1.0', lastmod: today },
+    { url: '/catalog', changefreq: 'daily', priority: '0.9', lastmod: today },
+  ];
+
+  const productUrls = products.map(p => ({
+    url: '/product/' + p.slug,
+    changefreq: 'weekly',
+    priority: '0.8',
+    lastmod: (p.updated_at || p.created_at || today).slice(0, 10)
+  }));
+
+  const allUrls = [...staticPages, ...productUrls];
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${allUrls.map(u => `  <url>
+    <loc>${base}${u.url}</loc>
+    <lastmod>${u.lastmod}</lastmod>
+    <changefreq>${u.changefreq}</changefreq>
+    <priority>${u.priority}</priority>
+  </url>`).join('\n')}
+</urlset>`;
+
+  res.setHeader('Content-Type', 'application/xml');
+  res.setHeader('Cache-Control', 'public, max-age=3600');
+  res.send(xml);
+});
+
+router.get('/robots.txt', (req, res) => {
+  const settings = getSettings();
+  const base = (settings.store_domain || 'https://digihackstore.com').replace(/\/$/, '');
+  res.setHeader('Content-Type', 'text/plain');
+  res.send(`User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /checkout\nDisallow: /callback\nDisallow: /order\n\nSitemap: ${base}/sitemap.xml\n`);
+});
+
 module.exports = router;
