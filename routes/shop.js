@@ -17,7 +17,9 @@ router.get('/', trackPage('/'), (req, res) => {
     FROM products p WHERE p.is_active=1 ORDER BY COALESCE(p.is_pinned,0) DESC, COALESCE(p.priority,0) DESC, p.created_at DESC LIMIT 8
   `).all();
   const categories = db.prepare('SELECT DISTINCT category FROM products WHERE is_active=1').all();
-  res.render('shop/index', { products: featured, categories, settings });
+  const lcpImage = (featured[0] && featured[0].image) ? featured[0].image : null;
+  res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+  res.render('shop/index', { products: featured, categories, settings, lcpImage });
 });
 
 router.get('/catalog', trackPage('/catalog'), (req, res) => {

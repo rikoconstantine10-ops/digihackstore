@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Pilih Pembayaran - <%= settings.store_name || 'Digihack Store' %></title>
+  <style>:root{--primary:#6c63ff;--primary-dark:#5a52d5;--secondary:#f8f9ff;--text:#2d3748;--text-light:#718096;--border:#e2e8f0;--white:#fff;--radius:12px;--shadow:0 4px 20px rgba(108,99,255,.12)}*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Inter',-apple-system,sans-serif;background:#f7f8fc;color:var(--text)}a{text-decoration:none;color:inherit}img{max-width:100%}.navbar{background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.08);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}.navbar-brand{font-size:1.4rem;font-weight:800;color:var(--primary)}.navbar-brand span{color:#ff6584}.navbar-links{display:flex;gap:24px;align-items:center}.navbar-links a{font-size:.9rem;font-weight:500;color:var(--text-light)}.checkout-wrap{max-width:480px;margin:40px auto;padding:0 16px}.checkout-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:32px}.checkout-product{background:var(--secondary);border-radius:8px;padding:16px;margin-bottom:24px;display:flex;gap:12px;align-items:center}.checkout-product img{width:60px;height:60px;object-fit:cover;border-radius:8px}.checkout-product .name{font-weight:700;font-size:.95rem}.btn-submit{width:100%;padding:15px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer}.error-msg{background:#fee2e2;color:#dc2626;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:.9rem}footer{background:var(--text);color:#a0aec0;padding:40px 24px;text-align:center;margin-top:60px}footer strong{color:#fff}</style>
+  <link rel="preload" href="/css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="/css/style.css"></noscript>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
-  <link rel="stylesheet" href="/css/style.css">
   <% if(settings && settings.ga4_id) { %><script async src="https://www.googletagmanager.com/gtag/js?id=<%= settings.ga4_id %>"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","<%= settings.ga4_id %>");</script><% } %>
   <style>
     .pm-accordion { border: 1.5px solid var(--border); border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
@@ -106,7 +108,7 @@
             <label class="payment-option">
               <input type="radio" name="channel" value="QRIS" required data-group="qris" data-label="QRIS">
               <div class="pm-card">
-                <img class="pm-logo" src="https://violetmediapay.com/assets/img/pembayaran/qris.png" alt="QRIS">
+                <img class="pm-logo" loading="lazy" decoding="async" src="https://violetmediapay.com/assets/img/pembayaran/qris.png" alt="QRIS">
                 <div class="pm-name">QRIS</div>
               </div>
             </label>
@@ -128,19 +130,19 @@
           <div class="payment-methods">
             <label class="payment-option">
               <input type="radio" name="channel" value="DANA" data-group="ewallet" data-label="DANA">
-              <div class="pm-card"><img class="pm-logo" src="https://violetmediapay.com/assets/img/pembayaran/dana.webp" alt="DANA"><div class="pm-name">DANA</div></div>
+              <div class="pm-card"><img class="pm-logo" loading="lazy" decoding="async" src="https://violetmediapay.com/assets/img/pembayaran/dana.webp" alt="DANA"><div class="pm-name">DANA</div></div>
             </label>
             <label class="payment-option">
               <input type="radio" name="channel" value="OVO" data-group="ewallet" data-label="OVO">
-              <div class="pm-card"><img class="pm-logo" src="https://violetmediapay.com/assets/img/pembayaran/ovo.webp" alt="OVO"><div class="pm-name">OVO</div></div>
+              <div class="pm-card"><img class="pm-logo" loading="lazy" decoding="async" src="https://violetmediapay.com/assets/img/pembayaran/ovo.webp" alt="OVO"><div class="pm-name">OVO</div></div>
             </label>
             <label class="payment-option">
               <input type="radio" name="channel" value="Shopee Pay" data-group="ewallet" data-label="ShopeePay">
-              <div class="pm-card"><img class="pm-logo" src="https://violetmediapay.com/assets/img/pembayaran/logo-shopeepay.png" alt="ShopeePay"><div class="pm-name">ShopeePay</div></div>
+              <div class="pm-card"><img class="pm-logo" loading="lazy" decoding="async" src="https://violetmediapay.com/assets/img/pembayaran/logo-shopeepay.png" alt="ShopeePay"><div class="pm-name">ShopeePay</div></div>
             </label>
             <label class="payment-option">
               <input type="radio" name="channel" value="Link Aja" data-group="ewallet" data-label="LinkAja">
-              <div class="pm-card"><img class="pm-logo" src="https://violetmediapay.com/assets/img/pembayaran/link-aja.png" alt="LinkAja"><div class="pm-name">LinkAja</div></div>
+              <div class="pm-card"><img class="pm-logo" loading="lazy" decoding="async" src="https://violetmediapay.com/assets/img/pembayaran/link-aja.png" alt="LinkAja"><div class="pm-name">LinkAja</div></div>
             </label>
           </div>
         </div>
@@ -158,22 +160,22 @@
         </div>
         <div class="pm-accordion-body" id="body-va">
           <div class="payment-methods">
-            <label class="payment-option"><input type="radio" name="channel" value="BRIVA" data-group="va" data-label="BRI VA"><div class="pm-card"><img class="pm-logo" src="https://violetmediapay.com/assets/img/pembayaran/logo-bri.png" alt="BRI VA"><div class="pm-name">BRI VA</div></div></label>
-            <label class="payment-option"><input type="radio" name="channel" value="BCAVA" data-group="va" data-label="BCA VA"><div class="pm-card"><img class="pm-logo" src="https://violetmediapay.com/assets/img/pembayaran/logo-bca.png" alt="BCA VA"><div class="pm-name">BCA VA</div></div></label>
-            <label class="payment-option"><input type="radio" name="channel" value="MANDIRIVA" data-group="va" data-label="Mandiri VA"><div class="pm-card"><img class="pm-logo" src="https://violetmediapay.com/assets/img/pembayaran/logo-mandiri.png" alt="Mandiri VA"><div class="pm-name">Mandiri VA</div></div></label>
-            <label class="payment-option"><input type="radio" name="channel" value="BNIVA" data-group="va" data-label="BNI VA"><div class="pm-card"><img class="pm-logo" src="https://violetmediapay.com/assets/img/pembayaran/logo-bni.png" alt="BNI VA"><div class="pm-name">BNI VA</div></div></label>
-            <label class="payment-option"><input type="radio" name="channel" value="BSI" data-group="va" data-label="BSI VA"><div class="pm-card"><img class="pm-logo" src="https://violetmediapay.com/assets/img/pembayaran/bsi-syariah-indonesia.jpg" alt="BSI VA"><div class="pm-name">BSI VA</div></div></label>
-            <label class="payment-option"><input type="radio" name="channel" value="CIMBNIAGA" data-group="va" data-label="CIMB VA"><div class="pm-card"><img class="pm-logo" src="https://violetmediapay.com/assets/img/pembayaran/logo-cimbniaga.png" alt="CIMB VA"><div class="pm-name">CIMB VA</div></div></label>
-            <label class="payment-option"><input type="radio" name="channel" value="DANAMON" data-group="va" data-label="Danamon VA"><div class="pm-card"><img class="pm-logo" src="https://violetmediapay.com/assets/img/pembayaran/danamon-logo.png" alt="Danamon VA"><div class="pm-name">Danamon VA</div></div></label>
-            <label class="payment-option"><input type="radio" name="channel" value="PERMATAVA" data-group="va" data-label="Permata VA"><div class="pm-card"><img class="pm-logo" src="https://violetmediapay.com/assets/img/pembayaran/logo-permata.png" alt="Permata VA"><div class="pm-name">Permata VA</div></div></label>
-            <label class="payment-option"><input type="radio" name="channel" value="MAYBANK" data-group="va" data-label="Maybank VA"><div class="pm-card"><img class="pm-logo" src="https://violetmediapay.com/assets/img/pembayaran/myBank-va.png" alt="Maybank VA"><div class="pm-name">Maybank VA</div></div></label>
-            <label class="payment-option"><input type="radio" name="channel" value="BNCVA" data-group="va" data-label="BNC VA"><div class="pm-card"><img class="pm-logo" src="https://violetmediapay.com/assets/img/pembayaran/Bank-Neo-Commerce.png" alt="BNC VA"><div class="pm-name">BNC VA</div></div></label>
-            <label class="payment-option"><input type="radio" name="channel" value="OCBC" data-group="va" data-label="OCBC VA"><div class="pm-card"><img class="pm-logo" src="https://violetmediapay.com/assets/img/pembayaran/OCBC-bank.png" alt="OCBC VA"><div class="pm-name">OCBC VA</div></div></label>
-            <label class="payment-option"><input type="radio" name="channel" value="SINARMAS" data-group="va" data-label="Sinarmas VA"><div class="pm-card"><img class="pm-logo" src="https://violetmediapay.com/assets/img/pembayaran/sinarmas%20bank.png" alt="Sinarmas VA"><div class="pm-name">Sinarmas VA</div></div></label>
-            <label class="payment-option"><input type="radio" name="channel" value="PANIN" data-group="va" data-label="Panin VA"><div class="pm-card"><img class="pm-logo" src="https://violetmediapay.com/assets/img/pembayaran/Panin_Bank2.png" alt="Panin VA"><div class="pm-name">Panin VA</div></div></label>
-            <label class="payment-option"><input type="radio" name="channel" value="SAMPOERNAVA" data-group="va" data-label="Sahabat VA"><div class="pm-card"><img class="pm-logo" src="https://violetmediapay.com/assets/img/pembayaran/sampoernava.jpg" alt="Sahabat VA"><div class="pm-name">Sahabat VA</div></div></label>
-            <label class="payment-option"><input type="radio" name="channel" value="ATMBERSAMA" data-group="va" data-label="ATM Bersama"><div class="pm-card"><img class="pm-logo" src="https://violetmediapay.com/assets/img/pembayaran/ATM_Bersama.png" alt="ATM Bersama"><div class="pm-name">ATM Bersama</div></div></label>
-            <label class="payment-option"><input type="radio" name="channel" value="ARTAGRAHA" data-group="va" data-label="Artagraha VA"><div class="pm-card"><img class="pm-logo" src="https://violetmediapay.com/assets/img/pembayaran/Bank_Artha_Graha_Internasional.png" alt="Artagraha VA"><div class="pm-name">Artagraha VA</div></div></label>
+            <label class="payment-option"><input type="radio" name="channel" value="BRIVA" data-group="va" data-label="BRI VA"><div class="pm-card"><img class="pm-logo" loading="lazy" decoding="async" src="https://violetmediapay.com/assets/img/pembayaran/logo-bri.png" alt="BRI VA"><div class="pm-name">BRI VA</div></div></label>
+            <label class="payment-option"><input type="radio" name="channel" value="BCAVA" data-group="va" data-label="BCA VA"><div class="pm-card"><img class="pm-logo" loading="lazy" decoding="async" src="https://violetmediapay.com/assets/img/pembayaran/logo-bca.png" alt="BCA VA"><div class="pm-name">BCA VA</div></div></label>
+            <label class="payment-option"><input type="radio" name="channel" value="MANDIRIVA" data-group="va" data-label="Mandiri VA"><div class="pm-card"><img class="pm-logo" loading="lazy" decoding="async" src="https://violetmediapay.com/assets/img/pembayaran/logo-mandiri.png" alt="Mandiri VA"><div class="pm-name">Mandiri VA</div></div></label>
+            <label class="payment-option"><input type="radio" name="channel" value="BNIVA" data-group="va" data-label="BNI VA"><div class="pm-card"><img class="pm-logo" loading="lazy" decoding="async" src="https://violetmediapay.com/assets/img/pembayaran/logo-bni.png" alt="BNI VA"><div class="pm-name">BNI VA</div></div></label>
+            <label class="payment-option"><input type="radio" name="channel" value="BSI" data-group="va" data-label="BSI VA"><div class="pm-card"><img class="pm-logo" loading="lazy" decoding="async" src="https://violetmediapay.com/assets/img/pembayaran/bsi-syariah-indonesia.jpg" alt="BSI VA"><div class="pm-name">BSI VA</div></div></label>
+            <label class="payment-option"><input type="radio" name="channel" value="CIMBNIAGA" data-group="va" data-label="CIMB VA"><div class="pm-card"><img class="pm-logo" loading="lazy" decoding="async" src="https://violetmediapay.com/assets/img/pembayaran/logo-cimbniaga.png" alt="CIMB VA"><div class="pm-name">CIMB VA</div></div></label>
+            <label class="payment-option"><input type="radio" name="channel" value="DANAMON" data-group="va" data-label="Danamon VA"><div class="pm-card"><img class="pm-logo" loading="lazy" decoding="async" src="https://violetmediapay.com/assets/img/pembayaran/danamon-logo.png" alt="Danamon VA"><div class="pm-name">Danamon VA</div></div></label>
+            <label class="payment-option"><input type="radio" name="channel" value="PERMATAVA" data-group="va" data-label="Permata VA"><div class="pm-card"><img class="pm-logo" loading="lazy" decoding="async" src="https://violetmediapay.com/assets/img/pembayaran/logo-permata.png" alt="Permata VA"><div class="pm-name">Permata VA</div></div></label>
+            <label class="payment-option"><input type="radio" name="channel" value="MAYBANK" data-group="va" data-label="Maybank VA"><div class="pm-card"><img class="pm-logo" loading="lazy" decoding="async" src="https://violetmediapay.com/assets/img/pembayaran/myBank-va.png" alt="Maybank VA"><div class="pm-name">Maybank VA</div></div></label>
+            <label class="payment-option"><input type="radio" name="channel" value="BNCVA" data-group="va" data-label="BNC VA"><div class="pm-card"><img class="pm-logo" loading="lazy" decoding="async" src="https://violetmediapay.com/assets/img/pembayaran/Bank-Neo-Commerce.png" alt="BNC VA"><div class="pm-name">BNC VA</div></div></label>
+            <label class="payment-option"><input type="radio" name="channel" value="OCBC" data-group="va" data-label="OCBC VA"><div class="pm-card"><img class="pm-logo" loading="lazy" decoding="async" src="https://violetmediapay.com/assets/img/pembayaran/OCBC-bank.png" alt="OCBC VA"><div class="pm-name">OCBC VA</div></div></label>
+            <label class="payment-option"><input type="radio" name="channel" value="SINARMAS" data-group="va" data-label="Sinarmas VA"><div class="pm-card"><img class="pm-logo" loading="lazy" decoding="async" src="https://violetmediapay.com/assets/img/pembayaran/sinarmas%20bank.png" alt="Sinarmas VA"><div class="pm-name">Sinarmas VA</div></div></label>
+            <label class="payment-option"><input type="radio" name="channel" value="PANIN" data-group="va" data-label="Panin VA"><div class="pm-card"><img class="pm-logo" loading="lazy" decoding="async" src="https://violetmediapay.com/assets/img/pembayaran/Panin_Bank2.png" alt="Panin VA"><div class="pm-name">Panin VA</div></div></label>
+            <label class="payment-option"><input type="radio" name="channel" value="SAMPOERNAVA" data-group="va" data-label="Sahabat VA"><div class="pm-card"><img class="pm-logo" loading="lazy" decoding="async" src="https://violetmediapay.com/assets/img/pembayaran/sampoernava.jpg" alt="Sahabat VA"><div class="pm-name">Sahabat VA</div></div></label>
+            <label class="payment-option"><input type="radio" name="channel" value="ATMBERSAMA" data-group="va" data-label="ATM Bersama"><div class="pm-card"><img class="pm-logo" loading="lazy" decoding="async" src="https://violetmediapay.com/assets/img/pembayaran/ATM_Bersama.png" alt="ATM Bersama"><div class="pm-name">ATM Bersama</div></div></label>
+            <label class="payment-option"><input type="radio" name="channel" value="ARTAGRAHA" data-group="va" data-label="Artagraha VA"><div class="pm-card"><img class="pm-logo" loading="lazy" decoding="async" src="https://violetmediapay.com/assets/img/pembayaran/Bank_Artha_Graha_Internasional.png" alt="Artagraha VA"><div class="pm-name">Artagraha VA</div></div></label>
           </div>
         </div>
       </div>
@@ -192,7 +194,7 @@
           <div class="payment-methods">
             <label class="payment-option">
               <input type="radio" name="channel" value="ALFAMART" data-group="retail" data-label="Alfamart">
-              <div class="pm-card"><img class="pm-logo" src="https://violetmediapay.com/assets/img/pembayaran/logo-alfamart.png" alt="Alfamart"><div class="pm-name">Alfamart</div></div>
+              <div class="pm-card"><img class="pm-logo" loading="lazy" decoding="async" src="https://violetmediapay.com/assets/img/pembayaran/logo-alfamart.png" alt="Alfamart"><div class="pm-name">Alfamart</div></div>
             </label>
           </div>
         </div>
