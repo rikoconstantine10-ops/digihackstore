@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
 const { trackPage } = require('../middleware/analytics');
-const { capiViewContent } = require('../services/capi');
+const { capiViewContent, genEventId } = require('../services/capi');
 
 function getSettings() {
   const rows = db.prepare('SELECT key, value FROM settings').all();
@@ -40,17 +40,19 @@ router.get('/product/:slug', (req, res) => {
   const settings = getSettings();
   const product = db.prepare('SELECT * FROM products WHERE slug=? AND is_active=1').get(req.params.slug);
   if (!product) return res.status(404).render('shop/404', { settings });
+  let vcEventId = null;
   try {
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
     const ua = req.headers['user-agent'] || '';
     const ref = req.headers['referer'] || '';
     db.prepare('INSERT INTO page_views (page, ref, ua, ip) VALUES (?, ?, ?, ?)').run('/product/' + req.params.slug, ref, ua, ip);
     const allSettings = Object.fromEntries(db.prepare('SELECT key,value FROM settings').all().map(r=>[r.key,r.value]));
-    capiViewContent(allSettings, product, req);
+    vcEventId = genEventId('vc');
+    capiViewContent(allSettings, product, req, vcEventId);
   } catch(e) {}
   const realSales = db.prepare("SELECT COUNT(*) as c FROM orders WHERE product_id=? AND status='success'").get(product.id).c;
   const salesCount = realSales + (product.social_proof || 0);
-  res.render('shop/product', { product, settings, salesCount });
+  res.render('shop/product', { product, settings, salesCount, vcEventId });
 });
 
 module.exports = router;

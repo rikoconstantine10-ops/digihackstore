@@ -4,7 +4,7 @@ const router = express.Router();
 const db = require('../db/database');
 const { createTransaction } = require('../services/payment');
 const { trackPage } = require('../middleware/analytics');
-const { capiInitiateCheckout } = require('../services/capi');
+const { capiInitiateCheckout, genEventId } = require('../services/capi');
 
 function getSettings() {
   const rows = db.prepare('SELECT key, value FROM settings').all();
@@ -38,8 +38,9 @@ router.get('/:slug', (req, res, next) => trackPage('/checkout/' + req.params.slu
   const settings = getSettings();
   const product = db.prepare('SELECT * FROM products WHERE slug=? AND is_active=1').get(req.params.slug);
   if (!product) return res.status(404).render('shop/404', { settings });
-  try { capiInitiateCheckout(settings, product, req); } catch(e) {}
-  res.render('shop/checkout', { product, settings, error: null });
+  let icEventId = null;
+  try { icEventId = genEventId('ic'); capiInitiateCheckout(settings, product, req, icEventId); } catch(e) {}
+  res.render('shop/checkout', { product, settings, error: null, icEventId });
 });
 
 router.post('/:slug', (req, res) => {

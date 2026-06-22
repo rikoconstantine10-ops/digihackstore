@@ -1,18 +1,19 @@
 const https = require("https");
+const crypto = require("crypto");
 
 function sendCapiEvent(pixelId, accessToken, events) {
   if (!pixelId || !accessToken) return;
   const body = JSON.stringify({ data: events, access_token: accessToken });
   const options = {
     hostname: "graph.facebook.com",
-    path: "/v19.0/" + pixelId + "/events",
+    path: "/v21.0/" + pixelId + "/events",
     method: "POST",
     headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(body) }
   };
   const req = https.request(options, (res) => {
     let d = "";
     res.on("data", chunk => d += chunk);
-    res.on("end", () => console.log("[CAPI]", res.statusCode, d.slice(0, 200)));
+    res.on("end", () => console.log("[CAPI]", res.statusCode, d.slice(0, 300)));
   });
   req.on("error", e => console.error("[CAPI error]", e.message));
   req.write(body);
@@ -21,13 +22,19 @@ function sendCapiEvent(pixelId, accessToken, events) {
 
 function hashSha256(val) {
   if (!val) return undefined;
-  return require("crypto").createHash("sha256").update(val.trim().toLowerCase()).digest("hex");
+  return crypto.createHash("sha256").update(val.trim().toLowerCase()).digest("hex");
+}
+
+function genEventId(prefix) {
+  return prefix + "_" + Date.now() + "_" + crypto.randomBytes(4).toString("hex");
 }
 
 function capiPurchase(settings, order) {
   if (!settings.meta_pixel_id || !settings.meta_capi_token) return;
+  const eventId = "purchase_" + order.ref_kode;
   sendCapiEvent(settings.meta_pixel_id, settings.meta_capi_token, [{
     event_name: "Purchase",
+    event_id: eventId,
     event_time: Math.floor(Date.now() / 1000),
     action_source: "website",
     event_source_url: (settings.store_domain || "https://digihackstore.com") + "/order/status",
@@ -44,17 +51,20 @@ function capiPurchase(settings, order) {
       order_id: order.ref_kode
     }
   }]);
+  return eventId;
 }
 
-function capiInitiateCheckout(settings, product, req) {
+function capiInitiateCheckout(settings, product, req, eventId) {
   if (!settings.meta_pixel_id || !settings.meta_capi_token) return;
+  const evId = eventId || genEventId("ic");
   const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || "").split(",")[0].trim();
   const ua = req.headers["user-agent"] || "";
   sendCapiEvent(settings.meta_pixel_id, settings.meta_capi_token, [{
     event_name: "InitiateCheckout",
+    event_id: evId,
     event_time: Math.floor(Date.now() / 1000),
     action_source: "website",
-    event_source_url: (settings.store_domain || "https://dighackstore.com") + "/checkout/" + product.slug,
+    event_source_url: (settings.store_domain || "https://digihackstore.com") + "/checkout/" + product.slug,
     user_data: { client_ip_address: ip, client_user_agent: ua },
     custom_data: {
       currency: "IDR",
@@ -65,14 +75,17 @@ function capiInitiateCheckout(settings, product, req) {
       num_items: 1
     }
   }]);
+  return evId;
 }
 
-function capiViewContent(settings, product, req) {
+function capiViewContent(settings, product, req, eventId) {
   if (!settings.meta_pixel_id || !settings.meta_capi_token) return;
+  const evId = eventId || genEventId("vc");
   const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || "").split(",")[0].trim();
   const ua = req.headers["user-agent"] || "";
   sendCapiEvent(settings.meta_pixel_id, settings.meta_capi_token, [{
     event_name: "ViewContent",
+    event_id: evId,
     event_time: Math.floor(Date.now() / 1000),
     action_source: "website",
     event_source_url: (settings.store_domain || "https://digihackstore.com") + "/product/" + product.slug,
@@ -85,6 +98,7 @@ function capiViewContent(settings, product, req) {
       content_type: "product"
     }
   }]);
+  return evId;
 }
 
-module.exports = { capiPurchase, capiInitiateCheckout, capiViewContent };
+module.exports = { capiPurchase, capiInitiateCheckout, capiViewContent, genEventId };
