@@ -76,23 +76,41 @@ router.get('/products', auth, (req, res) => {
       COALESCE((SELECT COUNT(*) FROM page_views pv WHERE pv.page = '/checkout/' || p.slug), 0) as checkout_count,
       COALESCE((SELECT COUNT(*) FROM orders o WHERE o.product_id = p.id AND o.status = 'success'), 0) as sales_count
     FROM products p
-    ORDER BY p.created_at DESC
+    ORDER BY COALESCE(p.priority,0) DESC, p.created_at DESC
   `).all();
-  for (const p of products) {
-    p.addons = db.prepare('SELECT addon_product_id, addon_price FROM product_addons WHERE product_id = ?').all(p.id);
-  }
-  const allProducts = db.prepare('SELECT id, name, price, discount_price FROM products WHERE is_active = 1 ORDER BY name').all();
-  res.render('admin/products', { settings, products, admin: req.session.admin, allProducts });
+  res.render('admin/products', { settings, products, admin: req.session.admin, success: req.query.saved });
+});
+
+router.get('/products/new', auth, (req, res) => {
+  const settings = getSettings();
+  const allProducts = db.prepare('SELECT id, name, price, discount_price, image FROM products WHERE is_active = 1 ORDER BY name').all();
+  res.render('admin/product-form', { settings, product: null, allProducts, admin: req.session.admin, error: null, success: null });
+});
+
+router.get('/products/edit/:id', auth, (req, res) => {
+  const settings = getSettings();
+  const product = db.prepare('SELECT * FROM products WHERE id=?').get(req.params.id);
+  if (!product) return res.redirect('/admin/products');
+  product.addons = db.prepare('SELECT addon_product_id, addon_price FROM product_addons WHERE product_id = ?').all(product.id);
+  const allProducts = db.prepare('SELECT id, name, price, discount_price, image FROM products WHERE is_active = 1 AND id != ? ORDER BY name').all(req.params.id);
+  res.render('admin/product-form', { settings, product, allProducts, admin: req.session.admin, error: null, success: req.query.saved });
 });
 
 router.post('/products/add', auth, upload.fields([{name:'image',maxCount:1},{name:'file',maxCount:1}]), (req, res) => {
-  const { name, category, description, price, discount_price, badge, countdown_end } = req.body;
+  const { name, category, description, price, discount_price, badge, countdown_end, priority } = req.body;
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') + '-' + Date.now();
   const image = req.files.image ? '/uploads/' + req.files.image[0].filename : null;
   const file_path = req.files.file ? req.files.file[0].filename : null;
-  db.prepare('INSERT INTO products (name,slug,category,description,price,discount_price,image,file_path,badge,countdown_end) VALUES (?,?,?,?,?,?,?,?,?,?)'
-  ).run(name, slug, category, description, parseInt(price), discount_price ? parseInt(discount_price) : null, image, file_path, badge||null, countdown_end||null);
-  res.redirect('/admin/products');
+  const insertResult = db.prepare('INSERT INTO products (name,slug,category,description,price,discount_price,image,file_path,badge,countdown_end,priority) VALUES (?,?,?,?,?,?,?,?,?,?,?)'
+  ).run(name, slug, category, description, parseInt(price), discount_price ? parseInt(discount_price) : null, image, file_path, badge||null, countdown_end||null, priority ? parseInt(priority) : 0);
+  const newId = insertResult.lastInsertRowid;
+  const rawAddonIds = req.body.addon_ids;
+  const addonIds = rawAddonIds ? (Array.isArray(rawAddonIds) ? rawAddonIds : [rawAddonIds]) : [];
+  for (const aid of addonIds) {
+    const ap = req.body['addon_price_' + aid] ? parseInt(req.body['addon_price_' + aid]) : null;
+    db.prepare('INSERT OR IGNORE INTO product_addons (product_id, addon_product_id, addon_price) VALUES (?,?,?)').run(newId, parseInt(aid), ap);
+  }
+  res.redirect('/admin/products?saved=1');
 });
 
 router.post('/products/edit/:id', auth, upload.fields([{name:'image',maxCount:1},{name:'file',maxCount:1}]), (req, res) => {
@@ -102,16 +120,26 @@ router.post('/products/edit/:id', auth, upload.fields([{name:'image',maxCount:1}
   if (req.files.file) updates.file_path = req.files.file[0].filename;
   const cols = Object.keys(updates).map(k => `${k}=?`).join(',');
   db.prepare(`UPDATE products SET ${cols} WHERE id=?`).run(...Object.values(updates), req.params.id);
-
   db.prepare('DELETE FROM product_addons WHERE product_id = ?').run(req.params.id);
-  const rawAddonIds = req.body['addon_ids[]'];
+  const rawAddonIds = req.body.addon_ids;
   const addonIds = rawAddonIds ? (Array.isArray(rawAddonIds) ? rawAddonIds : [rawAddonIds]) : [];
-  for (const addonId of addonIds) {
-    const price = req.body['addon_price_' + addonId] ? parseInt(req.body['addon_price_' + addonId]) : null;
-    db.prepare('INSERT OR IGNORE INTO product_addons (product_id, addon_product_id, addon_price) VALUES (?,?,?)').run(parseInt(req.params.id), parseInt(addonId), price);
+  for (const aid of addonIds) {
+    const ap = req.body['addon_price_' + aid] ? parseInt(req.body['addon_price_' + aid]) : null;
+    db.prepare('INSERT OR IGNORE INTO product_addons (product_id, addon_product_id, addon_price) VALUES (?,?,?)').run(parseInt(req.params.id), parseInt(aid), ap);
   }
+  res.redirect('/admin/products/edit/' + req.params.id + '?saved=1');
+});
 
-  res.redirect('/admin/products');
+router.post('/products/priority/:id', auth, (req, res) => {
+  db.prepare('UPDATE products SET priority=? WHERE id=?').run(parseInt(req.body.priority)||0, req.params.id);
+  res.json({ success: true });
+});
+
+router.post('/products/toggle/:id', auth, (req, res) => {
+  const p = db.prepare('SELECT is_active FROM products WHERE id=?').get(req.params.id);
+  if (!p) return res.json({ success: false });
+  db.prepare('UPDATE products SET is_active=? WHERE id=?').run(p.is_active ? 0 : 1, req.params.id);
+  res.json({ success: true, is_active: !p.is_active });
 });
 
 router.post('/products/delete/:id', auth, (req, res) => {

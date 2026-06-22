@@ -1,0 +1,290 @@
+<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title><%= product ? 'Edit' : 'Tambah' %> Produk - Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+<style>
+.form-admin { background:#fff; border-radius:14px; box-shadow:var(--shadow); padding:24px 28px; margin-bottom:20px; }
+.form-admin h3 { font-size:1rem; font-weight:700; margin-bottom:18px; padding-bottom:10px; border-bottom:1px solid var(--border); }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.form-group { margin-bottom:16px; }
+.form-group label { display:block; font-size:0.82rem; font-weight:600; color:var(--text-light); margin-bottom:6px; text-transform:uppercase; letter-spacing:.4px; }
+.form-group input[type=text], .form-group input[type=number], .form-group input[type=datetime-local], .form-group select, .form-group textarea { width:100%; padding:9px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:0.88rem; font-family:inherit; outline:none; transition:border .15s; box-sizing:border-box; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:var(--primary); }
+.form-group .hint { font-size:0.75rem; color:var(--text-light); margin-top:4px; }
+.ql-container { border-radius:0 0 8px 8px; min-height:160px; font-family:inherit; font-size:0.88rem; }
+.ql-toolbar { border-radius:8px 8px 0 0; }
+.ql-container.ql-snow, .ql-toolbar.ql-snow { border-color:var(--border); }
+.addon-card { display:grid; grid-template-columns:auto 1fr auto; gap:10px; align-items:center; padding:10px 14px; border:1.5px solid var(--border); border-radius:10px; margin-bottom:8px; transition:border-color .15s; }
+.addon-card.checked { border-color:var(--primary); background:#f8f7ff; }
+.addon-thumb { width:36px; height:36px; object-fit:cover; border-radius:6px; }
+.addon-thumb-placeholder { width:36px; height:36px; background:#e0e7ff; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:1rem; }
+.addon-info { min-width:0; }
+.addon-name { font-weight:600; font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.addon-base { font-size:0.75rem; color:var(--text-light); }
+.addon-price-wrap { display:none; }
+.addon-price-wrap.show { display:block; }
+.image-preview { width:100%; max-width:200px; height:140px; object-fit:cover; border-radius:10px; border:2px solid var(--border); margin-top:8px; }
+.sticky-bar { position:fixed; bottom:0; left:0; right:0; background:white; border-top:1px solid var(--border); padding:12px 24px; display:flex; align-items:center; justify-content:flex-end; gap:12px; z-index:100; box-shadow:0 -4px 20px rgba(0,0,0,0.08); }
+.badge-select { display:flex; gap:8px; flex-wrap:wrap; }
+.badge-opt { padding:5px 14px; border-radius:20px; font-size:0.78rem; font-weight:700; cursor:pointer; border:2px solid transparent; transition:all .15s; }
+.badge-opt.sel { border-color:currentColor; }
+.badge-none { background:#f1f5f9; color:#64748b; }
+.badge-new-opt { background:#e0f2fe; color:#0284c7; }
+.badge-hot-opt { background:#fee2e2; color:#dc2626; }
+.badge-sale-opt { background:#fef3c7; color:#d97706; }
+.badge-best-opt { background:#dcfce7; color:#16a34a; }
+</style>
+</head>
+<body>
+<div class="admin-wrap">
+  <aside class="admin-sidebar">
+    <div class="admin-logo">🚀 Digihack</div>
+    <nav class="admin-nav">
+      <a href="/admin">📊 Dashboard</a>
+      <a href="/admin/products" class="active">📦 Produk</a>
+      <a href="/admin/orders">📝 Orders</a>
+      <a href="/admin/leads">🎯 Leads</a>
+      <a href="/admin/analytics">📈 Analytics</a>
+      <a href="/admin/funnel">📊 Funnel</a>
+      <a href="/admin/settings">⚙️ Settings</a>
+      <a href="/admin/wa">💬 WhatsApp</a>
+      <a href="/" target="_blank">🌍 Lihat Store</a>
+      <a href="/admin/logout" style="margin-top:auto;color:#fc8181">🚪 Logout</a>
+    </nav>
+  </aside>
+  <main class="admin-main" style="padding-bottom:80px">
+    <div class="admin-topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <a href="/admin/products" style="color:var(--text-light);font-size:0.88rem;text-decoration:none">← Kembali</a>
+        <h1><%= product ? '✏️ Edit Produk' : '➕ Tambah Produk Baru' %></h1>
+      </div>
+      <span style="color:var(--text-light);font-size:0.85rem">Halo, <strong><%= admin.username %></strong></span>
+    </div>
+    <div class="admin-content">
+
+      <% if(success) { %><div style="background:#dcfce7;color:#166534;padding:12px 16px;border-radius:8px;margin-bottom:20px;font-weight:600">✅ Produk berhasil disimpan!</div><% } %>
+      <% if(error) { %><div style="background:#fef2f2;color:#dc2626;padding:12px 16px;border-radius:8px;margin-bottom:20px;font-weight:600">⚠️ <%= error %></div><% } %>
+
+      <form method="POST" action="<%= product ? '/admin/products/edit/'+product.id : '/admin/products/add' %>" enctype="multipart/form-data" id="prod-form">
+
+        <div class="form-admin">
+          <h3>📝 Informasi Produk</h3>
+          <div class="form-group">
+            <label>Nama Produk *</label>
+            <input type="text" name="name" value="<%= product ? product.name : '' %>" required placeholder="Contoh: Ebook Belajar Desain Grafis">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Kategori *</label>
+              <select name="category" required>
+                <option value="">Pilih Kategori</option>
+                <% ['Ebook','Template','Course','Software','Jasa','Plugin','Preset','Lainnya'].forEach(cat => { %>
+                <option value="<%= cat %>" <%= product && product.category===cat ? 'selected' : '' %>><%= cat %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Badge</label>
+              <input type="hidden" name="badge" id="badge-val" value="<%= product ? (product.badge||'') : '' %>">
+              <div class="badge-select">
+                <span class="badge-opt badge-none <%= !product || !product.badge ? 'sel' : '' %>" onclick="setBadge('')">Tidak Ada</span>
+                <span class="badge-opt badge-new-opt <%= product && product.badge==='New' ? 'sel' : '' %>" onclick="setBadge('New')">New</span>
+                <span class="badge-opt badge-hot-opt <%= product && product.badge==='Hot' ? 'sel' : '' %>" onclick="setBadge('Hot')">Hot</span>
+                <span class="badge-opt badge-sale-opt <%= product && product.badge==='Sale' ? 'sel' : '' %>" onclick="setBadge('Sale')">Sale</span>
+                <span class="badge-opt badge-best-opt <%= product && product.badge==='Best' ? 'sel' : '' %>" onclick="setBadge('Best')">Best</span>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Deskripsi</label>
+            <div id="quill-editor" style="min-height:160px"><%= product ? product.description||'' : '' %></div>
+            <input type="hidden" name="description" id="description-val">
+            <div class="hint">Deskripsi produk yang akan ditampilkan ke calon pembeli.</div>
+          </div>
+        </div>
+
+        <div class="form-admin">
+          <h3>💰 Harga & Promo</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Harga Normal (Rp) *</label>
+              <input type="number" name="price" value="<%= product ? product.price : '' %>" required min="0" placeholder="500000">
+            </div>
+            <div class="form-group">
+              <label>Harga Diskon (Rp)</label>
+              <input type="number" name="discount_price" value="<%= product && product.discount_price ? product.discount_price : '' %>" min="0" placeholder="Kosongkan jika tidak ada diskon">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Countdown Berakhir</label>
+              <input type="datetime-local" name="countdown_end" value="<%= product && product.countdown_end ? product.countdown_end.replace(' ','T').substring(0,16) : '' %>">
+              <div class="hint">Opsional — tampilkan timer hitung mundur di halaman produk.</div>
+            </div>
+            <div class="form-group">
+              <label>Bundle Discount (%)</label>
+              <input type="number" name="bundle_discount" value="<%= product && product.bundle_discount ? product.bundle_discount : '' %>" min="0" max="100" placeholder="0">
+              <div class="hint">Diskon tambahan jika customer membeli add-on.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-admin">
+          <h3>⚙️ Pengaturan Produk</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Prioritas Tampil</label>
+              <input type="number" name="priority" value="<%= product ? (product.priority||0) : 0 %>" min="0" placeholder="0">
+              <div class="hint">Semakin tinggi nilai, semakin atas posisinya di daftar produk.</div>
+            </div>
+            <% if(product) { %>
+            <div class="form-group">
+              <label>Social Proof Offset</label>
+              <input type="number" name="social_proof" value="<%= product.social_proof||0 %>" min="0" placeholder="0">
+              <div class="hint">Angka yang ditambahkan ke jumlah penjualan nyata saat ditampilkan.</div>
+            </div>
+            <% } %>
+          </div>
+          <% if(product) { %>
+          <div class="form-group">
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+              <input type="checkbox" name="is_active" value="1" <%= product.is_active ? 'checked' : '' %> style="width:18px;height:18px;accent-color:var(--primary)">
+              <span>Produk Aktif (ditampilkan di toko)</span>
+            </label>
+          </div>
+          <% } %>
+        </div>
+
+        <div class="form-admin">
+          <h3>🖼️ Gambar & File Produk</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Gambar Produk</label>
+              <input type="file" name="image" accept="image/*" onchange="previewImage(this)">
+              <% if(product && product.image) { %>
+              <img src="<%= product.image %>" class="image-preview" id="img-preview" alt="preview">
+              <% } else { %>
+              <img src="" class="image-preview" id="img-preview" alt="preview" style="display:none">
+              <% } %>
+              <div class="hint">JPG, PNG, WebP. Direkomendasikan rasio 1:1 (persegi).</div>
+            </div>
+            <div class="form-group">
+              <label>File Produk (dikirim ke email pembeli)</label>
+              <input type="file" name="file">
+              <% if(product && product.file_path) { %>
+              <div style="margin-top:6px;font-size:0.82rem;color:var(--primary)">📎 File saat ini: <strong><%= product.file_path %></strong></div>
+              <div class="hint">Upload file baru untuk mengganti file lama.</div>
+              <% } else { %>
+              <div class="hint">PDF, ZIP, dll. Link download dikirim ke email customer setelah pembayaran sukses.</div>
+              <% } %>
+            </div>
+          </div>
+        </div>
+
+        <% if(allProducts && allProducts.length > 0) { %>
+        <div class="form-admin">
+          <h3>🎁 Add-on / Produk Pelengkap</h3>
+          <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:16px">Pilih produk yang ditawarkan sebagai add-on saat checkout. Centang untuk mengaktifkan, isi harga override jika beda dari harga asli.</p>
+          <% allProducts.forEach(ap => { %>
+          <% const existingAddon = product && product.addons ? product.addons.find(a => a.addon_product_id == ap.id) : null; %>
+          <% const isChecked = !!existingAddon; %>
+          <div class="addon-card <%= isChecked ? 'checked' : '' %>" id="addon-card-<%= ap.id %>">
+            <input type="checkbox" name="addon_ids" value="<%= ap.id %>"
+              id="addon-cb-<%= ap.id %>"
+              <%= isChecked ? 'checked' : '' %>
+              onchange="toggleAddon(<%= ap.id %>)"
+              style="width:18px;height:18px;accent-color:var(--primary);flex-shrink:0">
+            <label for="addon-cb-<%= ap.id %>" style="display:flex;align-items:center;gap:10px;cursor:pointer;min-width:0;flex:1">
+              <% if(ap.image) { %>
+              <img src="<%= ap.image %>" class="addon-thumb" alt="">
+              <% } else { %>
+              <div class="addon-thumb-placeholder">📦</div>
+              <% } %>
+              <div class="addon-info">
+                <div class="addon-name"><%= ap.name %></div>
+                <div class="addon-base">Harga: Rp <%= (ap.discount_price||ap.price).toLocaleString('id-ID') %></div>
+              </div>
+            </label>
+            <div class="addon-price-wrap <%= isChecked ? 'show' : '' %>" id="addon-price-wrap-<%= ap.id %>">
+              <label style="font-size:0.72rem;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Harga Override (Rp)</label>
+              <input type="number" name="addon_price_<%= ap.id %>"
+                value="<%= existingAddon && existingAddon.addon_price ? existingAddon.addon_price : '' %>"
+                placeholder="<%= ap.discount_price||ap.price %>"
+                style="width:130px;padding:6px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:0.83rem;outline:none"
+                onfocus="this.style.borderColor='var(--primary)'"
+                onblur="this.style.borderColor='var(--border)'">
+              <div style="font-size:0.7rem;color:var(--text-light);margin-top:2px">Kosongkan = pakai harga produk</div>
+            </div>
+          </div>
+          <% }) %>
+        </div>
+        <% } %>
+
+      </form>
+    </div>
+  </main>
+</div>
+
+<div class="sticky-bar">
+  <a href="/admin/products" style="padding:10px 20px;border-radius:8px;background:#f1f5f9;color:var(--text);text-decoration:none;font-weight:600;font-size:0.88rem">Batal</a>
+  <button type="button" onclick="submitForm()" class="admin-btn admin-btn-primary" style="padding:10px 28px">
+    💾 <%= product ? 'Simpan Perubahan' : 'Tambah Produk' %>
+  </button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+<script>
+const quill = new Quill('#quill-editor', {
+  theme: 'snow',
+  modules: {
+    toolbar: [
+      [{ header: [1,2,3,false] }],
+      ['bold','italic','underline','strike'],
+      [{ list:'ordered' },{ list:'bullet' }],
+      ['link'],
+      ['clean']
+    ]
+  }
+});
+
+// Set initial content
+const initialDesc = document.getElementById('description-val').value;
+if (!initialDesc) {
+  const editorDiv = document.getElementById('quill-editor');
+  // Content already set by EJS in innerHTML
+}
+
+function setBadge(val) {
+  document.getElementById('badge-val').value = val;
+  document.querySelectorAll('.badge-opt').forEach(el => el.classList.remove('sel'));
+  event.target.classList.add('sel');
+}
+
+function toggleAddon(id) {
+  const cb = document.getElementById('addon-cb-' + id);
+  const card = document.getElementById('addon-card-' + id);
+  const priceWrap = document.getElementById('addon-price-wrap-' + id);
+  if (cb.checked) {
+    card.classList.add('checked');
+    priceWrap.classList.add('show');
+  } else {
+    card.classList.remove('checked');
+    priceWrap.classList.remove('show');
+  }
+}
+
+function previewImage(input) {
+  const preview = document.getElementById('img-preview');
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => { preview.src = e.target.result; preview.style.display='block'; };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function submitForm() {
+  document.getElementById('description-val').value = quill.root.innerHTML;
+  document.getElementById('prod-form').submit();
+}
+</script>
+</body></html>

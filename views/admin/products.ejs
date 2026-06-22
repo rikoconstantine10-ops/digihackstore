@@ -1,6 +1,46 @@
 <!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Produk - Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/style.css"></head>
+<link rel="stylesheet" href="/css/style.css">
+<style>
+.prod-list { background:#fff; border-radius:14px; box-shadow:var(--shadow); }
+.prod-cols { grid-template-columns:36px 56px 1fr 120px 80px 70px 130px; }
+.prod-list-header { display:grid; padding:10px 16px; background:#f8faff; border-bottom:1px solid var(--border); font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--text-light); align-items:center; gap:10px; border-radius:14px 14px 0 0; }
+.prod-row { display:grid; padding:10px 16px; border-bottom:1px solid #f1f5f9; align-items:center; gap:10px; transition:background .15s; }
+.prod-row:hover { background:#fafbff; }
+.prod-row:last-child { border-bottom:none; }
+.prod-num { font-size:0.82rem; font-weight:700; color:var(--text-light); text-align:center; }
+.prod-thumb { width:48px; height:48px; object-fit:cover; border-radius:8px; }
+.prod-thumb-placeholder { width:48px; height:48px; background:#e0e7ff; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; }
+.prod-name { font-weight:700; font-size:0.88rem; color:var(--text); line-height:1.3; }
+.prod-badges { display:flex; gap:4px; margin-top:3px; flex-wrap:wrap; align-items:center; }
+.tag { display:inline-block; padding:2px 7px; border-radius:20px; font-size:0.63rem; font-weight:700; text-transform:uppercase; }
+.tag-cat { background:#e0e7ff; color:#4338ca; }
+.tag-new { background:#e0f2fe; color:#0284c7; }
+.tag-hot { background:#fee2e2; color:#dc2626; }
+.tag-sale { background:#fef3c7; color:#d97706; }
+.tag-best { background:#dcfce7; color:#16a34a; }
+.stat-pill { display:inline-flex; gap:8px; font-size:0.7rem; color:var(--text-light); margin-top:3px; }
+.prod-price { font-weight:800; color:var(--primary); font-size:0.9rem; white-space:nowrap; }
+.prod-price-old { text-decoration:line-through; color:var(--text-light); font-size:0.73rem; }
+.status-dot { display:inline-flex; align-items:center; gap:5px; font-size:0.78rem; font-weight:600; }
+.status-dot::before { content:''; width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.status-active::before { background:#22c55e; }
+.status-inactive::before { background:#ef4444; }
+.priority-input { width:52px; padding:5px 6px; border:1px solid var(--border); border-radius:6px; font-size:0.82rem; text-align:center; outline:none; }
+.priority-input:focus { border-color:var(--primary); }
+.action-wrap { display:flex; gap:5px; align-items:center; position:relative; }
+.act-btn { padding:6px 10px; border-radius:7px; font-size:0.76rem; font-weight:600; cursor:pointer; border:none; white-space:nowrap; }
+.act-edit { background:var(--primary); color:white; text-decoration:none; display:inline-flex; align-items:center; }
+.act-more { background:#f1f5f9; color:var(--text); }
+.act-more:hover { background:#e2e8f0; }
+.dropdown { position:absolute; right:0; top:calc(100% + 4px); background:white; border-radius:10px; box-shadow:0 8px 30px rgba(0,0,0,0.15); z-index:200; min-width:155px; overflow:hidden; display:none; }
+.dropdown.open { display:block; }
+.dropdown a, .dropdown button { display:flex; align-items:center; gap:8px; width:100%; padding:9px 13px; font-size:0.82rem; font-weight:500; color:var(--text); border:none; background:none; cursor:pointer; text-decoration:none; }
+.dropdown a:hover, .dropdown button:hover { background:#f8faff; }
+.dropdown .danger { color:#dc2626; }
+.dropdown .danger:hover { background:#fef2f2; }
+</style>
+</head>
 <body>
 <div class="admin-wrap">
   <aside class="admin-sidebar">
@@ -20,169 +60,108 @@
   </aside>
   <main class="admin-main">
     <div class="admin-topbar">
-      <h1>📦 Manajemen Produk</h1>
-      <span style="color:var(--text-light);font-size:0.85rem">Halo, <strong><%= admin.username %></strong></span>
+      <h1>📦 Produk</h1>
+      <div style="display:flex;align-items:center;gap:12px">
+        <% if(success) { %><span style="background:#dcfce7;color:#166534;padding:6px 14px;border-radius:8px;font-size:0.82rem;font-weight:600">✅ Disimpan!</span><% } %>
+        <span style="color:var(--text-light);font-size:0.85rem">Halo, <strong><%= admin.username %></strong></span>
+        <a href="/admin/products/new" class="admin-btn admin-btn-primary" style="padding:9px 18px;text-decoration:none;border-radius:9px">+ Produk Baru</a>
+      </div>
     </div>
     <div class="admin-content">
-
-      <div class="form-admin">
-        <h3>+ Tambah Produk Baru</h3>
-        <form method="POST" action="/admin/products/add" enctype="multipart/form-data">
-          <div class="form-row">
-            <div class="form-group"><label>Nama Produk *</label><input type="text" name="name" required></div>
-            <div class="form-group"><label>Kategori *</label><input type="text" name="category" placeholder="Contoh: Ebook, Software, Template" required></div>
-          </div>
-          <div class="form-group"><label>Deskripsi</label><textarea name="description" rows="3" style="width:100%"></textarea></div>
-          <div class="form-row">
-            <div class="form-group"><label>Harga Normal (Rp) *</label><input type="number" name="price" required min="1000"></div>
-            <div class="form-group"><label>Harga Diskon (Rp) - opsional</label><input type="number" name="discount_price" min="1000"></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label>Badge</label>
-              <select name="badge"><option value="">Tidak ada</option><option value="new">NEW</option><option value="hot">HOT</option><option value="sale">SALE</option><option value="best">BEST</option></select>
-            </div>
-            <div class="form-group"><label>Countdown Diskon (opsional)</label><input type="datetime-local" name="countdown_end"></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label>Gambar Produk</label><input type="file" name="image" accept="image/*"></div>
-            <div class="form-group"><label>File Produk (PDF/ZIP/dll)</label><input type="file" name="file"></div>
-          </div>
-          <button type="submit" class="admin-btn admin-btn-primary" style="padding:10px 24px">+ Tambah Produk</button>
-        </form>
-      </div>
-
-      <div class="admin-table">
-        <div style="padding:16px 20px;font-weight:700;border-bottom:1px solid var(--border)">
-          Daftar Produk (<%= products.length %>)
-          <span style="font-size:0.75rem;font-weight:400;color:var(--text-light);margin-left:12px">👁 = views &nbsp; 🛒 = checkout &nbsp; ✅ = terjual</span>
+      <div class="prod-list">
+        <div class="prod-list-header prod-cols">
+          <div style="text-align:center">#</div>
+          <div>Gambar</div>
+          <div>Produk</div>
+          <div>Harga</div>
+          <div>Status</div>
+          <div style="text-align:center">Prior.</div>
+          <div>Aksi</div>
         </div>
-        <table>
-          <thead><tr><th>Gambar</th><th>Nama</th><th>Kategori</th><th>Harga</th><th style="text-align:center">👁</th><th style="text-align:center">🛒</th><th style="text-align:center">✅</th><th>Status</th><th>Aksi</th></tr></thead>
-          <tbody>
-          <% products.forEach(p => { %>
-          <tr>
-            <td><% if(p.image) { %><img src="<%= p.image %>" style="width:50px;height:40px;object-fit:cover;border-radius:6px"><% } else { %><div style="width:50px;height:40px;background:#e0e7ff;border-radius:6px;display:flex;align-items:center;justify-content:center">📦</div><% } %></td>
-            <td>
-              <div style="font-weight:600"><%= p.name %></div>
-              <div style="font-size:0.75rem;color:var(--text-light)"><%= p.slug %></div>
-              <% if(p.badge) { %><span class="badge badge-<%= p.badge %>"><%= p.badge %></span><% } %>
-            </td>
-            <td><%= p.category %></td>
-            <td>
-              <div style="font-weight:700;color:var(--primary)">Rp <%= (p.discount_price||p.price).toLocaleString('id-ID') %></div>
-              <% if(p.discount_price) { %><div style="text-decoration:line-through;font-size:0.75rem;color:var(--text-light)">Rp <%= p.price.toLocaleString('id-ID') %></div><% } %>
-            </td>
-            <td style="text-align:center;font-weight:700;color:var(--primary)"><%= p.view_count || 0 %></td>
-            <td style="text-align:center;font-weight:700;color:#f59e0b"><%= p.checkout_count || 0 %></td>
-            <td style="text-align:center;font-weight:700;color:#10b981"><%= p.sales_count || 0 %></td>
-            <td><span class="badge <%= p.is_active ? 'badge-success' : 'badge-expired' %>"><%= p.is_active ? 'Aktif' : 'Nonaktif' %></span></td>
-            <td style="display:flex;gap:6px;flex-wrap:wrap">
-              <a href="/product/<%= p.slug %>" target="_blank"><button class="admin-btn" style="background:#e0e7ff;color:var(--primary)">👁</button></a>
-              <button onclick="copyLink('<%= p.slug %>')" class="admin-btn" style="background:#f0fdf4;color:#16a34a" title="Copy link produk">🔗</button>
-              <button onclick="editProduct(<%= JSON.stringify(p) %>)" class="admin-btn admin-btn-primary">✏️</button>
-              <form method="POST" action="/admin/products/delete/<%= p.id %>" style="margin:0" onsubmit="return confirm('Nonaktifkan produk ini?')">
-                <button type="submit" class="admin-btn admin-btn-danger">🗑</button>
-              </form>
-            </td>
-          </tr>
-          <% }) %>
-          </tbody>
-        </table>
+        <% products.forEach((p, i) => { %>
+        <div class="prod-row prod-cols" id="row-<%= p.id %>">
+          <div class="prod-num"><%= i+1 %></div>
+          <div>
+            <% if(p.image) { %>
+            <img src="<%= p.image %>" class="prod-thumb" alt="<%= p.name %>">
+            <% } else { %>
+            <div class="prod-thumb-placeholder">📦</div>
+            <% } %>
+          </div>
+          <div style="min-width:0">
+            <div class="prod-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><%= p.name %></div>
+            <div class="prod-badges">
+              <span class="tag tag-cat"><%= p.category %></span>
+              <% if(p.badge) { %><span class="tag tag-<%= p.badge.toLowerCase() %>"><%= p.badge %></span><% } %>
+            </div>
+            <div class="stat-pill"><span>👁 <%= p.view_count %></span><span>🛒 <%= p.checkout_count %></span><span>✅ <%= p.sales_count %></span></div>
+          </div>
+          <div>
+            <div class="prod-price">Rp <%= (p.discount_price||p.price).toLocaleString('id-ID') %></div>
+            <% if(p.discount_price) { %><div class="prod-price-old">Rp <%= p.price.toLocaleString('id-ID') %></div><% } %>
+          </div>
+          <div>
+            <span class="status-dot <%= p.is_active ? 'status-active' : 'status-inactive' %>">
+              <%= p.is_active ? 'Aktif' : 'Nonaktif' %>
+            </span>
+          </div>
+          <div style="text-align:center">
+            <input type="number" class="priority-input" value="<%= p.priority||0 %>" min="0"
+              onchange="savePriority(<%= p.id %>, this.value)">
+          </div>
+          <div>
+            <div class="action-wrap">
+              <a href="/admin/products/edit/<%= p.id %>" class="act-btn act-edit">✏️ Edit</a>
+              <button class="act-btn act-more" onclick="toggleDropdown(event, 'dd-<%= p.id %>')">▾</button>
+              <div class="dropdown" id="dd-<%= p.id %>">
+                <a href="/product/<%= p.slug %>" target="_blank">👁 Lihat Produk</a>
+                <button onclick="copyLink('<%= p.slug %>')">🔗 Salin Link</button>
+                <button onclick="toggleActive(<%= p.id %>)" class="<%= !p.is_active ? '' : 'danger' %>">
+                  <%= p.is_active ? '⏸ Nonaktifkan' : '▶️ Aktifkan' %>
+                </button>
+                <form method="POST" action="/admin/products/delete/<%= p.id %>" onsubmit="return confirm('Nonaktifkan produk ini?')" style="margin:0">
+                  <button type="submit" class="danger">🗑 Hapus</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <% }) %>
+        <% if(products.length === 0) { %>
+        <div style="padding:48px;text-align:center;color:var(--text-light)">
+          <div style="font-size:3rem;margin-bottom:12px">📦</div>
+          <div style="font-weight:600;margin-bottom:8px">Belum ada produk</div>
+          <a href="/admin/products/new" class="admin-btn admin-btn-primary" style="display:inline-block;margin-top:8px;text-decoration:none">+ Tambah Produk Pertama</a>
+        </div>
+        <% } %>
       </div>
     </div>
   </main>
 </div>
 
-<div id="editModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
-  <div style="background:white;border-radius:16px;padding:32px;width:600px;max-width:90vw;max-height:90vh;overflow-y:auto">
-    <h3 style="margin-bottom:20px">Edit Produk</h3>
-    <form id="editForm" method="POST" enctype="multipart/form-data">
-      <div class="form-row">
-        <div class="form-group"><label>Nama *</label><input type="text" name="name" id="editName" required></div>
-        <div class="form-group"><label>Kategori *</label><input type="text" name="category" id="editCategory" required></div>
-      </div>
-      <div class="form-group"><label>Deskripsi</label><textarea name="description" id="editDesc" rows="3" style="width:100%"></textarea></div>
-      <div class="form-row">
-        <div class="form-group"><label>Harga Normal</label><input type="number" name="price" id="editPrice" required></div>
-        <div class="form-group"><label>Harga Diskon</label><input type="number" name="discount_price" id="editDiscountPrice"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Badge</label><select name="badge" id="editBadge"><option value="">Tidak ada</option><option value="new">NEW</option><option value="hot">HOT</option><option value="sale">SALE</option><option value="best">BEST</option></select></div>
-        <div class="form-group"><label>Countdown End</label><input type="datetime-local" name="countdown_end" id="editCountdown"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Social Proof Offset <span style="font-weight:400;color:var(--text-light);font-size:0.8rem">(ditambah ke penjualan real)</span></label>
-          <input type="number" name="social_proof" id="editSocialProof" min="0" placeholder="Contoh: 150">
-          <div style="font-size:0.75rem;color:var(--text-light);margin-top:4px">Tampil di halaman produk: "🔥 X terjual"</div>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Gambar baru (opsional)</label><input type="file" name="image" accept="image/*"></div>
-        <div class="form-group"><label>File baru (opsional)</label><input type="file" name="file"></div>
-      </div>
-      <div class="form-group"><label><input type="checkbox" name="is_active" id="editActive" value="1"> Aktif</label></div>
-
-      <div style="border-top:1px solid #e2e8f0;margin:20px 0;padding-top:16px">
-        <h4 style="margin:0 0 12px;font-size:0.95rem;color:var(--text-dark)">🎁 Add-on Products</h4>
-        <div style="font-size:0.8rem;color:var(--text-light);margin-bottom:12px">Pilih produk yang akan ditawarkan sebagai add-on sebelum pembayaran. Isi harga override jika berbeda dari harga produk.</div>
-        <div id="addonList" style="display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto">
-          <% allProducts.forEach(ap => { %>
-          <div class="addon-item" data-pid="<%= ap.id %>" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:6px;background:#fafafa">
-            <input type="checkbox" class="addon-check" name="addon_ids[]" value="<%= ap.id %>" style="margin:0;cursor:pointer">
-            <span style="flex:1;font-size:0.85rem"><%= ap.name %></span>
-            <span style="font-size:0.75rem;color:var(--text-light)">Rp <%= (ap.discount_price||ap.price).toLocaleString('id-ID') %></span>
-            <input type="number" name="addon_price_<%= ap.id %>" class="addon-price" placeholder="Override harga" style="width:140px;padding:4px 8px;border:1px solid #e2e8f0;border-radius:4px;font-size:0.8rem" min="0">
-          </div>
-          <% }) %>
-        </div>
-      </div>
-
-      <div style="display:flex;gap:10px">
-        <button type="submit" class="admin-btn admin-btn-primary" style="padding:10px 24px">Simpan</button>
-        <button type="button" onclick="document.getElementById('editModal').style.display='none'" class="admin-btn" style="padding:10px 24px;background:#e2e8f0">Batal</button>
-      </div>
-    </form>
-  </div>
-</div>
-
 <script>
+function toggleDropdown(e, id) {
+  e.stopPropagation();
+  document.querySelectorAll('.dropdown.open').forEach(d => { if(d.id !== id) d.classList.remove('open'); });
+  document.getElementById(id).classList.toggle('open');
+}
+document.addEventListener('click', () => document.querySelectorAll('.dropdown.open').forEach(d => d.classList.remove('open')));
+
 function copyLink(slug) {
-  const url = window.location.origin + '/product/' + slug;
-  navigator.clipboard.writeText(url).then(() => {
-    alert('✅ Link disalin!\n' + url);
-  }).catch(() => {
-    prompt('Salin link ini:', url);
+  navigator.clipboard.writeText(window.location.origin + '/product/' + slug).then(() => alert('✅ Link disalin!'));
+}
+
+function savePriority(id, val) {
+  fetch('/admin/products/priority/' + id, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ priority: parseInt(val)||0 })
   });
 }
-function editProduct(p) {
-  document.getElementById('editName').value = p.name;
-  document.getElementById('editCategory').value = p.category;
-  document.getElementById('editDesc').value = p.description || '';
-  document.getElementById('editPrice').value = p.price;
-  document.getElementById('editDiscountPrice').value = p.discount_price || '';
-  document.getElementById('editBadge').value = p.badge || '';
-  document.getElementById('editCountdown').value = p.countdown_end || '';
-  document.getElementById('editActive').checked = p.is_active === 1;
-  document.getElementById('editSocialProof').value = p.social_proof || '';
-  document.getElementById('editForm').action = '/admin/products/edit/' + p.id;
 
-  const addonMap = {};
-  (p.addons || []).forEach(a => { addonMap[a.addon_product_id] = a.addon_price; });
-  document.querySelectorAll('.addon-item').forEach(row => {
-    const pid = parseInt(row.dataset.pid);
-    const isself = pid === p.id;
-    row.style.display = isself ? 'none' : 'flex';
-    const chk = row.querySelector('.addon-check');
-    const priceInput = row.querySelector('.addon-price');
-    if (isself) { chk.checked = false; priceInput.value = ''; return; }
-    const hasAddon = addonMap.hasOwnProperty(pid);
-    chk.checked = hasAddon;
-    priceInput.value = hasAddon && addonMap[pid] ? addonMap[pid] : '';
-  });
-
-  const modal = document.getElementById('editModal');
-  modal.style.display = 'flex';
+function toggleActive(id) {
+  fetch('/admin/products/toggle/' + id, { method: 'POST' })
+    .then(r => r.json())
+    .then(d => { if(d.success) location.reload(); });
 }
 </script>
 </body></html>
