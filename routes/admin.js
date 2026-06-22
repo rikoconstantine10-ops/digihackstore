@@ -96,8 +96,8 @@ router.post('/products/add', auth, upload.fields([{name:'image',maxCount:1},{nam
 });
 
 router.post('/products/edit/:id', auth, upload.fields([{name:'image',maxCount:1},{name:'file',maxCount:1}]), (req, res) => {
-  const { name, category, description, price, discount_price, badge, countdown_end, is_active } = req.body;
-  const updates = { name, category, description, price: parseInt(price), discount_price: discount_price ? parseInt(discount_price) : null, badge: badge||null, countdown_end: countdown_end||null, is_active: is_active ? 1 : 0 };
+  const { name, category, description, price, discount_price, badge, countdown_end, is_active, social_proof } = req.body;
+  const updates = { name, category, description, price: parseInt(price), discount_price: discount_price ? parseInt(discount_price) : null, badge: badge||null, countdown_end: countdown_end||null, is_active: is_active ? 1 : 0, social_proof: social_proof ? parseInt(social_proof) : 0 };
   if (req.files.image) updates.image = '/uploads/' + req.files.image[0].filename;
   if (req.files.file) updates.file_path = req.files.file[0].filename;
   const cols = Object.keys(updates).map(k => `${k}=?`).join(',');

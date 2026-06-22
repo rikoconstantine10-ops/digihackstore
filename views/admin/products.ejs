@@ -109,6 +109,13 @@
         <div class="form-group"><label>Countdown End</label><input type="datetime-local" name="countdown_end" id="editCountdown"></div>
       </div>
       <div class="form-row">
+        <div class="form-group">
+          <label>Social Proof Offset <span style="font-weight:400;color:var(--text-light);font-size:0.8rem">(ditambah ke penjualan real)</span></label>
+          <input type="number" name="social_proof" id="editSocialProof" min="0" placeholder="Contoh: 150">
+          <div style="font-size:0.75rem;color:var(--text-light);margin-top:4px">Tampil di halaman produk: "🔥 X terjual"</div>
+        </div>
+      </div>
+      <div class="form-row">
         <div class="form-group"><label>Gambar baru (opsional)</label><input type="file" name="image" accept="image/*"></div>
         <div class="form-group"><label>File baru (opsional)</label><input type="file" name="file"></div>
       </div>
@@ -155,6 +162,7 @@ function editProduct(p) {
   document.getElementById('editBadge').value = p.badge || '';
   document.getElementById('editCountdown').value = p.countdown_end || '';
   document.getElementById('editActive').checked = p.is_active === 1;
+  document.getElementById('editSocialProof').value = p.social_proof || '';
   document.getElementById('editForm').action = '/admin/products/edit/' + p.id;
 
   const addonMap = {};
