@@ -41,7 +41,10 @@ router.post('/', express.json(), async (req, res) => {
           .replace('{email}', order.customer_email);
         try {
           const http = require('http');
-          const body = JSON.stringify({ phone: order.customer_phone, message: msg });
+          let custPhone = order.customer_phone.replace(/\D/g,'');
+          if (custPhone.startsWith('0')) custPhone = '62' + custPhone.slice(1);
+          else if (!custPhone.startsWith('62')) custPhone = '62' + custPhone;
+          const body = JSON.stringify({ phone: custPhone, message: msg });
           const req2 = http.request({ host: 'localhost', port: 3001, path: '/send', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) } });
           req2.write(body); req2.end();
           db.prepare('UPDATE orders SET wa_sent=1 WHERE ref_kode=?').run(String(ref));

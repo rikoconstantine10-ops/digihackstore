@@ -4,7 +4,9 @@ const http = require('http');
 
 function sendWA(phone, message) {
   return new Promise((resolve, reject) => {
-    const cleanPhone = phone.replace(/\D/g, '').replace(/^0/, '62');
+    let cleanPhone = phone.replace(/\D/g, '');
+    if (cleanPhone.startsWith('0')) cleanPhone = '62' + cleanPhone.slice(1);
+    else if (!cleanPhone.startsWith('62')) cleanPhone = '62' + cleanPhone;
     const body = JSON.stringify({ phone: cleanPhone, message });
     const req = http.request({
       host: 'localhost', port: 3001, path: '/send', method: 'POST',

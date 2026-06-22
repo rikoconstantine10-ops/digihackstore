@@ -325,7 +325,10 @@ router.post('/orders/send-reminder/:id', auth, async (req, res) => {
     .replace('{url}', order.checkout_url || '');
   try {
     const http = require('http');
-    const body = JSON.stringify({ phone: order.customer_phone, message: msg });
+    let orderPhone = order.customer_phone.replace(/\D/g,'');
+    if (orderPhone.startsWith('0')) orderPhone = '62' + orderPhone.slice(1);
+    else if (!orderPhone.startsWith('62')) orderPhone = '62' + orderPhone;
+    const body = JSON.stringify({ phone: orderPhone, message: msg });
     await new Promise((resolve, reject) => {
       const r2 = http.request({ host: 'localhost', port: 3001, path: '/send', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) } }, (res2) => { res2.resume(); resolve(); });
       r2.on('error', reject);
@@ -360,7 +363,9 @@ router.post('/leads/:id/send-wa', auth, async (req, res) => {
   const { message } = req.body;
   const lead = db.prepare('SELECT * FROM leads WHERE id=?').get(req.params.id);
   if (!lead) return res.json({ success: false, error: 'Lead tidak ditemukan' });
-  const phone = lead.customer_phone.replace(/\D/g, '').replace(/^0/, '62');
+  let phone = lead.customer_phone.replace(/\D/g, '');
+  if (phone.startsWith('0')) phone = '62' + phone.slice(1);
+  else if (!phone.startsWith('62')) phone = '62' + phone;
   const personalizedMsg = (message || '').replace('{name}', lead.customer_name).replace('{product}', lead.product_name || '');
   const http = require('http');
   try {
@@ -383,7 +388,9 @@ router.post('/leads/blast', auth, async (req, res) => {
   let sent = 0, failed = 0;
   const http = require('http');
   for (const lead of leads) {
-    const phone = lead.customer_phone.replace(/\D/g,'').replace(/^0/,'62');
+    let phone = lead.customer_phone.replace(/\D/g, '');
+    if (phone.startsWith('0')) phone = '62' + phone.slice(1);
+    else if (!phone.startsWith('62')) phone = '62' + phone;
     const personalizedMsg = message
       .replace('{name}', lead.customer_name)
       .replace('{product}', lead.product_name || '');
