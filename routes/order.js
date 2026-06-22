@@ -12,8 +12,12 @@ router.get('/status', (req, res) => {
   const settings = getSettings();
   const { ref } = req.query;
   let order = null;
-  if (ref) order = db.prepare('SELECT * FROM orders WHERE ref_kode=?').get(ref);
-  res.render('shop/order-status', { order, settings, ref });
+  let product = null;
+  if (ref) {
+    order = db.prepare('SELECT * FROM orders WHERE ref_kode=?').get(ref);
+    if (order) product = db.prepare('SELECT product_link, file_path FROM products WHERE id=?').get(order.product_id);
+  }
+  res.render('shop/order-status', { order, settings, ref, product });
 });
 
 router.post('/check', (req, res) => {

@@ -27,6 +27,21 @@ async function sendProductEmail(order, product, addonProduct = null) {
       ${addonFileExists ? '<p>📂 File add-on terlampir di email ini.</p>' : addonProduct.file_path ? `<p>🔗 Link download add-on: <a href='${addonProduct.file_path}'>Klik di sini</a></p>` : ''}
     </div>` : '';
 
+  let downloadSection = '';
+  if (product.product_link) {
+    downloadSection = `
+    <div style='text-align:center;margin:28px 0'>
+      <a href='${product.product_link}' style='display:inline-block;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:16px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:1.1rem;letter-spacing:.3px'>
+        ⬇️ Download Produk Sekarang
+      </a>
+      <p style='margin:10px 0 0;font-size:0.82rem;color:#888'>Atau copy link ini: <a href='${product.product_link}' style='color:#667eea'>${product.product_link}</a></p>
+    </div>`;
+  } else if (fileExists) {
+    downloadSection = `<p style='margin:16px 0'>📂 File produk terlampir di email ini. Silakan download.</p>`;
+  } else if (product.file_path) {
+    downloadSection = `<p style='margin:16px 0'>🔗 Link download: <a href='${product.file_path}' style='color:#667eea'>Klik di sini</a></p>`;
+  }
+
   const html = `
   <!DOCTYPE html>
   <html>
@@ -55,7 +70,7 @@ async function sendProductEmail(order, product, addonProduct = null) {
         <p><strong>Total:</strong> Rp ${order.amount.toLocaleString('id-ID')}</p>
         <p><strong>Metode:</strong> ${order.payment_method}</p>
       </div>
-      ${fileExists ? '<p>📂 File produk terlampir di email ini. Silakan download.</p>' : `<p>🔗 Link download produk: <a href='${product.file_path}'>Klik di sini</a></p>`}
+      ${downloadSection}
       ${addonSection}
       <p>Jika ada pertanyaan, balas email ini atau hubungi kami.</p>
       <p>Salam,<br><strong>${storeName}</strong></p>

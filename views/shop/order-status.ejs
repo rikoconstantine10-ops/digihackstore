@@ -34,9 +34,18 @@
     <div class="order-detail-row"><span>Email</span><strong><%= order.customer_email %></strong></div>
     <div class="order-detail-row"><span>Total</span><strong style="color:var(--primary)">Rp <%= order.amount.toLocaleString('id-ID') %></strong></div>
     <div class="order-detail-row"><span>Dibayar</span><strong><%= order.paid_at %></strong></div>
+    <% if(product && product.product_link) { %>
+    <div style="text-align:center;margin:24px 0">
+      <a href="<%= product.product_link %>" target="_blank" rel="noopener" style="display:inline-block;background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:16px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:1.05rem">
+        ⬇️ Download Produk Sekarang
+      </a>
+      <div style="margin-top:10px;font-size:0.8rem;color:var(--text-light)">Link juga sudah dikirim ke email kamu</div>
+    </div>
+    <% } else { %>
     <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin-top:20px;text-align:center;font-size:0.9rem;color:#166534">
       📧 Produk sudah dikirim ke email <strong><%= order.customer_email %></strong><br>Cek inbox atau folder spam.
     </div>
+    <% } %>
     <a href="/catalog" style="display:block;text-align:center;margin-top:20px;color:var(--primary);font-weight:600">Belanja lagi →</a>
   </div>
   <% } else if(order.status === 'pending') { %>
