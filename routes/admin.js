@@ -7,11 +7,32 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
+let sharp;
+try { sharp = require('sharp'); } catch(e) { sharp = null; }
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, path.join(__dirname, '../public/uploads')),
   filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname.replace(/\s/g, '_'))
 });
 const upload = multer({ storage, limits: { fileSize: 100 * 1024 * 1024 } });
+
+async function convertToWebP(origPath) {
+  if (!sharp) return path.basename(origPath);
+  const dir = path.dirname(origPath);
+  const webpName = path.parse(origPath).name + '.webp';
+  const webpPath = path.join(dir, webpName);
+  try {
+    await sharp(origPath)
+      .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 82 })
+      .toFile(webpPath);
+    try { fs.unlinkSync(origPath); } catch(e) {}
+    return webpName;
+  } catch(e) {
+    console.error('Image conversion error:', e.message);
+    return path.basename(origPath);
+  }
+}
 
 function auth(req, res, next) {
   if (req.session.admin) return next();
@@ -96,38 +117,53 @@ router.get('/products/edit/:id', auth, (req, res) => {
   res.render('admin/product-form', { settings, product, allProducts, admin: req.session.admin, error: null, success: req.query.saved });
 });
 
-router.post('/products/add', auth, upload.fields([{name:'image',maxCount:1},{name:'file',maxCount:1}]), (req, res) => {
-  const { name, category, description, price, discount_price, badge, countdown_end, priority, product_link, social_proof } = req.body;
-  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') + '-' + Date.now();
-  const image = req.files.image ? '/uploads/' + req.files.image[0].filename : null;
-  const file_path = req.files.file ? req.files.file[0].filename : null;
-  const insertResult = db.prepare('INSERT INTO products (name,slug,category,description,price,discount_price,image,file_path,badge,countdown_end,priority,product_link,social_proof) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)'
-  ).run(name, slug, category, description, parseInt(price), discount_price ? parseInt(discount_price) : null, image, file_path, badge||null, countdown_end||null, priority ? parseInt(priority) : 0, product_link||null, social_proof ? parseInt(social_proof) : 0);
-  const newId = insertResult.lastInsertRowid;
-  const rawAddonIds = req.body.addon_ids;
-  const addonIds = rawAddonIds ? (Array.isArray(rawAddonIds) ? rawAddonIds : [rawAddonIds]) : [];
-  for (const aid of addonIds) {
-    const ap = req.body['addon_price_' + aid] ? parseInt(req.body['addon_price_' + aid]) : null;
-    db.prepare('INSERT OR IGNORE INTO product_addons (product_id, addon_product_id, addon_price) VALUES (?,?,?)').run(newId, parseInt(aid), ap);
+router.post('/products/add', auth, upload.fields([{name:'image',maxCount:1},{name:'file',maxCount:1}]), async (req, res) => {
+  try {
+    const { name, category, description, price, discount_price, badge, countdown_end, priority, product_link, social_proof } = req.body;
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') + '-' + Date.now();
+    let imageFilename = null;
+    if (req.files.image) imageFilename = await convertToWebP(req.files.image[0].path);
+    const image = imageFilename ? '/uploads/' + imageFilename : null;
+    const file_path = req.files.file ? req.files.file[0].filename : null;
+    const insertResult = db.prepare('INSERT INTO products (name,slug,category,description,price,discount_price,image,file_path,badge,countdown_end,priority,product_link,social_proof) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)'
+    ).run(name, slug, category, description, parseInt(price), discount_price ? parseInt(discount_price) : null, image, file_path, badge||null, countdown_end||null, priority ? parseInt(priority) : 0, product_link||null, social_proof ? parseInt(social_proof) : 0);
+    const newId = insertResult.lastInsertRowid;
+    const rawAddonIds = req.body.addon_ids;
+    const addonIds = rawAddonIds ? (Array.isArray(rawAddonIds) ? rawAddonIds : [rawAddonIds]) : [];
+    for (const aid of addonIds) {
+      const ap = req.body['addon_price_' + aid] ? parseInt(req.body['addon_price_' + aid]) : null;
+      db.prepare('INSERT OR IGNORE INTO product_addons (product_id, addon_product_id, addon_price) VALUES (?,?,?)').run(newId, parseInt(aid), ap);
+    }
+    res.redirect('/admin/products?saved=1');
+  } catch(e) {
+    console.error('Add product error:', e);
+    res.redirect('/admin/products?error=1');
   }
-  res.redirect('/admin/products?saved=1');
 });
 
-router.post('/products/edit/:id', auth, upload.fields([{name:'image',maxCount:1},{name:'file',maxCount:1}]), (req, res) => {
-  const { name, category, description, price, discount_price, badge, countdown_end, is_active, social_proof, priority, product_link } = req.body;
-  const updates = { name, category, description, price: parseInt(price), discount_price: discount_price ? parseInt(discount_price) : null, badge: badge||null, countdown_end: countdown_end||null, is_active: is_active ? 1 : 0, social_proof: social_proof ? parseInt(social_proof) : 0, priority: priority ? parseInt(priority) : 0, product_link: product_link||null };
-  if (req.files.image) updates.image = '/uploads/' + req.files.image[0].filename;
-  if (req.files.file) updates.file_path = req.files.file[0].filename;
-  const cols = Object.keys(updates).map(k => `${k}=?`).join(',');
-  db.prepare(`UPDATE products SET ${cols} WHERE id=?`).run(...Object.values(updates), req.params.id);
-  db.prepare('DELETE FROM product_addons WHERE product_id = ?').run(req.params.id);
-  const rawAddonIds = req.body.addon_ids;
-  const addonIds = rawAddonIds ? (Array.isArray(rawAddonIds) ? rawAddonIds : [rawAddonIds]) : [];
-  for (const aid of addonIds) {
-    const ap = req.body['addon_price_' + aid] ? parseInt(req.body['addon_price_' + aid]) : null;
-    db.prepare('INSERT OR IGNORE INTO product_addons (product_id, addon_product_id, addon_price) VALUES (?,?,?)').run(parseInt(req.params.id), parseInt(aid), ap);
+router.post('/products/edit/:id', auth, upload.fields([{name:'image',maxCount:1},{name:'file',maxCount:1}]), async (req, res) => {
+  try {
+    const { name, category, description, price, discount_price, badge, countdown_end, is_active, social_proof, priority, product_link } = req.body;
+    const updates = { name, category, description, price: parseInt(price), discount_price: discount_price ? parseInt(discount_price) : null, badge: badge||null, countdown_end: countdown_end||null, is_active: is_active ? 1 : 0, social_proof: social_proof ? parseInt(social_proof) : 0, priority: priority ? parseInt(priority) : 0, product_link: product_link||null };
+    if (req.files.image) {
+      const webpName = await convertToWebP(req.files.image[0].path);
+      updates.image = '/uploads/' + webpName;
+    }
+    if (req.files.file) updates.file_path = req.files.file[0].filename;
+    const cols = Object.keys(updates).map(k => `${k}=?`).join(',');
+    db.prepare(`UPDATE products SET ${cols} WHERE id=?`).run(...Object.values(updates), req.params.id);
+    db.prepare('DELETE FROM product_addons WHERE product_id = ?').run(req.params.id);
+    const rawAddonIds = req.body.addon_ids;
+    const addonIds = rawAddonIds ? (Array.isArray(rawAddonIds) ? rawAddonIds : [rawAddonIds]) : [];
+    for (const aid of addonIds) {
+      const ap = req.body['addon_price_' + aid] ? parseInt(req.body['addon_price_' + aid]) : null;
+      db.prepare('INSERT OR IGNORE INTO product_addons (product_id, addon_product_id, addon_price) VALUES (?,?,?)').run(parseInt(req.params.id), parseInt(aid), ap);
+    }
+    res.redirect('/admin/products/edit/' + req.params.id + '?saved=1');
+  } catch(e) {
+    console.error('Edit product error:', e);
+    res.redirect('/admin/products/edit/' + req.params.id + '?error=1');
   }
-  res.redirect('/admin/products/edit/' + req.params.id + '?saved=1');
 });
 
 router.post('/products/priority/:id', auth, (req, res) => {
@@ -405,6 +441,37 @@ router.post('/leads/blast', auth, async (req, res) => {
     } catch(e) { failed++; }
   }
   res.json({ success: true, sent, failed });
+});
+
+// Bulk convert existing images to WebP
+router.post('/convert-images', auth, async (req, res) => {
+  if (!sharp) return res.json({ success: false, error: 'sharp not installed' });
+  const uploadsDir = path.join(__dirname, '../public/uploads');
+  let converted = 0, skipped = 0, failed = 0;
+  try {
+    const files = fs.readdirSync(uploadsDir);
+    const imageFiles = files.filter(f => /\.(png|jpg|jpeg)$/i.test(f));
+    for (const file of imageFiles) {
+      const origPath = path.join(uploadsDir, file);
+      const webpName = path.parse(file).name + '.webp';
+      const webpPath = path.join(uploadsDir, webpName);
+      if (fs.existsSync(webpPath)) { skipped++; continue; }
+      try {
+        await sharp(origPath)
+          .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+          .webp({ quality: 82 })
+          .toFile(webpPath);
+        const oldRef = '/uploads/' + file;
+        const newRef = '/uploads/' + webpName;
+        db.prepare('UPDATE products SET image=? WHERE image=?').run(newRef, oldRef);
+        try { fs.unlinkSync(origPath); } catch(e) {}
+        converted++;
+      } catch(e) { failed++; }
+    }
+    res.json({ success: true, converted, skipped, failed, total: imageFiles.length });
+  } catch(e) {
+    res.json({ success: false, error: e.message });
+  }
 });
 
 // Funnel analytics
