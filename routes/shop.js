@@ -58,7 +58,7 @@ router.get('/product/:slug', (req, res) => {
 router.get('/sitemap.xml', (req, res) => {
   const settings = getSettings();
   const base = (settings.store_domain || 'https://digihackstore.com').replace(/\/$/, '');
-  const products = db.prepare('SELECT slug, updated_at, created_at FROM products WHERE is_active=1 ORDER BY created_at DESC').all();
+  const products = db.prepare('SELECT slug, created_at FROM products WHERE is_active=1 ORDER BY created_at DESC').all();
   const today = new Date().toISOString().slice(0, 10);
 
   const staticPages = [
@@ -70,7 +70,7 @@ router.get('/sitemap.xml', (req, res) => {
     url: '/product/' + p.slug,
     changefreq: 'weekly',
     priority: '0.8',
-    lastmod: (p.updated_at || p.created_at || today).slice(0, 10)
+    lastmod: (p.created_at || today).slice(0, 10)
   }));
 
   const allUrls = [...staticPages, ...productUrls];
