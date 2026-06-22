@@ -33,9 +33,12 @@
     <% } %>
   </div>
   <div class="product-info">
-    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
       <span class="category"><%= product.category %></span>
       <% if(product.badge) { %><span class="badge badge-<%= product.badge.toLowerCase() %>"><%= product.badge %></span><% } %>
+      <% if(typeof salesCount !== 'undefined' && salesCount > 0) { %>
+      <span style="display:inline-flex;align-items:center;gap:4px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:20px;padding:3px 10px;font-size:0.78rem;color:#166534;font-weight:600">🔥 <%= salesCount %> terjual</span>
+      <% } %>
     </div>
     <h1><%= product.name %></h1>
     <p class="desc" style="white-space:pre-line"><%= product.description %></p>

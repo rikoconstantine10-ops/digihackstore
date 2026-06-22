@@ -92,6 +92,7 @@ for (const [k, v] of defaults) {
 try { db.exec("ALTER TABLE orders ADD COLUMN addon_product_id INTEGER DEFAULT NULL"); } catch(e) {}
 try { db.exec("ALTER TABLE orders ADD COLUMN addon_product_name TEXT DEFAULT NULL"); } catch(e) {}
 try { db.exec("ALTER TABLE orders ADD COLUMN addon_amount INTEGER DEFAULT 0"); } catch(e) {}
+try { db.exec("ALTER TABLE orders ADD COLUMN wa_reminder_sent INTEGER DEFAULT 0"); } catch(e) {}
 try { db.exec("ALTER TABLE page_views ADD COLUMN utm_source TEXT DEFAULT ''"); } catch(e) {}
 try { db.exec("ALTER TABLE page_views ADD COLUMN utm_medium TEXT DEFAULT ''"); } catch(e) {}
 try { db.exec("ALTER TABLE page_views ADD COLUMN utm_campaign TEXT DEFAULT ''"); } catch(e) {}

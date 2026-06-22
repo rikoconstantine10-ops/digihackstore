@@ -47,6 +47,17 @@ router.post('/', express.json(), async (req, res) => {
           db.prepare('UPDATE orders SET wa_sent=1 WHERE ref_kode=?').run(String(ref));
         } catch(e) { console.error('WA failed:', e.message); }
       }
+
+      // Admin notification
+      if (settings.wa_number) {
+        try {
+          const http = require('http');
+          const adminMsg = `🛎️ *Order Baru Masuk!*\n\nProduk: ${order.product_name}\nCustomer: ${order.customer_name}\nHP: ${order.customer_phone}\nEmail: ${order.customer_email}\nTotal: Rp ${order.amount.toLocaleString('id-ID')}\nMetode: ${order.payment_method}\nRef: #${order.ref_kode}`;
+          const adminBody = JSON.stringify({ phone: settings.wa_number, message: adminMsg });
+          const req3 = http.request({ host: 'localhost', port: 3001, path: '/send', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(adminBody) } });
+          req3.write(adminBody); req3.end();
+        } catch(e) { console.error('Admin WA failed:', e.message); }
+      }
     } else if (status === 'kadaluarsa') {
       db.prepare('UPDATE orders SET status=? WHERE ref_kode=?').run('expired', String(ref));
     } else if (status === 'refund') {

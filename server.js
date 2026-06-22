@@ -30,6 +30,9 @@ const checkoutLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: 
 // Init DB
 require('./db/database');
 
+// Background jobs
+require('./services/cron');
+
 // Routes
 app.use('/', require('./routes/shop'));
 app.use('/checkout', checkoutLimiter, require('./routes/payment'));

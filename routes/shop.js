@@ -45,7 +45,8 @@ router.get('/product/:slug', (req, res) => {
     const allSettings = Object.fromEntries(db.prepare('SELECT key,value FROM settings').all().map(r=>[r.key,r.value]));
     capiViewContent(allSettings, product, req);
   } catch(e) {}
-  res.render('shop/product', { product, settings });
+  const salesCount = db.prepare("SELECT COUNT(*) as c FROM orders WHERE product_id=? AND status='success'").get(product.id).c;
+  res.render('shop/product', { product, settings, salesCount });
 });
 
 module.exports = router;
