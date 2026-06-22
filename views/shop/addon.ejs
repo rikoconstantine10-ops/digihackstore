@@ -21,24 +21,28 @@
     .main-product-info h3 { margin: 0 0 4px; font-size: 1rem; font-weight: 700; }
     .main-product-info .price { color: var(--primary); font-weight: 700; font-size: 1rem; }
     .section-title { font-size: 1rem; font-weight: 700; margin-bottom: 14px; color: var(--text-dark); }
-    .addon-card { border: 2px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; background: var(--card); position: relative; }
-    .addon-card:hover { border-color: var(--primary); box-shadow: 0 4px 16px rgba(102,126,234,0.15); }
-    .addon-card.selected { border-color: var(--primary); background: #f5f3ff; box-shadow: 0 4px 16px rgba(102,126,234,0.2); }
+    .addon-card { border: 2px solid var(--border); border-radius: 14px; padding: 0; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; background: var(--card); position: relative; overflow: hidden; }
+    .addon-card:hover { border-color: var(--primary); box-shadow: 0 6px 20px rgba(102,126,234,0.18); transform: translateY(-1px); }
+    .addon-card.selected { border-color: var(--primary); background: #f5f3ff; box-shadow: 0 6px 20px rgba(102,126,234,0.25); }
     .addon-card input[type="radio"] { position: absolute; opacity: 0; }
-    .addon-card-inner { display: flex; gap: 14px; align-items: center; }
-    .addon-card-img { width: 70px; height: 70px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
-    .addon-card-icon { width: 70px; height: 70px; background: #f0f0ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 2rem; flex-shrink: 0; }
-    .addon-card-info { flex: 1; }
-    .addon-card-info h4 { margin: 0 0 4px; font-size: 0.95rem; font-weight: 700; }
-    .addon-card-info .desc { font-size: 0.8rem; color: var(--text-light); margin: 0 0 6px; line-height: 1.4; }
-    .addon-card-info .addon-price { font-size: 0.95rem; font-weight: 700; color: #10b981; }
-    .addon-card-check { width: 24px; height: 24px; border: 2px solid var(--border); border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-    .addon-card.selected .addon-card-check { background: var(--primary); border-color: var(--primary); color: white; }
+    .addon-card-inner { display: flex; gap: 0; align-items: stretch; }
+    .addon-card-img { width: 90px; height: 90px; object-fit: cover; flex-shrink: 0; }
+    .addon-card-icon { width: 90px; height: 90px; background: linear-gradient(135deg, #e0e7ff, #f0f0ff); display: flex; align-items: center; justify-content: center; font-size: 2.2rem; flex-shrink: 0; }
+    .addon-card-body { flex: 1; padding: 14px 12px; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+    .addon-card-body h4 { margin: 0 0 6px; font-size: 0.9rem; font-weight: 700; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .addon-price-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .addon-price-main { font-size: 1rem; font-weight: 800; color: #10b981; }
+    .addon-price-old { font-size: 0.75rem; color: var(--text-light); text-decoration: line-through; }
+    .addon-save-badge { font-size: 0.65rem; background: #dcfce7; color: #16a34a; padding: 2px 7px; border-radius: 10px; font-weight: 700; }
+    .addon-card-check { width: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-left: 1px solid var(--border); background: #fafbff; transition: all 0.2s; }
+    .addon-check-circle { width: 22px; height: 22px; border: 2px solid #cbd5e1; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s; font-size: 0.7rem; color: transparent; }
+    .addon-card.selected .addon-card-check { background: var(--primary); border-left-color: var(--primary); }
+    .addon-card.selected .addon-check-circle { border-color: white; background: white; color: var(--primary); }
     .addon-actions { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; }
-    .btn-add-addon { width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: none; box-shadow: 0 4px 16px rgba(102,99,255,0.3); }
+    .btn-add-addon { width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: none; box-shadow: 0 4px 16px rgba(102,99,255,0.3); }
     .btn-add-addon:hover { opacity: 0.92; transform: translateY(-1px); }
-    .btn-skip { width: 100%; padding: 13px; background: transparent; color: var(--text-light); border: none; border-radius: 10px; font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: all 0.2s; text-decoration: underline; text-underline-offset: 3px; }
-    .btn-skip:hover { color: var(--text-dark); }
+    .btn-skip { width: 100%; padding: 13px; background: transparent; color: var(--text-light); border: 1.5px solid var(--border); border-radius: 12px; font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    .btn-skip:hover { color: var(--text-dark); border-color: #94a3b8; background: #f8faff; }
     .addon-badge { display:inline-block; background:#fef3c7; color:#d97706; font-size:0.65rem; font-weight:700; padding:2px 7px; border-radius:10px; text-transform:uppercase; margin-bottom:6px; }
     .steps { display: flex; justify-content: center; gap: 8px; margin-bottom: 24px; align-items: center; font-size: 0.8rem; color: var(--text-light); }
     .step { display: flex; align-items: center; gap: 4px; }
@@ -86,7 +90,6 @@
       <input type="hidden" name="addon_product_id" id="selectedAddonId" value="">
 
       <% addons.forEach(addon => { %>
-      <% const rawDesc = addon.description ? addon.description.replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim() : ''; %>
       <% const addonPrice = addon.addon_price || addon.discount_price || addon.price; %>
       <% const basePrice = addon.discount_price || addon.price; %>
       <label class="addon-card" onclick="selectAddon(<%= addon.id %>)" id="addon-card-<%= addon.id %>">
@@ -97,20 +100,19 @@
           <% } else { %>
           <div class="addon-card-icon">🎁</div>
           <% } %>
-          <div class="addon-card-info">
+          <div class="addon-card-body">
             <h4><%= addon.name %></h4>
-            <% if(rawDesc) { %>
-            <p class="desc"><%= rawDesc.substring(0, 110) %><%= rawDesc.length > 110 ? '...' : '' %></p>
-            <% } %>
-            <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
-              <div class="addon-price">+ Rp <%= addonPrice.toLocaleString('id-ID') %></div>
+            <div class="addon-price-row">
+              <span class="addon-price-main">+ Rp <%= addonPrice.toLocaleString('id-ID') %></span>
               <% if(addonPrice < basePrice) { %>
-              <div style="font-size:0.75rem;color:var(--text-light);text-decoration:line-through">Rp <%= basePrice.toLocaleString('id-ID') %></div>
-              <div style="font-size:0.7rem;background:#dcfce7;color:#16a34a;padding:1px 6px;border-radius:10px;font-weight:700">Hemat!</div>
+              <span class="addon-price-old">Rp <%= basePrice.toLocaleString('id-ID') %></span>
+              <span class="addon-save-badge">Hemat!</span>
               <% } %>
             </div>
           </div>
-          <div class="addon-card-check" id="check-<%= addon.id %>"></div>
+          <div class="addon-card-check" id="check-<%= addon.id %>">
+            <div class="addon-check-circle">✓</div>
+          </div>
         </div>
       </label>
       <% }) %>
@@ -134,18 +136,14 @@
         selectedId = null;
         document.getElementById('selectedAddonId').value = '';
         document.querySelectorAll('.addon-card').forEach(c => c.classList.remove('selected'));
-        document.querySelectorAll('[id^="check-"]').forEach(c => { c.innerHTML = ''; c.style.background = ''; });
         document.getElementById('btnAddAddon').style.display = 'none';
         return;
       }
       selectedId = id;
       document.getElementById('selectedAddonId').value = id;
       document.querySelectorAll('.addon-card').forEach(c => c.classList.remove('selected'));
-      document.querySelectorAll('[id^="check-"]').forEach(c => { c.innerHTML = ''; c.style.background = ''; });
       const card = document.getElementById('addon-card-' + id);
       if (card) card.classList.add('selected');
-      const check = document.getElementById('check-' + id);
-      if (check) { check.innerHTML = '✓'; check.style.background = 'var(--primary)'; check.style.color = 'white'; check.style.border = 'none'; }
       document.getElementById('btnAddAddon').style.display = 'block';
     }
 
