@@ -16,12 +16,39 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Session
+// SQLite session store (persists across restarts)
+const Database = require('better-sqlite3');
+const sessionDb = new Database(path.join(__dirname, 'data/sessions.db'));
+sessionDb.exec(`CREATE TABLE IF NOT EXISTS sessions (sid TEXT PRIMARY KEY, sess TEXT NOT NULL, expired INTEGER NOT NULL)`);
+sessionDb.exec(`CREATE INDEX IF NOT EXISTS sessions_expired ON sessions(expired)`);
+
+const Store = session.Store;
+class SQLiteStore extends Store {
+  get(sid, cb) {
+    try {
+      const row = sessionDb.prepare('SELECT sess FROM sessions WHERE sid=? AND expired>?').get(sid, Date.now());
+      cb(null, row ? JSON.parse(row.sess) : null);
+    } catch(e) { cb(e); }
+  }
+  set(sid, sess, cb) {
+    try {
+      const exp = sess.cookie && sess.cookie.expires ? new Date(sess.cookie.expires).getTime() : Date.now() + 30*24*60*60*1000;
+      sessionDb.prepare('INSERT OR REPLACE INTO sessions (sid,sess,expired) VALUES (?,?,?)').run(sid, JSON.stringify(sess), exp);
+      cb(null);
+    } catch(e) { cb(e); }
+  }
+  destroy(sid, cb) {
+    try { sessionDb.prepare('DELETE FROM sessions WHERE sid=?').run(sid); cb(null); } catch(e) { cb(e); }
+  }
+  touch(sid, sess, cb) { this.set(sid, sess, cb); }
+}
+
 app.use(session({
   secret: process.env.SESSION_SECRET || 'digihack_secret',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }
+  store: new SQLiteStore(),
+  cookie: { secure: false, maxAge: 30 * 24 * 60 * 60 * 1000 }
 }));
 
 // Rate limit checkout
