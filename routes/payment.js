@@ -20,6 +20,20 @@ function getProductAddons(productId) {
   `).all(productId);
 }
 
+function saveLead(productId, productName, name, email, phone, domisili) {
+  try {
+    db.prepare('INSERT INTO leads (product_id, product_name, customer_name, customer_email, customer_phone, domisili) VALUES (?,?,?,?,?,?)')
+      .run(productId, productName, name, email, phone, domisili || '');
+  } catch(e) {
+    try {
+      db.prepare('INSERT INTO leads (product_id, product_name, customer_name, customer_email, customer_phone) VALUES (?,?,?,?,?)')
+        .run(productId, productName, name, email, phone);
+    } catch(e2) {}
+  }
+}
+
+// ── Step 1: Form (data diri) ──────────────────────────────────────────────────
+
 router.get('/:slug', (req, res, next) => trackPage('/checkout/' + req.params.slug)(req, res, next), (req, res) => {
   const settings = getSettings();
   const product = db.prepare('SELECT * FROM products WHERE slug=? AND is_active=1').get(req.params.slug);
@@ -28,41 +42,37 @@ router.get('/:slug', (req, res, next) => trackPage('/checkout/' + req.params.slu
   res.render('shop/checkout', { product, settings, error: null });
 });
 
-router.post('/:slug', async (req, res) => {
+router.post('/:slug', (req, res) => {
   const settings = getSettings();
   const product = db.prepare('SELECT * FROM products WHERE slug=? AND is_active=1').get(req.params.slug);
   if (!product) return res.status(404).render('shop/404', { settings });
 
-  const { name, email, phone, channel } = req.body;
-  if (!name || !email || !phone || !channel) {
+  const { name, email, phone, domisili } = req.body;
+  if (!name || !email || !phone || !domisili) {
     return res.render('shop/checkout', { product, settings, error: 'Semua field wajib diisi.' });
   }
 
+  saveLead(product.id, product.name, name, email, phone, domisili);
+
+  const baseAmount = product.discount_price || product.price;
   const refKode = Date.now().toString().slice(-8) + Math.floor(Math.random() * 1000);
-  const amount = product.discount_price || product.price;
+
+  req.session.pendingCheckout = {
+    name, email, phone, domisili, refKode,
+    productId: product.id, productName: product.name,
+    baseAmount, amount: baseAmount,
+    addonProductId: null, addonProductName: null, addonAmount: 0,
+  };
 
   const addons = getProductAddons(product.id);
   if (addons.length > 0) {
-    req.session.pendingCheckout = { name, email, phone, channel, refKode, amount, productId: product.id, productName: product.name };
     return res.redirect('/checkout/' + req.params.slug + '/addon');
   }
-
-  try {
-    const result = await createTransaction({ refKode, amount, channel, cusName: name, cusEmail: email, cusPhone: phone, produk: product.name });
-    if (!result.status) return res.render('shop/checkout', { product, settings, error: 'Gagal membuat transaksi. Coba lagi.' });
-
-    const data = result.data[0];
-    db.prepare('INSERT INTO orders (ref_kode,id_reference,product_id,product_name,customer_name,customer_email,customer_phone,amount,payment_method,status,checkout_url) VALUES (?,?,?,?,?,?,?,?,?,?,?)'
-    ).run(refKode, data.id_reference, product.id, product.name, name, email, phone, amount, channel, 'pending', data.checkout_url);
-
-    res.redirect(data.checkout_url);
-  } catch (e) {
-    console.error(e);
-    res.render('shop/checkout', { product, settings, error: 'Terjadi kesalahan sistem.' });
-  }
+  res.redirect('/checkout/' + req.params.slug + '/payment');
 });
 
-// Add-on interstitial page
+// ── Step 2: Add-on ────────────────────────────────────────────────────────────
+
 router.get('/:slug/addon', (req, res) => {
   const settings = getSettings();
   const product = db.prepare('SELECT * FROM products WHERE slug=? AND is_active=1').get(req.params.slug);
@@ -72,12 +82,12 @@ router.get('/:slug/addon', (req, res) => {
   if (!pending || pending.productId !== product.id) return res.redirect('/checkout/' + req.params.slug);
 
   const addons = getProductAddons(product.id);
-  if (!addons.length) return res.redirect('/checkout/' + req.params.slug);
+  if (!addons.length) return res.redirect('/checkout/' + req.params.slug + '/payment');
 
   res.render('shop/addon', { product, settings, addons, pending });
 });
 
-router.post('/:slug/addon', async (req, res) => {
+router.post('/:slug/addon', (req, res) => {
   const settings = getSettings();
   const product = db.prepare('SELECT * FROM products WHERE slug=? AND is_active=1').get(req.params.slug);
   if (!product) return res.status(404).render('shop/404', { settings });
@@ -86,11 +96,6 @@ router.post('/:slug/addon', async (req, res) => {
   if (!pending || pending.productId !== product.id) return res.redirect('/checkout/' + req.params.slug);
 
   const { addon_product_id } = req.body;
-  let { refKode, amount, name, email, phone, channel } = pending;
-
-  let addonProductId = null;
-  let addonProductName = null;
-  let addonAmount = 0;
 
   if (addon_product_id) {
     const addonRow = db.prepare(`
@@ -100,34 +105,64 @@ router.post('/:slug/addon', async (req, res) => {
     `).get(product.id, parseInt(addon_product_id));
 
     if (addonRow) {
-      addonProductId = addonRow.id;
-      addonProductName = addonRow.name;
-      addonAmount = addonRow.addon_price || addonRow.discount_price || addonRow.price;
-      amount += addonAmount;
+      const addonAmount = addonRow.addon_price || addonRow.discount_price || addonRow.price;
+      pending.addonProductId = addonRow.id;
+      pending.addonProductName = addonRow.name;
+      pending.addonAmount = addonAmount;
+      pending.amount = pending.baseAmount + addonAmount;
     }
   }
 
-  req.session.pendingCheckout = null;
+  req.session.pendingCheckout = pending;
+  res.redirect('/checkout/' + req.params.slug + '/payment');
+});
+
+// ── Step 3: Payment method ────────────────────────────────────────────────────
+
+router.get('/:slug/payment', (req, res) => {
+  const settings = getSettings();
+  const product = db.prepare('SELECT * FROM products WHERE slug=? AND is_active=1').get(req.params.slug);
+  if (!product) return res.status(404).render('shop/404', { settings });
+
+  const pending = req.session.pendingCheckout;
+  if (!pending || pending.productId !== product.id) return res.redirect('/checkout/' + req.params.slug);
+
+  res.render('shop/payment-method', { product, settings, pending, error: null });
+});
+
+router.post('/:slug/payment', async (req, res) => {
+  const settings = getSettings();
+  const product = db.prepare('SELECT * FROM products WHERE slug=? AND is_active=1').get(req.params.slug);
+  if (!product) return res.status(404).render('shop/404', { settings });
+
+  const pending = req.session.pendingCheckout;
+  if (!pending || pending.productId !== product.id) return res.redirect('/checkout/' + req.params.slug);
+
+  const { channel } = req.body;
+  if (!channel) {
+    return res.render('shop/payment-method', { product, settings, pending, error: 'Pilih metode pembayaran.' });
+  }
+
+  const { refKode, amount, name, email, phone, addonProductId, addonProductName, addonAmount } = pending;
+  const produkLabel = addonProductName ? `${product.name} + ${addonProductName}` : product.name;
 
   try {
-    const produkLabel = addonProductName ? `${product.name} + ${addonProductName}` : product.name;
     const result = await createTransaction({ refKode, amount, channel, cusName: name, cusEmail: email, cusPhone: phone, produk: produkLabel });
     if (!result.status) {
-      req.session.pendingCheckout = pending;
-      const addons = getProductAddons(product.id);
-      return res.render('shop/addon', { product, settings, addons, pending, error: 'Gagal membuat transaksi, coba lagi.' });
+      return res.render('shop/payment-method', { product, settings, pending, error: 'Gagal membuat transaksi. Coba lagi.' });
     }
 
-    const data = result.data[0];
-    db.prepare('INSERT INTO orders (ref_kode,id_reference,product_id,product_name,customer_name,customer_email,customer_phone,amount,payment_method,status,checkout_url,addon_product_id,addon_product_name,addon_amount) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
-    ).run(refKode, data.id_reference, product.id, product.name, name, email, phone, amount, channel, 'pending', data.checkout_url, addonProductId, addonProductName, addonAmount || 0);
+    const data = result.data;
+    db.prepare(`INSERT INTO orders
+      (ref_kode,id_reference,product_id,product_name,customer_name,customer_email,customer_phone,amount,payment_method,status,checkout_url,addon_product_id,addon_product_name,addon_amount)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+      .run(refKode, data.id_reference, product.id, product.name, name, email, phone, amount, channel, 'pending', data.checkout_url, addonProductId, addonProductName, addonAmount || 0);
 
+    req.session.pendingCheckout = null;
     res.redirect(data.checkout_url);
   } catch (e) {
     console.error(e);
-    req.session.pendingCheckout = pending;
-    const addons = getProductAddons(product.id);
-    res.render('shop/addon', { product, settings, addons, pending, error: 'Terjadi kesalahan sistem.' });
+    res.render('shop/payment-method', { product, settings, pending, error: 'Terjadi kesalahan sistem.' });
   }
 });
 

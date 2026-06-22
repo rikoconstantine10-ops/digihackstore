@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -7,7 +6,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
   <% if(settings.meta_pixel_id) { %><script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','<%= settings.meta_pixel_id %>');fbq('track','InitiateCheckout',{value:<%= product.discount_price || product.price %>,currency:'IDR'});</script><% } %>
-<% if(settings && settings.ga4_id) { %><script async src="https://www.googletagmanager.com/gtag/js?id=<%= settings.ga4_id %>"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","<%= settings.ga4_id %>");</script><% } %></head>
+  <% if(settings && settings.ga4_id) { %><script async src="https://www.googletagmanager.com/gtag/js?id=<%= settings.ga4_id %>"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","<%= settings.ga4_id %>");</script><% } %>
+</head>
 <body>
 <nav class="navbar">
   <a href="/" class="navbar-brand">Digi<span>hack</span></a>
@@ -16,9 +16,30 @@
 
 <div class="checkout-wrap">
   <div style="text-align:center;margin:32px 0 24px">
-    <div style="font-size:2rem;margin-bottom:8px">💳</div>
-    <h1 style="font-size:1.5rem;font-weight:800">Checkout</h1>
-    <p style="color:var(--text-light);font-size:0.9rem">Isi data diri kamu untuk melanjutkan</p>
+    <div style="font-size:2rem;margin-bottom:8px">🛒</div>
+    <h1 style="font-size:1.5rem;font-weight:800">Data Diri</h1>
+    <p style="color:var(--text-light);font-size:0.9rem">Isi informasi kamu untuk melanjutkan pembelian</p>
+    <div id="checkout-timer" style="display:inline-flex;align-items:center;gap:6px;background:#fff3cd;border:1px solid #ffc107;border-radius:20px;padding:5px 14px;font-size:0.8rem;font-weight:700;color:#856404;margin-top:8px">
+      ⏱ Sesi berakhir dalam <span id="timer-display">15:00</span>
+    </div>
+  </div>
+
+  <!-- Step indicator -->
+  <div style="display:flex;justify-content:center;align-items:center;gap:0;margin-bottom:28px">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div style="width:32px;height:32px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700">1</div>
+      <span style="font-size:0.7rem;font-weight:600;color:var(--primary)">Data Diri</span>
+    </div>
+    <div style="width:48px;height:2px;background:#e2e8f0;margin-bottom:20px"></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div style="width:32px;height:32px;border-radius:50%;background:#e2e8f0;color:#94a3b8;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700">2</div>
+      <span style="font-size:0.7rem;font-weight:600;color:#94a3b8">Add-on</span>
+    </div>
+    <div style="width:48px;height:2px;background:#e2e8f0;margin-bottom:20px"></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div style="width:32px;height:32px;border-radius:50%;background:#e2e8f0;color:#94a3b8;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700">3</div>
+      <span style="font-size:0.7rem;font-weight:600;color:#94a3b8">Pembayaran</span>
+    </div>
   </div>
 
   <div class="checkout-card">
@@ -49,87 +70,56 @@
         <label>No. WhatsApp *</label>
         <input type="tel" name="phone" placeholder="08123456789" required>
       </div>
-
       <div class="form-group">
-        <label>Metode Pembayaran *</label>
-        <div class="payment-methods">
-          <label class="payment-option">
-            <input type="radio" name="channel" value="QRIS" required>
-            <div style="font-size:1.5rem">📱</div>
-            <div class="pm-name">QRIS</div>
-            <div class="pm-fee">Fee 0.7%</div>
-          </label>
-          <label class="payment-option">
-            <input type="radio" name="channel" value="BRIVA">
-            <div style="font-size:1.5rem">🏦</div>
-            <div class="pm-name">BRI VA</div>
-            <div class="pm-fee">Fee Rp 3.000</div>
-          </label>
-          <label class="payment-option">
-            <input type="radio" name="channel" value="BCAVA">
-            <div style="font-size:1.5rem">🏦</div>
-            <div class="pm-name">BCA VA</div>
-            <div class="pm-fee">Fee Rp 4.500</div>
-          </label>
-          <label class="payment-option">
-            <input type="radio" name="channel" value="MANDIRIVA">
-            <div style="font-size:1.5rem">🏦</div>
-            <div class="pm-name">Mandiri VA</div>
-            <div class="pm-fee">Fee Rp 3.000</div>
-          </label>
-          <label class="payment-option">
-            <input type="radio" name="channel" value="BNIVA">
-            <div style="font-size:1.5rem">🏦</div>
-            <div class="pm-name">BNI VA</div>
-            <div class="pm-fee">Fee Rp 3.500</div>
-          </label>
-          <label class="payment-option">
-            <input type="radio" name="channel" value="DANA">
-            <div style="font-size:1.5rem">💳</div>
-            <div class="pm-name">DANA</div>
-            <div class="pm-fee">Fee 1.67%</div>
-          </label>
-          <label class="payment-option">
-            <input type="radio" name="channel" value="Shopee Pay">
-            <div style="font-size:1.5rem">🛒</div>
-            <div class="pm-name">ShopeePay</div>
-            <div class="pm-fee">Fee 4%</div>
-          </label>
-          <label class="payment-option">
-            <input type="radio" name="channel" value="ALFAMART">
-            <div style="font-size:1.5rem">🏪</div>
-            <div class="pm-name">Alfamart</div>
-            <div class="pm-fee">Fee Rp 3.500</div>
-          </label>
-        </div>
+        <label>Domisili *</label>
+        <input type="text" name="domisili" placeholder="Kota / Kabupaten" required>
       </div>
 
-      <div style="background:#f8f9ff;border-radius:8px;padding:14px;margin-bottom:20px;font-size:0.85rem">
-        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-          <span style="color:var(--text-light)">Harga produk</span>
-          <span style="font-weight:600">Rp <%= (product.discount_price || product.price).toLocaleString('id-ID') %></span>
-        </div>
-        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-          <span style="color:var(--text-light)">Biaya payment</span>
-          <span style="color:var(--text-light)">Sesuai metode</span>
-        </div>
-        <hr style="border:none;border-top:1px solid var(--border);margin:8px 0">
-        <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1rem">
-          <span>Total</span>
-          <span style="color:var(--primary)">Rp <%= (product.discount_price || product.price).toLocaleString('id-ID') %> + fee</span>
-        </div>
-      </div>
-
-      <button type="submit" class="btn-submit">🔒 Bayar Sekarang</button>
+      <button type="submit" class="btn-submit">Lanjutkan →</button>
     </form>
   </div>
 
-  <div style="text-align:center;margin-top:20px;font-size:0.8rem;color:var(--text-light)">
-    🔒 Pembayaran aman diproses oleh Violet Media Pay<br>
-    📧 Produk dikirim otomatis ke email setelah pembayaran sukses
+  <div style="margin-top:24px;display:flex;flex-direction:column;align-items:center;gap:14px">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center">
+      <div style="display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #e2e8f0;border-radius:30px;padding:7px 14px;font-size:0.78rem;font-weight:600;color:#374151;box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Transaksi Aman & Terenkripsi
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #e2e8f0;border-radius:30px;padding:7px 14px;font-size:0.78rem;font-weight:600;color:#374151;box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        SSL Protected
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #e2e8f0;border-radius:30px;padding:7px 14px;font-size:0.78rem;font-weight:600;color:#374151;box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Produk Terkirim Otomatis
+      </div>
+    </div>
   </div>
 </div>
 
+<script>
+(function() {
+  const KEY = 'checkout_timer_<%= product.slug %>';
+  const DURATION = 15 * 60;
+  let end = parseInt(sessionStorage.getItem(KEY) || '0');
+  if (!end || end < Date.now() / 1000) {
+    end = Math.floor(Date.now() / 1000) + DURATION;
+    sessionStorage.setItem(KEY, end);
+  }
+  function tick() {
+    const left = Math.max(0, end - Math.floor(Date.now() / 1000));
+    const m = String(Math.floor(left / 60)).padStart(2, '0');
+    const s = String(left % 60).padStart(2, '0');
+    const el = document.getElementById('timer-display');
+    const wrap = document.getElementById('checkout-timer');
+    if (el) el.textContent = m + ':' + s;
+    if (left <= 60 && wrap) wrap.style.background = '#fee2e2', wrap.style.borderColor = '#ef4444', wrap.style.color = '#991b1b';
+    if (left === 0) { sessionStorage.removeItem(KEY); window.location.href = '/'; }
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
+</script>
 <footer style="margin-top:60px">
   <p>&copy; 2026 <strong><%= settings.store_name %></strong></p>
 </footer>

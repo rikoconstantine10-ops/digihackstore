@@ -96,8 +96,8 @@ router.post('/products/add', auth, upload.fields([{name:'image',maxCount:1},{nam
 });
 
 router.post('/products/edit/:id', auth, upload.fields([{name:'image',maxCount:1},{name:'file',maxCount:1}]), (req, res) => {
-  const { name, category, description, price, discount_price, badge, countdown_end, is_active, social_proof } = req.body;
-  const updates = { name, category, description, price: parseInt(price), discount_price: discount_price ? parseInt(discount_price) : null, badge: badge||null, countdown_end: countdown_end||null, is_active: is_active ? 1 : 0, social_proof: social_proof ? parseInt(social_proof) : 0 };
+  const { name, category, description, price, discount_price, badge, countdown_end, is_active, social_proof, priority } = req.body;
+  const updates = { name, category, description, price: parseInt(price), discount_price: discount_price ? parseInt(discount_price) : null, badge: badge||null, countdown_end: countdown_end||null, is_active: is_active ? 1 : 0, social_proof: social_proof ? parseInt(social_proof) : 0, priority: priority ? parseInt(priority) : 0 };
   if (req.files.image) updates.image = '/uploads/' + req.files.image[0].filename;
   if (req.files.file) updates.file_path = req.files.file[0].filename;
   const cols = Object.keys(updates).map(k => `${k}=?`).join(',');
@@ -238,6 +238,27 @@ router.post('/wa/logout', auth, async (req, res) => {
   res.redirect('/admin/wa');
 });
 
+// VMP Connection Test
+router.get('/test-vmp', auth, async (req, res) => {
+  const { getChannels } = require('../services/payment');
+  const result = {
+    vmp_api_key: process.env.VMP_API_KEY ? '✅ SET (' + process.env.VMP_API_KEY.slice(0,8) + '...)' : '❌ NOT SET',
+    vmp_secret_key: process.env.VMP_SECRET_KEY ? '✅ SET' : '❌ NOT SET',
+    vmp_base_url: process.env.VMP_BASE_URL || 'https://violetmediapay.com/api/live (default)',
+    callback_url: process.env.CALLBACK_URL || '❌ NOT SET',
+    redirect_url: process.env.REDIRECT_URL || '❌ NOT SET',
+  };
+  if (!process.env.VMP_API_KEY || !process.env.VMP_SECRET_KEY) {
+    return res.json({ status: 'error', message: 'VMP credentials tidak di-set di .env', config: result });
+  }
+  try {
+    const channels = await getChannels();
+    res.json({ status: 'success', message: 'Koneksi VMP berhasil!', config: result, channels });
+  } catch(e) {
+    res.json({ status: 'error', message: 'Gagal konek ke VMP: ' + e.message, config: result });
+  }
+});
+
 router.post('/orders/send-reminder/:id', auth, async (req, res) => {
   const order = db.prepare('SELECT * FROM orders WHERE id=?').get(req.params.id);
   if (!order) return res.json({ success: false, error: 'Order not found' });
@@ -262,6 +283,61 @@ router.post('/orders/send-reminder/:id', auth, async (req, res) => {
   } catch(e) {
     res.json({ success: false, error: e.message });
   }
+});
+
+// Leads
+router.get('/leads', auth, (req, res) => {
+  const settings = getSettings();
+  const leads = db.prepare('SELECT * FROM leads ORDER BY created_at DESC LIMIT 500').all();
+  res.render('admin/leads', { settings, leads, admin: req.session.admin });
+});
+
+router.post('/leads/:id/status', auth, (req, res) => {
+  const { status } = req.body;
+  db.prepare('UPDATE leads SET status=? WHERE id=?').run(status, req.params.id);
+  res.json({ success: true });
+});
+
+router.post('/leads/:id/notes', auth, (req, res) => {
+  const { notes } = req.body;
+  db.prepare('UPDATE leads SET notes=? WHERE id=?').run(notes, req.params.id);
+  res.json({ success: true });
+});
+
+router.post('/leads/blast', auth, async (req, res) => {
+  const { message } = req.body;
+  if (!message) return res.json({ success: false, error: 'Message kosong' });
+  const leads = db.prepare("SELECT * FROM leads WHERE customer_phone != ''").all();
+  let sent = 0, failed = 0;
+  const http = require('http');
+  for (const lead of leads) {
+    const phone = lead.customer_phone.replace(/\D/g,'').replace(/^0/,'62');
+    const personalizedMsg = message
+      .replace('{name}', lead.customer_name)
+      .replace('{product}', lead.product_name || '');
+    try {
+      await new Promise((resolve, reject) => {
+        const body = JSON.stringify({ phone, message: personalizedMsg });
+        const r = http.request({ host:'localhost', port:3001, path:'/send', method:'POST', headers:{'Content-Type':'application/json','Content-Length':Buffer.byteLength(body)} }, (res2) => { res2.resume(); resolve(); });
+        r.on('error', reject); r.write(body); r.end();
+      });
+      db.prepare('UPDATE leads SET wa_sent=1 WHERE id=?').run(lead.id);
+      sent++;
+    } catch(e) { failed++; }
+  }
+  res.json({ success: true, sent, failed });
+});
+
+// Funnel analytics
+router.get('/funnel', auth, (req, res) => {
+  const settings = getSettings();
+  const funnel = {
+    product_views: db.prepare("SELECT COUNT(*) as c FROM page_views WHERE page LIKE '/product/%'").get().c,
+    checkout_starts: db.prepare("SELECT COUNT(*) as c FROM leads").get().c,
+    payment_reached: db.prepare("SELECT COUNT(*) as c FROM orders").get().c,
+    payment_success: db.prepare("SELECT COUNT(*) as c FROM orders WHERE status='success'").get().c,
+  };
+  res.render('admin/funnel', { settings, funnel, admin: req.session.admin });
 });
 
 module.exports = router;

@@ -84,6 +84,7 @@ const defaults = [
   ['wa_followup_msg', 'Halo {name}! Terima kasih sudah order di Digihack Store. Produk {product} sudah dikirim ke email {email}. Hubungi kami jika ada pertanyaan!'],
   ['wa_pending_msg', 'Halo {name}! Pesanan {product} kamu belum dibayar. Selesaikan pembayaran sebelum {expired}. Link: {url}'],
   ['ga4_id', ''],
+  ['wa_pending_lead_msg', 'Halo {name}! Kamu tadi sempat mau beli {product} di {store}. Yuk selesaikan pembelianmu sekarang sebelum kehabisan! 😊'],
 ];
 for (const [k, v] of defaults) {
   db.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)').run(k, v);
@@ -94,9 +95,38 @@ try { db.exec("ALTER TABLE orders ADD COLUMN addon_product_name TEXT DEFAULT NUL
 try { db.exec("ALTER TABLE orders ADD COLUMN addon_amount INTEGER DEFAULT 0"); } catch(e) {}
 try { db.exec("ALTER TABLE orders ADD COLUMN wa_reminder_sent INTEGER DEFAULT 0"); } catch(e) {}
 try { db.exec("ALTER TABLE products ADD COLUMN social_proof INTEGER DEFAULT 0"); } catch(e) {}
+try { db.exec("ALTER TABLE products ADD COLUMN priority INTEGER DEFAULT 0"); } catch(e) {}
 try { db.exec("ALTER TABLE page_views ADD COLUMN utm_source TEXT DEFAULT ''"); } catch(e) {}
 try { db.exec("ALTER TABLE page_views ADD COLUMN utm_medium TEXT DEFAULT ''"); } catch(e) {}
 try { db.exec("ALTER TABLE page_views ADD COLUMN utm_campaign TEXT DEFAULT ''"); } catch(e) {}
 try { db.exec("ALTER TABLE page_views ADD COLUMN utm_content TEXT DEFAULT ''"); } catch(e) {}
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS leads (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    product_id INTEGER,
+    product_name TEXT,
+    customer_name TEXT NOT NULL,
+    customer_email TEXT NOT NULL,
+    customer_phone TEXT NOT NULL,
+    status TEXT DEFAULT 'new',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+`);
+
+try { db.exec("ALTER TABLE leads ADD COLUMN domisili TEXT DEFAULT ''"); } catch(e) {}
+try { db.exec("ALTER TABLE leads ADD COLUMN status TEXT DEFAULT 'new'"); } catch(e) {}
+try { db.exec("ALTER TABLE leads ADD COLUMN wa_sent INTEGER DEFAULT 0"); } catch(e) {}
+try { db.exec("ALTER TABLE leads ADD COLUMN notes TEXT DEFAULT ''"); } catch(e) {}
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS funnel_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT,
+    product_slug TEXT,
+    step TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+`);
 
 module.exports = db;
