@@ -76,7 +76,7 @@ router.get('/products', auth, (req, res) => {
       COALESCE((SELECT COUNT(*) FROM page_views pv WHERE pv.page = '/checkout/' || p.slug), 0) as checkout_count,
       COALESCE((SELECT COUNT(*) FROM orders o WHERE o.product_id = p.id AND o.status = 'success'), 0) as sales_count
     FROM products p
-    ORDER BY COALESCE(p.priority,0) DESC, p.created_at DESC
+    ORDER BY COALESCE(p.is_pinned,0) DESC, COALESCE(p.priority,0) DESC, p.created_at DESC
   `).all();
   res.render('admin/products', { settings, products, admin: req.session.admin, success: req.query.saved });
 });
@@ -140,6 +140,13 @@ router.post('/products/toggle/:id', auth, (req, res) => {
   if (!p) return res.json({ success: false });
   db.prepare('UPDATE products SET is_active=? WHERE id=?').run(p.is_active ? 0 : 1, req.params.id);
   res.json({ success: true, is_active: !p.is_active });
+});
+
+router.post('/products/pin/:id', auth, (req, res) => {
+  const p = db.prepare('SELECT is_pinned FROM products WHERE id=?').get(req.params.id);
+  if (!p) return res.json({ success: false });
+  db.prepare('UPDATE products SET is_pinned=? WHERE id=?').run(p.is_pinned ? 0 : 1, req.params.id);
+  res.json({ success: true, is_pinned: !p.is_pinned });
 });
 
 router.post('/products/delete/:id', auth, (req, res) => {

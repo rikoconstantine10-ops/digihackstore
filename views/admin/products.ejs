@@ -89,7 +89,10 @@
             <% } %>
           </div>
           <div style="min-width:0">
-            <div class="prod-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><%= p.name %></div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <% if(p.is_pinned) { %><span title="Pinned" style="font-size:0.85rem">📌</span><% } %>
+              <div class="prod-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><%= p.name %></div>
+            </div>
             <div class="prod-badges">
               <span class="tag tag-cat"><%= p.category %></span>
               <% if(p.badge) { %><span class="tag tag-<%= p.badge.toLowerCase() %>"><%= p.badge %></span><% } %>
@@ -116,6 +119,9 @@
               <div class="dropdown" id="dd-<%= p.id %>">
                 <a href="/product/<%= p.slug %>" target="_blank">👁 Lihat Produk</a>
                 <button onclick="copyLink('<%= p.slug %>')">🔗 Salin Link</button>
+                <button onclick="togglePin(<%= p.id %>, this)" id="pin-btn-<%= p.id %>">
+                  <%= p.is_pinned ? '📌 Unpin' : '📌 Pin ke Atas' %>
+                </button>
                 <button onclick="toggleActive(<%= p.id %>)" class="<%= !p.is_active ? '' : 'danger' %>">
                   <%= p.is_active ? '⏸ Nonaktifkan' : '▶️ Aktifkan' %>
                 </button>
@@ -160,6 +166,12 @@ function savePriority(id, val) {
 
 function toggleActive(id) {
   fetch('/admin/products/toggle/' + id, { method: 'POST' })
+    .then(r => r.json())
+    .then(d => { if(d.success) location.reload(); });
+}
+
+function togglePin(id, btn) {
+  fetch('/admin/products/pin/' + id, { method: 'POST' })
     .then(r => r.json())
     .then(d => { if(d.success) location.reload(); });
 }
