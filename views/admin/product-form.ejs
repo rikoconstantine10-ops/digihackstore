@@ -138,13 +138,11 @@
               <input type="number" name="priority" value="<%= product ? (product.priority||0) : 0 %>" min="0" placeholder="0">
               <div class="hint">Semakin tinggi nilai, semakin atas posisinya di daftar produk.</div>
             </div>
-            <% if(product) { %>
             <div class="form-group">
               <label>Social Proof Offset</label>
-              <input type="number" name="social_proof" value="<%= product.social_proof||0 %>" min="0" placeholder="0">
-              <div class="hint">Angka yang ditambahkan ke jumlah penjualan nyata saat ditampilkan.</div>
+              <input type="number" name="social_proof" value="<%= product ? (product.social_proof||0) : 0 %>" min="0" placeholder="0">
+              <div class="hint">Angka yang ditambahkan ke jumlah penjualan nyata saat ditampilkan ke calon pembeli.</div>
             </div>
-            <% } %>
           </div>
           <% if(product) { %>
           <div class="form-group">

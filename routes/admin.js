@@ -97,12 +97,12 @@ router.get('/products/edit/:id', auth, (req, res) => {
 });
 
 router.post('/products/add', auth, upload.fields([{name:'image',maxCount:1},{name:'file',maxCount:1}]), (req, res) => {
-  const { name, category, description, price, discount_price, badge, countdown_end, priority, product_link } = req.body;
+  const { name, category, description, price, discount_price, badge, countdown_end, priority, product_link, social_proof } = req.body;
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') + '-' + Date.now();
   const image = req.files.image ? '/uploads/' + req.files.image[0].filename : null;
   const file_path = req.files.file ? req.files.file[0].filename : null;
-  const insertResult = db.prepare('INSERT INTO products (name,slug,category,description,price,discount_price,image,file_path,badge,countdown_end,priority,product_link) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)'
-  ).run(name, slug, category, description, parseInt(price), discount_price ? parseInt(discount_price) : null, image, file_path, badge||null, countdown_end||null, priority ? parseInt(priority) : 0, product_link||null);
+  const insertResult = db.prepare('INSERT INTO products (name,slug,category,description,price,discount_price,image,file_path,badge,countdown_end,priority,product_link,social_proof) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)'
+  ).run(name, slug, category, description, parseInt(price), discount_price ? parseInt(discount_price) : null, image, file_path, badge||null, countdown_end||null, priority ? parseInt(priority) : 0, product_link||null, social_proof ? parseInt(social_proof) : 0);
   const newId = insertResult.lastInsertRowid;
   const rawAddonIds = req.body.addon_ids;
   const addonIds = rawAddonIds ? (Array.isArray(rawAddonIds) ? rawAddonIds : [rawAddonIds]) : [];
