@@ -35,10 +35,11 @@
     .addon-card-check { width: 24px; height: 24px; border: 2px solid var(--border); border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
     .addon-card.selected .addon-card-check { background: var(--primary); border-color: var(--primary); color: white; }
     .addon-actions { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; }
-    .btn-add-addon { width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s; display: none; }
-    .btn-add-addon:hover { opacity: 0.9; }
-    .btn-skip { width: 100%; padding: 12px; background: transparent; color: var(--text-light); border: 1px solid var(--border); border-radius: 10px; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
-    .btn-skip:hover { background: #f1f5f9; color: var(--text-dark); }
+    .btn-add-addon { width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: none; box-shadow: 0 4px 16px rgba(102,99,255,0.3); }
+    .btn-add-addon:hover { opacity: 0.92; transform: translateY(-1px); }
+    .btn-skip { width: 100%; padding: 13px; background: transparent; color: var(--text-light); border: none; border-radius: 10px; font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: all 0.2s; text-decoration: underline; text-underline-offset: 3px; }
+    .btn-skip:hover { color: var(--text-dark); }
+    .addon-badge { display:inline-block; background:#fef3c7; color:#d97706; font-size:0.65rem; font-weight:700; padding:2px 7px; border-radius:10px; text-transform:uppercase; margin-bottom:6px; }
     .steps { display: flex; justify-content: center; gap: 8px; margin-bottom: 24px; align-items: center; font-size: 0.8rem; color: var(--text-light); }
     .step { display: flex; align-items: center; gap: 4px; }
     .step-num { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; }
@@ -85,6 +86,9 @@
       <input type="hidden" name="addon_product_id" id="selectedAddonId" value="">
 
       <% addons.forEach(addon => { %>
+      <% const rawDesc = addon.description ? addon.description.replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim() : ''; %>
+      <% const addonPrice = addon.addon_price || addon.discount_price || addon.price; %>
+      <% const basePrice = addon.discount_price || addon.price; %>
       <label class="addon-card" onclick="selectAddon(<%= addon.id %>)" id="addon-card-<%= addon.id %>">
         <input type="radio" name="_addon_radio" value="<%= addon.id %>">
         <div class="addon-card-inner">
@@ -95,10 +99,16 @@
           <% } %>
           <div class="addon-card-info">
             <h4><%= addon.name %></h4>
-            <% if(addon.description) { %>
-            <p class="desc"><%= addon.description.substring(0, 100) %><%= addon.description.length > 100 ? '...' : '' %></p>
+            <% if(rawDesc) { %>
+            <p class="desc"><%= rawDesc.substring(0, 110) %><%= rawDesc.length > 110 ? '...' : '' %></p>
             <% } %>
-            <div class="addon-price">+ Rp <%= (addon.addon_price || addon.discount_price || addon.price).toLocaleString('id-ID') %></div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+              <div class="addon-price">+ Rp <%= addonPrice.toLocaleString('id-ID') %></div>
+              <% if(addonPrice < basePrice) { %>
+              <div style="font-size:0.75rem;color:var(--text-light);text-decoration:line-through">Rp <%= basePrice.toLocaleString('id-ID') %></div>
+              <div style="font-size:0.7rem;background:#dcfce7;color:#16a34a;padding:1px 6px;border-radius:10px;font-weight:700">Hemat!</div>
+              <% } %>
+            </div>
           </div>
           <div class="addon-card-check" id="check-<%= addon.id %>"></div>
         </div>
