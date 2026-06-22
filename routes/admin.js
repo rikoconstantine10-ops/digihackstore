@@ -356,6 +356,26 @@ router.post('/leads/:id/notes', auth, (req, res) => {
   res.json({ success: true });
 });
 
+router.post('/leads/:id/send-wa', auth, async (req, res) => {
+  const { message } = req.body;
+  const lead = db.prepare('SELECT * FROM leads WHERE id=?').get(req.params.id);
+  if (!lead) return res.json({ success: false, error: 'Lead tidak ditemukan' });
+  const phone = lead.customer_phone.replace(/\D/g, '').replace(/^0/, '62');
+  const personalizedMsg = (message || '').replace('{name}', lead.customer_name).replace('{product}', lead.product_name || '');
+  const http = require('http');
+  try {
+    await new Promise((resolve, reject) => {
+      const body = JSON.stringify({ phone, message: personalizedMsg });
+      const r = http.request({ host: 'localhost', port: 3001, path: '/send', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) } }, (res2) => { res2.resume(); resolve(); });
+      r.on('error', reject); r.write(body); r.end();
+    });
+    db.prepare("UPDATE leads SET wa_sent=1, status=CASE WHEN status='new' THEN 'contacted' ELSE status END WHERE id=?").run(req.params.id);
+    res.json({ success: true });
+  } catch(e) {
+    res.json({ success: false, error: e.message });
+  }
+});
+
 router.post('/leads/blast', auth, async (req, res) => {
   const { message } = req.body;
   if (!message) return res.json({ success: false, error: 'Message kosong' });

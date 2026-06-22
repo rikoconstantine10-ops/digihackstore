@@ -1,6 +1,26 @@
 <!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Leads - Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/style.css"></head>
+<link rel="stylesheet" href="/css/style.css">
+<style>
+.leads-topbar-actions { display:flex; gap:10px; align-items:center; }
+.blast-wrap { background:#fff; border-radius:12px; padding:20px; margin-bottom:20px; border:1px solid var(--border); box-shadow:var(--shadow); display:none; }
+.blast-wrap.open { display:block; }
+/* WA Modal */
+.wa-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:1000; align-items:center; justify-content:center; }
+.wa-modal-overlay.open { display:flex; }
+.wa-modal { background:#fff; border-radius:16px; padding:24px; width:100%; max-width:460px; box-shadow:0 20px 60px rgba(0,0,0,0.2); }
+.wa-modal h3 { margin:0 0 6px; font-size:1rem; }
+.wa-modal-meta { font-size:0.82rem; color:var(--text-light); margin-bottom:14px; }
+.wa-modal textarea { width:100%; border:1.5px solid var(--border); border-radius:10px; padding:12px; font-family:Inter,sans-serif; font-size:0.88rem; resize:vertical; min-height:120px; box-sizing:border-box; }
+.wa-modal textarea:focus { outline:none; border-color:#25d366; }
+.wa-modal-actions { display:flex; gap:10px; margin-top:14px; }
+.btn-wa-send { flex:1; padding:11px; background:#25d366; color:#fff; border:none; border-radius:10px; font-size:0.92rem; font-weight:700; cursor:pointer; }
+.btn-wa-send:hover { background:#1ebe5d; }
+.btn-wa-cancel { padding:11px 20px; background:#f1f5f9; color:var(--text); border:none; border-radius:10px; font-size:0.88rem; font-weight:600; cursor:pointer; }
+.btn-wa-cancel:hover { background:#e2e8f0; }
+.wa-sent-icon { display:inline-block; font-size:1.1rem; }
+</style>
+</head>
 <body>
 <div class="admin-wrap">
   <aside class="admin-sidebar">
@@ -20,86 +40,91 @@
   </aside>
   <main class="admin-main">
     <div class="admin-topbar">
-      <h1>🎯 Leads</h1>
-      <div style="display:flex;gap:10px;align-items:center">
+      <h1>🎯 Leads <span style="font-size:0.85rem;color:var(--text-light);font-weight:500">(<%= leads.length %> leads)</span></h1>
+      <div class="leads-topbar-actions">
         <span style="color:var(--text-light);font-size:0.85rem">Halo, <strong><%= admin.username %></strong></span>
+        <button onclick="toggleBlast()" id="blastToggleBtn" class="admin-btn" style="background:#25d366;color:#fff;border:none;display:flex;align-items:center;gap:6px;padding:9px 16px">
+          📣 WA Blast
+        </button>
       </div>
     </div>
     <div class="admin-content">
-      <div style="background:#fff;border-radius:12px;padding:16px 20px;margin-bottom:20px;border:1px solid var(--border)">
-        <p style="margin:0;font-size:0.88rem;color:var(--text-light)">
-          🎯 Leads adalah calon pembeli yang sudah mengisi data diri namun belum menyelesaikan pembayaran. Kamu bisa follow-up mereka via WhatsApp.
-        </p>
+
+      <!-- Info banner -->
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:0.85rem;color:#166534">
+        🎯 Leads = calon pembeli yang sudah isi data tapi belum bayar. Klik tombol <strong>💬 WA</strong> di tiap baris untuk follow-up otomatis.
       </div>
 
-      <!-- WA Blast Section -->
-      <div style="background:#fff;border-radius:12px;padding:20px;margin-bottom:20px;border:1px solid var(--border);box-shadow:var(--shadow)">
-        <h3 style="margin:0 0 12px;font-size:1rem;font-weight:700">📣 WA Blast ke Semua Leads</h3>
-        <p style="font-size:0.82rem;color:var(--text-light);margin:0 0 12px">Gunakan <code>{name}</code> untuk nama lead dan <code>{product}</code> untuk nama produk.</p>
-        <textarea id="blastMsg" rows="3" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:10px;font-family:Inter,sans-serif;font-size:0.88rem;resize:vertical;box-sizing:border-box" placeholder="Halo {name}! Ada penawaran spesial untuk {product} hari ini..."></textarea>
-        <div style="display:flex;gap:10px;margin-top:10px;align-items:center">
-          <button onclick="sendBlast()" class="admin-btn admin-btn-primary" style="background:#25d366;border:none;color:#fff;display:flex;align-items:center;gap:6px">
-            📣 Kirim ke Semua Leads
+      <!-- WA Blast (collapsible) -->
+      <div class="blast-wrap" id="blastPanel">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h3 style="margin:0;font-size:1rem;font-weight:700">📣 WA Blast ke Semua Leads</h3>
+          <button onclick="toggleBlast()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text-light)">✕</button>
+        </div>
+        <p style="font-size:0.82rem;color:var(--text-light);margin:0 0 10px">Gunakan <code>{name}</code> untuk nama dan <code>{product}</code> untuk nama produk.</p>
+        <textarea id="blastMsg" rows="4" style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:12px;font-family:Inter,sans-serif;font-size:0.88rem;resize:vertical;box-sizing:border-box" placeholder="Halo {name}! Kamu tadi sempat mau beli {product} di Digihack Store. Ada yang bisa kami bantu? 😊&#10;&#10;Klik di sini untuk lanjut: digihackstore.com"></textarea>
+        <div style="display:flex;gap:10px;margin-top:12px;align-items:center;flex-wrap:wrap">
+          <button onclick="sendBlast()" id="blastBtn" style="background:#25d366;color:#fff;border:none;border-radius:10px;padding:11px 20px;font-size:0.88rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px">
+            📣 Kirim ke Semua Leads (<%= leads.length %>)
           </button>
           <span id="blastStatus" style="font-size:0.85rem;color:var(--text-light)"></span>
         </div>
       </div>
 
+      <!-- Leads table -->
       <div class="admin-table" style="overflow-x:auto">
-        <table style="min-width:900px">
+        <table style="min-width:860px">
           <thead><tr>
             <th>#</th>
-            <th>Nama</th>
             <th>Email</th>
             <th>WhatsApp</th>
             <th>Domisili</th>
             <th>Produk</th>
             <th>Status</th>
-            <th>WA Sent</th>
+            <th style="text-align:center">WA Sent</th>
             <th>Notes</th>
             <th>Waktu</th>
-            <th>Aksi</th>
+            <th style="text-align:center">Aksi</th>
           </tr></thead>
           <tbody>
           <% leads.forEach((l, i) => { %>
-          <tr>
+          <%
+            const st = l.status || 'new';
+            const stColor = st === 'converted' ? '#16a34a' : st === 'contacted' ? '#d97706' : '#2563eb';
+            const stBg = st === 'converted' ? '#dcfce7' : st === 'contacted' ? '#fef3c7' : '#dbeafe';
+          %>
+          <tr id="row-<%= l.id %>">
             <td style="font-size:0.8rem;color:var(--text-light)"><%= leads.length - i %></td>
-            <td style="font-weight:600;font-size:0.88rem"><%= l.customer_name %></td>
             <td style="font-size:0.85rem"><a href="mailto:<%= l.customer_email %>" style="color:var(--primary)"><%= l.customer_email %></a></td>
-            <td style="font-size:0.85rem">
-              <a href="https://wa.me/<%= l.customer_phone.replace(/^0/, '62').replace(/\D/g,'') %>" target="_blank" style="color:#25d366;font-weight:600">
-                <%= l.customer_phone %>
-              </a>
-            </td>
+            <td style="font-size:0.85rem;font-weight:600;color:#25d366"><%= l.customer_phone %></td>
             <td style="font-size:0.85rem"><%= l.domisili || '-' %></td>
-            <td style="font-size:0.85rem;max-width:160px"><%= l.product_name %></td>
+            <td style="font-size:0.82rem;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><%= l.product_name %></td>
             <td>
-              <%
-                const st = l.status || 'new';
-                const stColor = st === 'converted' ? '#16a34a' : st === 'contacted' ? '#d97706' : '#2563eb';
-                const stBg = st === 'converted' ? '#dcfce7' : st === 'contacted' ? '#fef3c7' : '#dbeafe';
-              %>
-              <span id="badge-<%= l.id %>" style="display:inline-block;padding:2px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;background:<%= stBg %>;color:<%= stColor %>"><%= st.toUpperCase() %></span>
-              <select onchange="updateStatus(<%= l.id %>, this.value)" style="display:block;margin-top:4px;font-size:0.72rem;border:1px solid var(--border);border-radius:6px;padding:2px 4px;cursor:pointer">
-                <option value="new" <%= !l.status || l.status === 'new' ? 'selected' : '' %>>New</option>
-                <option value="contacted" <%= l.status === 'contacted' ? 'selected' : '' %>>Contacted</option>
-                <option value="converted" <%= l.status === 'converted' ? 'selected' : '' %>>Converted</option>
+              <span id="badge-<%= l.id %>" style="display:inline-block;padding:2px 10px;border-radius:20px;font-size:0.7rem;font-weight:700;background:<%= stBg %>;color:<%= stColor %>"><%= st.toUpperCase() %></span>
+              <select onchange="updateStatus(<%= l.id %>, this.value)" style="display:block;margin-top:4px;font-size:0.7rem;border:1px solid var(--border);border-radius:6px;padding:2px 4px;cursor:pointer">
+                <option value="new" <%= st === 'new' ? 'selected' : '' %>>New</option>
+                <option value="contacted" <%= st === 'contacted' ? 'selected' : '' %>>Contacted</option>
+                <option value="converted" <%= st === 'converted' ? 'selected' : '' %>>Converted</option>
               </select>
             </td>
-            <td style="text-align:center;font-size:1.1rem"><%= l.wa_sent ? '✅' : '⏳' %></td>
-            <td>
-              <input type="text" value="<%= l.notes || '' %>" placeholder="Tambah catatan..." onblur="updateNotes(<%= l.id %>, this.value)" style="width:140px;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:0.78rem;font-family:Inter,sans-serif">
+            <td style="text-align:center">
+              <span class="wa-sent-icon" id="wa-icon-<%= l.id %>"><%= l.wa_sent ? '✅' : '⏳' %></span>
             </td>
-            <td style="font-size:0.75rem;color:var(--text-light)"><%= l.created_at.slice(0,16) %></td>
             <td>
-              <a href="https://wa.me/<%= l.customer_phone.replace(/^0/, '62').replace(/\D/g,'') %>?text=<%= encodeURIComponent('Halo ' + l.customer_name + '! Kamu tadi sempat mau beli ' + l.product_name + ' di Digihack Store. Ada yang bisa kami bantu? 😊') %>" target="_blank">
-                <button class="admin-btn" style="font-size:0.78rem;padding:5px 10px;background:#25d366;color:#fff;border:none">💬 WA</button>
-              </a>
+              <input type="text" value="<%= l.notes || '' %>" placeholder="Catatan..." onblur="updateNotes(<%= l.id %>, this.value)" style="width:130px;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:0.78rem;font-family:Inter,sans-serif">
+            </td>
+            <td style="font-size:0.75rem;color:var(--text-light);white-space:nowrap"><%= l.created_at.slice(0,16) %></td>
+            <td style="text-align:center">
+              <button
+                onclick="openWaModal(<%= l.id %>, '<%= (l.customer_name||'').replace(/'/g,"\\'") %>', '<%= l.customer_phone %>', '<%= (l.product_name||'').replace(/'/g,"\\'") %>')"
+                style="background:#25d366;color:#fff;border:none;border-radius:8px;padding:6px 13px;font-size:0.78rem;font-weight:700;cursor:pointer">
+                💬 WA
+              </button>
             </td>
           </tr>
           <% }) %>
           <% if(!leads.length) { %>
-          <tr><td colspan="11" style="text-align:center;color:var(--text-light);padding:32px">Belum ada leads</td></tr>
+          <tr><td colspan="10" style="text-align:center;color:var(--text-light);padding:40px">Belum ada leads</td></tr>
           <% } %>
           </tbody>
         </table>
@@ -107,58 +132,141 @@
     </div>
   </main>
 </div>
+
+<!-- WA Send Modal -->
+<div class="wa-modal-overlay" id="waModal" onclick="closeWaModalOutside(event)">
+  <div class="wa-modal">
+    <h3>💬 Kirim WhatsApp</h3>
+    <div class="wa-modal-meta" id="waModalMeta"></div>
+    <textarea id="waModalMsg" placeholder="Tulis pesan..."></textarea>
+    <div class="wa-modal-actions">
+      <button class="btn-wa-cancel" onclick="closeWaModal()">Batal</button>
+      <button class="btn-wa-send" id="waModalSendBtn" onclick="sendWaNow()">📲 Kirim Sekarang</button>
+    </div>
+    <div id="waModalStatus" style="font-size:0.82rem;margin-top:10px;text-align:center"></div>
+  </div>
+</div>
+
 <script>
+var currentLeadId = null;
+var DEFAULT_MSG = 'Halo {name}! 👋\n\nKamu tadi sempat mau beli *{product}* di Digihack Store.\n\nAda yang bisa kami bantu? Atau mau kami bantu proses ordernya sekarang? 😊';
+
+function toggleBlast() {
+  var panel = document.getElementById('blastPanel');
+  panel.classList.toggle('open');
+}
+
+function openWaModal(id, name, phone, product) {
+  currentLeadId = id;
+  document.getElementById('waModalMeta').textContent = name + ' · ' + phone;
+  document.getElementById('waModalMsg').value = DEFAULT_MSG.replace('{name}', name).replace('{product}', product);
+  document.getElementById('waModalStatus').textContent = '';
+  document.getElementById('waModalSendBtn').disabled = false;
+  document.getElementById('waModalSendBtn').textContent = '📲 Kirim Sekarang';
+  document.getElementById('waModal').classList.add('open');
+  setTimeout(() => document.getElementById('waModalMsg').focus(), 100);
+}
+
+function closeWaModal() {
+  document.getElementById('waModal').classList.remove('open');
+  currentLeadId = null;
+}
+
+function closeWaModalOutside(e) {
+  if (e.target === document.getElementById('waModal')) closeWaModal();
+}
+
+function sendWaNow() {
+  if (!currentLeadId) return;
+  var msg = document.getElementById('waModalMsg').value.trim();
+  if (!msg) { alert('Pesan tidak boleh kosong'); return; }
+  var btn = document.getElementById('waModalSendBtn');
+  var status = document.getElementById('waModalStatus');
+  btn.disabled = true;
+  btn.textContent = '⏳ Mengirim...';
+  status.textContent = '';
+
+  fetch('/admin/leads/' + currentLeadId + '/send-wa', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: msg })
+  }).then(r => r.json()).then(d => {
+    if (d.success) {
+      // Update row icon and badge
+      var icon = document.getElementById('wa-icon-' + currentLeadId);
+      if (icon) icon.textContent = '✅';
+      var badge = document.getElementById('badge-' + currentLeadId);
+      if (badge && badge.textContent === 'NEW') {
+        badge.textContent = 'CONTACTED';
+        badge.style.background = '#fef3c7';
+        badge.style.color = '#d97706';
+        var sel = badge.parentElement.querySelector('select');
+        if (sel) sel.value = 'contacted';
+      }
+      status.style.color = '#16a34a';
+      status.textContent = '✅ Terkirim!';
+      setTimeout(closeWaModal, 1000);
+    } else {
+      status.style.color = '#dc2626';
+      status.textContent = '❌ Gagal: ' + (d.error || 'Koneksi WA service error');
+      btn.disabled = false;
+      btn.textContent = '📲 Kirim Sekarang';
+    }
+  }).catch(() => {
+    status.style.color = '#dc2626';
+    status.textContent = '❌ Koneksi gagal';
+    btn.disabled = false;
+    btn.textContent = '📲 Kirim Sekarang';
+  });
+}
+
 function updateStatus(id, status) {
-  const badge = document.getElementById('badge-' + id);
-  const colors = { new: { bg:'#dbeafe', color:'#2563eb' }, contacted: { bg:'#fef3c7', color:'#d97706' }, converted: { bg:'#dcfce7', color:'#16a34a' } };
+  var badge = document.getElementById('badge-' + id);
+  var colors = { new: { bg:'#dbeafe', color:'#2563eb' }, contacted: { bg:'#fef3c7', color:'#d97706' }, converted: { bg:'#dcfce7', color:'#16a34a' } };
   if (badge && colors[status]) {
     badge.textContent = status.toUpperCase();
     badge.style.background = colors[status].bg;
     badge.style.color = colors[status].color;
   }
   fetch('/admin/leads/' + id + '/status', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ status })
   });
 }
 
 function updateNotes(id, notes) {
   fetch('/admin/leads/' + id + '/notes', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ notes })
   });
 }
 
 function sendBlast() {
-  const message = document.getElementById('blastMsg').value.trim();
+  var message = document.getElementById('blastMsg').value.trim();
   if (!message) { alert('Pesan tidak boleh kosong'); return; }
-  const btn = event.target;
-  const status = document.getElementById('blastStatus');
+  if (!confirm('Kirim WA blast ke semua leads?')) return;
+  var btn = document.getElementById('blastBtn');
+  var status = document.getElementById('blastStatus');
   btn.disabled = true;
   btn.textContent = '⏳ Mengirim...';
-  status.textContent = '';
   fetch('/admin/leads/blast', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message })
   }).then(r => r.json()).then(d => {
     btn.disabled = false;
-    btn.innerHTML = '📣 Kirim ke Semua Leads';
-    if (d.success) {
-      status.style.color = '#16a34a';
-      status.textContent = '✅ Terkirim: ' + d.sent + ', Gagal: ' + d.failed;
-    } else {
-      status.style.color = '#dc2626';
-      status.textContent = '❌ ' + (d.error || 'Gagal');
-    }
+    btn.textContent = '📣 Kirim ke Semua Leads';
+    status.style.color = d.success ? '#16a34a' : '#dc2626';
+    status.textContent = d.success ? ('✅ Terkirim: ' + d.sent + ', Gagal: ' + d.failed) : ('❌ ' + (d.error || 'Gagal'));
   }).catch(() => {
     btn.disabled = false;
-    btn.innerHTML = '📣 Kirim ke Semua Leads';
+    btn.textContent = '📣 Kirim ke Semua Leads';
     status.style.color = '#dc2626';
     status.textContent = '❌ Koneksi gagal';
   });
 }
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeWaModal();
+});
 </script>
 </body></html>
