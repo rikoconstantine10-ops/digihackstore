@@ -57,11 +57,14 @@
           <% if(p.badge) { %><span class="badge badge-<%= p.badge.toLowerCase() %>"><%= p.badge %></span><% } %>
         </div>
         <div class="card-title"><%= p.name %></div>
-        <div class="card-desc"><%= p.description %></div>
+        <div class="card-desc"><%= (p.description || '').replace(/<[^>]*>/g, '') %></div>
         <div class="card-price">
           <span class="price-main">Rp <%= (p.discount_price || p.price).toLocaleString('id-ID') %></span>
           <% if(p.discount_price) { %><span class="price-old">Rp <%= p.price.toLocaleString('id-ID') %></span><% } %>
         </div>
+        <% if(p.total_sold > 0) { %>
+        <div style="font-size:0.75rem;color:#16a34a;font-weight:600;margin-bottom:8px">🔥 <%= p.total_sold %> terjual</div>
+        <% } %>
         <button class="btn-card">Beli Sekarang</button>
       </div>
     </a>

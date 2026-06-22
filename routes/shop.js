@@ -12,7 +12,10 @@ function getSettings() {
 
 router.get('/', trackPage('/'), (req, res) => {
   const settings = getSettings();
-  const featured = db.prepare('SELECT * FROM products WHERE is_active=1 ORDER BY created_at DESC LIMIT 8').all();
+  const featured = db.prepare(`
+    SELECT p.*, COALESCE(p.social_proof, 0) + COALESCE((SELECT COUNT(*) FROM orders o WHERE o.product_id = p.id AND o.status = 'success'), 0) as total_sold
+    FROM products p WHERE p.is_active=1 ORDER BY p.created_at DESC LIMIT 8
+  `).all();
   const categories = db.prepare('SELECT DISTINCT category FROM products WHERE is_active=1').all();
   res.render('shop/index', { products: featured, categories, settings });
 });
@@ -22,12 +25,12 @@ router.get('/catalog', trackPage('/catalog'), (req, res) => {
   const { category, search, page = 1 } = req.query;
   const limit = 12;
   const offset = (page - 1) * limit;
-  let query = 'SELECT * FROM products WHERE is_active=1';
+  let baseWhere = 'FROM products p WHERE p.is_active=1';
   const params = [];
-  if (category) { query += ' AND category=?'; params.push(category); }
-  if (search) { query += ' AND (name LIKE ? OR description LIKE ?)'; params.push('%' + search + '%', '%' + search + '%'); }
-  const total = db.prepare(query.replace('SELECT *', 'SELECT COUNT(*) as c')).get(...params).c;
-  query += ' LIMIT ' + limit + ' OFFSET ' + offset;
+  if (category) { baseWhere += ' AND p.category=?'; params.push(category); }
+  if (search) { baseWhere += ' AND (p.name LIKE ? OR p.description LIKE ?)'; params.push('%' + search + '%', '%' + search + '%'); }
+  const total = db.prepare('SELECT COUNT(*) as c ' + baseWhere).get(...params).c;
+  const query = `SELECT p.*, COALESCE(p.social_proof, 0) + COALESCE((SELECT COUNT(*) FROM orders o WHERE o.product_id = p.id AND o.status = 'success'), 0) as total_sold ${baseWhere} ORDER BY p.created_at DESC LIMIT ${limit} OFFSET ${offset}`;
   const products = db.prepare(query).all(...params);
   const categories = db.prepare('SELECT DISTINCT category FROM products WHERE is_active=1').all();
   res.render('shop/catalog', { products, categories, settings, category, search, page: +page, total, limit });
