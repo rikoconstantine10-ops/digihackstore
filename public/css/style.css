@@ -69,6 +69,13 @@ img { max-width: 100%; }
 .filter-bar input:focus { border-color: var(--primary); }
 .filter-btn { padding: 9px 18px; border-radius: 8px; border: 1px solid var(--border); background: white; cursor: pointer; font-size: 0.85rem; transition: all .2s; }
 .filter-btn.active, .filter-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+/* CATEGORY BAR — horizontal scroll, never wraps */
+.category-bar { display: flex; gap: 8px; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; margin-bottom: 20px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.category-bar::-webkit-scrollbar { display: none; }
+.category-bar .filter-btn { white-space: nowrap; flex-shrink: 0; }
+/* SEARCH BUTTON ROW */
+.search-btn-row { display: flex; gap: 8px; }
+.search-btn-row .filter-btn { flex: 1; text-align: center; }
 
 /* PRODUCT DETAIL */
 .product-detail { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; max-width: 1000px; margin: 40px auto; padding: 0 24px; }
