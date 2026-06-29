@@ -9,14 +9,26 @@ const { capiPurchase } = require('../services/capi');
 router.post('/', express.json(), async (req, res) => {
   try {
     const data = req.body;
+    console.log('[CALLBACK] Raw body received:', JSON.stringify(data));
     const { status, ref, id_reference, signature } = data;
 
-    if (!verifyCallbackSignature(ref, signature)) {
+    const sigValid = verifyCallbackSignature(ref, signature);
+    if (!sigValid) {
+      const { createHmac } = require('crypto');
+      const API_KEY = process.env.VMP_API_KEY;
+      const expected = API_KEY ? createHmac('sha256', API_KEY).update(String(ref)).digest('hex') : 'API_KEY_NOT_SET';
+      console.error('[CALLBACK] Signature MISMATCH for ref:', ref);
+      console.error('[CALLBACK] Expected:', expected);
+      console.error('[CALLBACK] Received:', signature);
+      console.error('[CALLBACK] Full body:', JSON.stringify(data));
       return res.status(400).json({ status: false });
     }
 
     const order = db.prepare('SELECT * FROM orders WHERE ref_kode=?').get(String(ref));
-    if (!order) return res.status(404).json({ status: false });
+    if (!order) {
+      console.error('[CALLBACK] Order not found for ref:', ref);
+      return res.status(404).json({ status: false });
+    }
 
     if (status === 'success') {
       db.prepare('UPDATE orders SET status=?, id_reference=?, paid_at=CURRENT_TIMESTAMP WHERE ref_kode=?').run('success', id_reference, String(ref));

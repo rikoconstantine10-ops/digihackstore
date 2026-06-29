@@ -347,6 +347,47 @@ router.get('/test-vmp', auth, async (req, res) => {
   }
 });
 
+// Manual mark order as success (for cases where VMP confirmed payment but callback failed)
+router.post('/orders/mark-success/:id', auth, async (req, res) => {
+  const { sendProductEmail } = require('../services/email');
+  const order = db.prepare('SELECT * FROM orders WHERE id=?').get(req.params.id);
+  if (!order) return res.json({ success: false, error: 'Order tidak ditemukan' });
+  if (order.status === 'success') return res.json({ success: false, error: 'Order sudah berstatus success' });
+
+  db.prepare("UPDATE orders SET status='success', paid_at=CURRENT_TIMESTAMP WHERE id=?").run(req.params.id);
+
+  try {
+    const product = db.prepare('SELECT * FROM products WHERE id=?').get(order.product_id);
+    await sendProductEmail(order, product || { name: order.product_name, file_path: null }, null);
+    db.prepare('UPDATE orders SET email_sent=1 WHERE id=?').run(req.params.id);
+  } catch(e) {
+    console.error('Email failed after manual mark-success:', e.message);
+  }
+
+  res.json({ success: true, message: 'Order berhasil di-update ke success dan email produk dikirim.' });
+});
+
+// Diagnostic: test callback signature
+router.get('/orders/callback-diag', auth, (req, res) => {
+  const { createHmac } = require('crypto');
+  const API_KEY = process.env.VMP_API_KEY;
+  const SECRET_KEY = process.env.VMP_SECRET_KEY;
+  const sampleRef = '12345678';
+  const sigWithApiKey = API_KEY ? createHmac('sha256', API_KEY).update(sampleRef).digest('hex') : 'NOT_SET';
+  const sigWithSecretKey = SECRET_KEY ? createHmac('sha256', SECRET_KEY).update(sampleRef).digest('hex') : 'NOT_SET';
+  res.json({
+    callback_url: process.env.CALLBACK_URL || 'NOT SET',
+    redirect_url: process.env.REDIRECT_URL || 'NOT SET',
+    vmp_api_key: API_KEY ? API_KEY.slice(0,8) + '...' : 'NOT SET',
+    vmp_secret_key: SECRET_KEY ? '***SET***' : 'NOT SET',
+    signature_examples: {
+      hmac_sha256_api_key: sigWithApiKey,
+      hmac_sha256_secret_key: sigWithSecretKey,
+    },
+    pending_orders: db.prepare("SELECT id, ref_kode, product_name, customer_email, amount, created_at FROM orders WHERE status='pending' ORDER BY created_at DESC LIMIT 20").all(),
+  });
+});
+
 router.post('/orders/send-reminder/:id', auth, async (req, res) => {
   const order = db.prepare('SELECT * FROM orders WHERE id=?').get(req.params.id);
   if (!order) return res.json({ success: false, error: 'Order not found' });

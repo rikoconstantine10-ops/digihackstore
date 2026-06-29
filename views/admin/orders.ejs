@@ -58,6 +58,7 @@
               <% } %>
               <% if(o.status === 'pending') { %>
               <button onclick="sendReminder(<%= o.id %>)" class="admin-btn" style="background:#fef9c3;color:#854d0e;font-size:0.75rem">💬 WA</button>
+              <button onclick="markSuccess(<%= o.id %>)" class="admin-btn" style="background:#dcfce7;color:#15803d;font-size:0.75rem">✅ Mark Paid</button>
               <% } %>
             </td>
           </tr>
@@ -88,6 +89,13 @@ async function sendReminder(id) {
   const r = await fetch('/admin/orders/send-reminder/' + id, {method:'POST'});
   const d = await r.json();
   alert(d.success ? '✅ WA reminder terkirim!' : '❌ Gagal: ' + d.error);
+}
+async function markSuccess(id) {
+  if (!confirm('Tandai order ini sebagai SUKSES dan kirim email produk ke customer?\n\nGunakan HANYA jika VMP sudah konfirmasi pembayaran berhasil.')) return;
+  const r = await fetch('/admin/orders/mark-success/' + id, {method:'POST'});
+  const d = await r.json();
+  if (d.success) { alert('✅ ' + d.message); location.reload(); }
+  else alert('❌ Gagal: ' + d.error);
 }
 </script>
 </body></html>
