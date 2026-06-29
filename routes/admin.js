@@ -258,6 +258,8 @@ router.post('/orders/resend-email/:id', auth, async (req, res) => {
 });
 
 router.get('/analytics', auth, (req, res) => {
+  const period = ['7d', '30d', 'all'].includes(req.query.period) ? req.query.period : '30d';
+
   const week = new Date(Date.now() - 7*24*60*60*1000).toISOString().slice(0, 10);
   const month = new Date(Date.now() - 30*24*60*60*1000).toISOString().slice(0, 10);
 
@@ -272,12 +274,25 @@ router.get('/analytics', auth, (req, res) => {
   const successOrders = db.prepare("SELECT COUNT(*) as c FROM orders WHERE status='success'").get().c;
   const convRate = checkoutVisits > 0 ? ((successOrders / checkoutVisits) * 100).toFixed(1) : 0;
 
+  const pvDateFilter = period === '7d'
+    ? "AND pv.created_at >= datetime('now', '-7 days')"
+    : period === '30d'
+    ? "AND pv.created_at >= datetime('now', '-30 days')"
+    : '';
+  const ordDateFilter = period === '7d'
+    ? "AND o.created_at >= datetime('now', '-7 days')"
+    : period === '30d'
+    ? "AND o.created_at >= datetime('now', '-30 days')"
+    : '';
+
   const productStats = db.prepare(`
     SELECT p.id, p.name, p.slug, p.category,
-      COALESCE((SELECT COUNT(*) FROM page_views pv WHERE pv.page = '/product/' || p.slug), 0) as page_views,
-      COALESCE((SELECT COUNT(*) FROM page_views pv WHERE pv.page = '/checkout/' || p.slug), 0) as checkout_views,
-      COALESCE((SELECT COUNT(*) FROM orders o WHERE o.product_id = p.id), 0) as total_orders,
-      COALESCE((SELECT COUNT(*) FROM orders o WHERE o.product_id = p.id AND o.status = 'success'), 0) as success_orders
+      COALESCE((SELECT COUNT(DISTINCT CASE WHEN pv.ip != '' THEN pv.ip ELSE CAST(pv.id AS TEXT) END)
+                FROM page_views pv WHERE pv.page = '/product/' || p.slug ${pvDateFilter}), 0) as page_views,
+      COALESCE((SELECT COUNT(DISTINCT CASE WHEN pv.ip != '' THEN pv.ip ELSE CAST(pv.id AS TEXT) END)
+                FROM page_views pv WHERE pv.page = '/checkout/' || p.slug ${pvDateFilter}), 0) as checkout_views,
+      COALESCE((SELECT COUNT(*) FROM orders o WHERE o.product_id = p.id ${ordDateFilter}), 0) as total_orders,
+      COALESCE((SELECT COUNT(*) FROM orders o WHERE o.product_id = p.id AND o.status = 'success' ${ordDateFilter}), 0) as success_orders
     FROM products p
     WHERE p.is_active = 1
     ORDER BY page_views DESC
@@ -293,7 +308,7 @@ router.get('/analytics', auth, (req, res) => {
   res.render('admin/analytics', {
     admin: req.session.admin,
     stats: { todayViews, weekViews, monthViews, totalViews, convRate, successOrders },
-    topPages, topRefs, daily, productStats, utmStats
+    topPages, topRefs, daily, productStats, utmStats, period
   });
 });
 
