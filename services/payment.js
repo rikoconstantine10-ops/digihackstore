@@ -58,7 +58,7 @@ async function getChannels() {
 }
 
 function verifyCallbackSignature(refId, signatureReceived) {
-  const expected = crypto.createHmac('sha256', API_KEY).update(refId).digest('hex');
+  const expected = crypto.createHmac('sha256', API_KEY).update(String(refId)).digest('hex');
   return expected === signatureReceived;
 }
 
