@@ -155,6 +155,10 @@ router.post('/:slug/payment', async (req, res) => {
     return res.render('shop/payment-method', { product, settings, pending, error: 'Pilih metode pembayaran.' });
   }
 
+  if (product.max_slots > 0 && (product.sold_slots || 0) >= product.max_slots) {
+    return res.render('shop/payment-method', { product, settings, pending, error: 'Maaf, slot produk ini sudah habis.' });
+  }
+
   const { refKode, amount, name, email, phone, addonProductId, addonProductName, addonAmount } = pending;
   const produkLabel = addonProductName ? `${product.name} + ${addonProductName}` : product.name;
 

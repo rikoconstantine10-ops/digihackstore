@@ -1,12 +1,12 @@
 
 <!DOCTYPE html>
-<html lang="id">
+<html lang="<%= t.lang %>">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title><%= product.name %> - <%= settings.store_name %></title>
   <meta name="description" content="<%= (product.description ? product.description.replace(/<[^>]*>/g,'').slice(0,155) : product.name + ' - Tersedia di ' + (settings.store_name || 'Digihack Store')) %>">
   <% if(product.image) { %><link rel="preload" href="<%= product.image %>" as="image" fetchpriority="high"><% } %>
-  <style>:root{--primary:#6c63ff;--primary-dark:#5a52d5;--secondary:#f8f9ff;--accent:#ff6584;--text:#2d3748;--text-light:#718096;--border:#e2e8f0;--white:#fff;--radius:12px;--shadow:0 4px 20px rgba(108,99,255,.12)}*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Inter',-apple-system,sans-serif;background:#f7f8fc;color:var(--text)}a{text-decoration:none;color:inherit}img{max-width:100%}.navbar{background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.08);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}.navbar-brand{font-size:1.4rem;font-weight:800;color:var(--primary)}.navbar-brand span{color:var(--accent)}.navbar-links{display:flex;gap:24px;align-items:center}.navbar-links a{font-size:.9rem;font-weight:500;color:var(--text-light)}.btn-nav{background:var(--primary);color:#fff!important;padding:8px 20px;border-radius:25px;font-weight:600!important}.product-detail{display:grid;grid-template-columns:1fr 1fr;gap:48px;max-width:1000px;margin:40px auto;padding:0 24px}.product-detail img{border-radius:var(--radius);box-shadow:var(--shadow);width:100%}.product-info .category{color:var(--primary);font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:1px}.product-info h1{font-size:2rem;font-weight:800;margin:10px 0}.product-info .desc{color:var(--text-light);line-height:1.8;margin-bottom:24px}.price-block{background:var(--secondary);border-radius:12px;padding:20px;margin-bottom:24px}.price-block .price-now{font-size:2rem;font-weight:800;color:var(--primary)}.price-block .price-was{text-decoration:line-through;color:var(--text-light);font-size:.9rem}.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}.badge-new{background:#e0f2fe;color:#0284c7}.badge-hot{background:#fee2e2;color:#dc2626}.badge-sale{background:#fef3c7;color:#d97706}.badge-best{background:#dcfce7;color:#16a34a}.countdown{background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:.9rem;color:#c2410c;font-weight:600}.btn-buy{width:100%;padding:16px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;border:none;border-radius:12px;font-size:1.1rem;font-weight:700;cursor:pointer;transition:transform .2s}.btn-buy:hover{transform:translateY(-2px)}footer{background:var(--text);color:#a0aec0;padding:40px 24px;text-align:center;margin-top:60px}footer strong{color:#fff}@media(max-width:768px){.product-detail{grid-template-columns:1fr}}</style>
+  <style>:root{--primary:#6c63ff;--primary-dark:#5a52d5;--secondary:#f8f9ff;--accent:#ff6584;--text:#2d3748;--text-light:#718096;--border:#e2e8f0;--white:#fff;--radius:12px;--shadow:0 4px 20px rgba(108,99,255,.12)}*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Inter',-apple-system,sans-serif;background:#f7f8fc;color:var(--text)}a{text-decoration:none;color:inherit}img{max-width:100%}.navbar{background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.08);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}.navbar-brand{font-size:1.4rem;font-weight:800;color:var(--primary)}.navbar-brand span{color:var(--accent)}.navbar-links{display:flex;gap:24px;align-items:center}.navbar-links a{font-size:.9rem;font-weight:500;color:var(--text-light)}.btn-nav{background:var(--primary);color:#fff!important;padding:8px 20px;border-radius:25px;font-weight:600!important}.btn-lang{background:transparent;color:var(--primary)!important;border:1px solid var(--primary);padding:6px 14px;border-radius:20px;font-size:.8rem;font-weight:600!important;cursor:pointer}.product-detail{display:grid;grid-template-columns:1fr 1fr;gap:48px;max-width:1000px;margin:40px auto;padding:0 24px}.product-detail img{border-radius:var(--radius);box-shadow:var(--shadow);width:100%}.product-info .category{color:var(--primary);font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:1px}.product-info h1{font-size:2rem;font-weight:800;margin:10px 0}.product-info .desc{color:var(--text-light);line-height:1.8;margin-bottom:24px}.price-block{background:var(--secondary);border-radius:12px;padding:20px;margin-bottom:24px}.price-block .price-now{font-size:2rem;font-weight:800;color:var(--primary)}.price-block .price-was{text-decoration:line-through;color:var(--text-light);font-size:.9rem}.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}.badge-new{background:#e0f2fe;color:#0284c7}.badge-hot{background:#fee2e2;color:#dc2626}.badge-sale{background:#fef3c7;color:#d97706}.badge-best{background:#dcfce7;color:#16a34a}.countdown{background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:.9rem;color:#c2410c;font-weight:600}.slot-bar{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 16px;margin-bottom:16px}.slot-bar-full{background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:12px 16px;margin-bottom:16px}.slot-progress{background:#e5e7eb;border-radius:99px;height:8px;margin-top:8px;overflow:hidden}.slot-progress-fill{background:linear-gradient(90deg,#6c63ff,#a78bfa);height:100%;border-radius:99px;transition:width .4s}.btn-buy{width:100%;padding:16px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;border:none;border-radius:12px;font-size:1.1rem;font-weight:700;cursor:pointer;transition:transform .2s}.btn-buy:hover{transform:translateY(-2px)}.btn-buy-disabled{width:100%;padding:16px;background:#e5e7eb;color:#9ca3af;border:none;border-radius:12px;font-size:1.1rem;font-weight:700;cursor:not-allowed}footer{background:var(--text);color:#a0aec0;padding:40px 24px;text-align:center;margin-top:60px}footer strong{color:#fff}@media(max-width:768px){.product-detail{grid-template-columns:1fr}}</style>
   <link rel="preload" href="/css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="/css/style.css"></noscript>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
@@ -15,17 +15,22 @@
 <nav class="navbar">
   <a href="/" class="navbar-brand">Digi<span>hack</span></a>
   <div class="navbar-links">
-    <a href="/catalog">Catalog</a>
-    <a href="/order/status">Cek Order</a>
-    <a href="/catalog" class="btn-nav">Belanja Sekarang</a>
+    <a href="/catalog"><%= t.nav_catalog %></a>
+    <a href="/order/status"><%= t.nav_check_order %></a>
+    <a href="?lang=<%= t.lang_toggle_url %>" class="btn-lang"><%= t.lang_toggle %></a>
+    <a href="/catalog" class="btn-nav"><%= t.nav_shop %></a>
   </div>
 </nav>
 
 <div style="max-width:1000px;margin:24px auto;padding:0 24px">
   <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:24px">
-    <a href="/">Home</a> / <a href="/catalog">Catalog</a> / <a href="/catalog?category=<%= encodeURIComponent(product.category) %>"><%= product.category %></a> / <%= product.name %>
+    <a href="/"><%= t.home %></a> / <a href="/catalog"><%= t.breadcrumb_catalog %></a> / <a href="/catalog?category=<%= encodeURIComponent(product.category) %>"><%= product.category %></a> / <%= product.name %>
   </div>
 </div>
+
+<% const slotsFull = product.max_slots > 0 && (product.sold_slots || 0) >= product.max_slots; %>
+<% const slotsLeft = product.max_slots > 0 ? product.max_slots - (product.sold_slots || 0) : null; %>
+<% const slotPct = product.max_slots > 0 ? Math.min(100, Math.round((product.sold_slots || 0) / product.max_slots * 100)) : 0; %>
 
 <div class="product-detail">
   <div>
@@ -38,9 +43,9 @@
   <div class="product-info">
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
       <span class="category"><%= product.category %></span>
-      <% if(product.badge) { %><span class="badge badge-<%= product.badge.toLowerCase() %>"><%= product.badge %></span><% } %>
+      <% if(product.badge && !slotsFull) { %><span class="badge badge-<%= product.badge.toLowerCase() %>"><%= product.badge %></span><% } %>
       <% if(typeof salesCount !== 'undefined' && salesCount > 0) { %>
-      <span style="display:inline-flex;align-items:center;gap:4px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:20px;padding:3px 10px;font-size:0.78rem;color:#166534;font-weight:600">🔥 <%= salesCount %> terjual</span>
+      <span style="display:inline-flex;align-items:center;gap:4px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:20px;padding:3px 10px;font-size:0.78rem;color:#166534;font-weight:600">🔥 <%= salesCount %> <%= t.sold %></span>
       <% } %>
     </div>
     <h1><%= product.name %></h1>
@@ -50,30 +55,54 @@
     <div class="countdown" id="countdown">⏰ Diskon berakhir dalam: <span id="timer">...</span></div>
     <% } %>
 
+    <% if(product.max_slots > 0) { %>
+    <% if(slotsFull) { %>
+    <div class="slot-bar-full">
+      <div style="display:flex;justify-content:space-between;font-size:.85rem;font-weight:600;color:#6b7280">
+        <span>🚫 <%= t.slot_full %></span>
+        <span><%= product.sold_slots %>/<%= product.max_slots %></span>
+      </div>
+      <div class="slot-progress"><div class="slot-progress-fill" style="width:100%;background:#e5e7eb"></div></div>
+    </div>
+    <% } else { %>
+    <div class="slot-bar">
+      <div style="display:flex;justify-content:space-between;font-size:.85rem;font-weight:600;color:#166534">
+        <span>🎟️ <%= t.slot_remaining %>: <%= slotsLeft %></span>
+        <span><%= product.sold_slots || 0 %>/<%= product.max_slots %> <%= t.sold %></span>
+      </div>
+      <div class="slot-progress"><div class="slot-progress-fill" style="width:<%= slotPct %>%"></div></div>
+    </div>
+    <% } %>
+    <% } %>
+
     <div class="price-block">
       <% if(product.discount_price) { %>
-      <div class="price-was">Harga normal: Rp <%= product.price.toLocaleString('id-ID') %></div>
+      <div class="price-was"><%= t.normal_price %> Rp <%= product.price.toLocaleString('id-ID') %></div>
       <div class="price-now">Rp <%= product.discount_price.toLocaleString('id-ID') %></div>
-      <div style="margin-top:6px"><span class="badge badge-sale">Hemat Rp <%= (product.price - product.discount_price).toLocaleString('id-ID') %></span></div>
+      <div style="margin-top:6px"><span class="badge badge-sale"><%= t.save %> Rp <%= (product.price - product.discount_price).toLocaleString('id-ID') %></span></div>
       <% } else { %>
       <div class="price-now">Rp <%= product.price.toLocaleString('id-ID') %></div>
       <% } %>
     </div>
 
     <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:0.85rem;color:#166534">
-      ✅ Produk digital - dikirim otomatis ke email<br>
-      ✅ Pembayaran aman via Violet Media Pay<br>
-      ✅ Support berbagai metode pembayaran
+      ✅ <%= t.digital_delivery %><br>
+      ✅ <%= t.payment_secure %><br>
+      ✅ <%= t.payment_methods %>
     </div>
 
+    <% if(slotsFull) { %>
+    <button class="btn-buy-disabled" disabled>🚫 <%= t.slot_full %></button>
+    <% } else { %>
     <a href="/checkout/<%= product.slug %>">
-      <button class="btn-buy">💎 Beli Sekarang - Rp <%= (product.discount_price || product.price).toLocaleString('id-ID') %></button>
+      <button class="btn-buy">💎 <%= t.buy_now %> - Rp <%= (product.discount_price || product.price).toLocaleString('id-ID') %></button>
     </a>
+    <% } %>
   </div>
 </div>
 
 <footer style="margin-top:60px">
-  <p>&copy; 2026 <strong><%= settings.store_name %></strong>. All rights reserved.</p>
+  <p>&copy; 2026 <strong><%= settings.store_name %></strong>. <%= t.footer_rights %></p>
 </footer>
 
 <% if(product.countdown_end) { %>

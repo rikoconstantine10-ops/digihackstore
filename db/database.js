@@ -98,6 +98,8 @@ try { db.exec("ALTER TABLE products ADD COLUMN social_proof INTEGER DEFAULT 0");
 try { db.exec("ALTER TABLE products ADD COLUMN priority INTEGER DEFAULT 0"); } catch(e) {}
 try { db.exec("ALTER TABLE products ADD COLUMN product_link TEXT DEFAULT NULL"); } catch(e) {}
 try { db.exec("ALTER TABLE products ADD COLUMN is_pinned INTEGER DEFAULT 0"); } catch(e) {}
+try { db.exec("ALTER TABLE products ADD COLUMN max_slots INTEGER DEFAULT 0"); } catch(e) {}
+try { db.exec("ALTER TABLE products ADD COLUMN sold_slots INTEGER DEFAULT 0"); } catch(e) {}
 try { db.exec("ALTER TABLE page_views ADD COLUMN utm_source TEXT DEFAULT ''"); } catch(e) {}
 try { db.exec("ALTER TABLE page_views ADD COLUMN utm_medium TEXT DEFAULT ''"); } catch(e) {}
 try { db.exec("ALTER TABLE page_views ADD COLUMN utm_campaign TEXT DEFAULT ''"); } catch(e) {}

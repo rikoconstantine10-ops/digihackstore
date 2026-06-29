@@ -32,6 +32,7 @@ router.post('/', express.json(), async (req, res) => {
 
     if (status === 'success') {
       db.prepare('UPDATE orders SET status=?, id_reference=?, paid_at=CURRENT_TIMESTAMP WHERE ref_kode=?').run('success', id_reference, String(ref));
+      db.prepare('UPDATE products SET sold_slots = sold_slots + 1 WHERE id = ?').run(order.product_id);
 
       if (!order.email_sent) {
         const product = db.prepare('SELECT * FROM products WHERE id=?').get(order.product_id);

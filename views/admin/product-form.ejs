@@ -144,6 +144,18 @@
               <div class="hint">Angka yang ditambahkan ke jumlah penjualan nyata saat ditampilkan ke calon pembeli.</div>
             </div>
           </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Max Slot (0 = tidak terbatas)</label>
+              <input type="number" name="max_slots" value="<%= product ? (product.max_slots||0) : 0 %>" min="0" placeholder="0">
+              <div class="hint">Batasi jumlah penjualan. Jika 0, produk tidak memiliki batas slot.</div>
+            </div>
+            <div class="form-group">
+              <label>Slot Terjual</label>
+              <input type="number" value="<%= product ? (product.sold_slots||0) : 0 %>" disabled style="background:#f5f5f5;cursor:not-allowed">
+              <div class="hint">Dihitung otomatis setiap order berhasil. Tidak bisa diedit manual.</div>
+            </div>
+          </div>
           <% if(product) { %>
           <div class="form-group">
             <label style="display:flex;align-items:center;gap:10px;cursor:pointer">

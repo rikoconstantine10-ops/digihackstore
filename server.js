@@ -61,6 +61,9 @@ const checkoutLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: 
 // Init DB
 require('./db/database');
 
+// Language middleware (ID/EN)
+app.use(require('./middleware/lang'));
+
 // Background jobs
 require('./services/cron');
 

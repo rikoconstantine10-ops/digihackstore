@@ -119,14 +119,14 @@ router.get('/products/edit/:id', auth, (req, res) => {
 
 router.post('/products/add', auth, upload.fields([{name:'image',maxCount:1},{name:'file',maxCount:1}]), async (req, res) => {
   try {
-    const { name, category, description, price, discount_price, badge, countdown_end, priority, product_link, social_proof } = req.body;
+    const { name, category, description, price, discount_price, badge, countdown_end, priority, product_link, social_proof, max_slots } = req.body;
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') + '-' + Date.now();
     let imageFilename = null;
     if (req.files.image) imageFilename = await convertToWebP(req.files.image[0].path);
     const image = imageFilename ? '/uploads/' + imageFilename : null;
     const file_path = req.files.file ? req.files.file[0].filename : null;
-    const insertResult = db.prepare('INSERT INTO products (name,slug,category,description,price,discount_price,image,file_path,badge,countdown_end,priority,product_link,social_proof) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)'
-    ).run(name, slug, category, description, parseInt(price), discount_price ? parseInt(discount_price) : null, image, file_path, badge||null, countdown_end||null, priority ? parseInt(priority) : 0, product_link||null, social_proof ? parseInt(social_proof) : 0);
+    const insertResult = db.prepare('INSERT INTO products (name,slug,category,description,price,discount_price,image,file_path,badge,countdown_end,priority,product_link,social_proof,max_slots) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
+    ).run(name, slug, category, description, parseInt(price), discount_price ? parseInt(discount_price) : null, image, file_path, badge||null, countdown_end||null, priority ? parseInt(priority) : 0, product_link||null, social_proof ? parseInt(social_proof) : 0, max_slots ? parseInt(max_slots) : 0);
     const newId = insertResult.lastInsertRowid;
     const rawAddonIds = req.body.addon_ids;
     const addonIds = rawAddonIds ? (Array.isArray(rawAddonIds) ? rawAddonIds : [rawAddonIds]) : [];
@@ -143,8 +143,8 @@ router.post('/products/add', auth, upload.fields([{name:'image',maxCount:1},{nam
 
 router.post('/products/edit/:id', auth, upload.fields([{name:'image',maxCount:1},{name:'file',maxCount:1}]), async (req, res) => {
   try {
-    const { name, category, description, price, discount_price, badge, countdown_end, is_active, social_proof, priority, product_link } = req.body;
-    const updates = { name, category, description, price: parseInt(price), discount_price: discount_price ? parseInt(discount_price) : null, badge: badge||null, countdown_end: countdown_end||null, is_active: is_active ? 1 : 0, social_proof: social_proof ? parseInt(social_proof) : 0, priority: priority ? parseInt(priority) : 0, product_link: product_link||null };
+    const { name, category, description, price, discount_price, badge, countdown_end, is_active, social_proof, priority, product_link, max_slots } = req.body;
+    const updates = { name, category, description, price: parseInt(price), discount_price: discount_price ? parseInt(discount_price) : null, badge: badge||null, countdown_end: countdown_end||null, is_active: is_active ? 1 : 0, social_proof: social_proof ? parseInt(social_proof) : 0, priority: priority ? parseInt(priority) : 0, product_link: product_link||null, max_slots: max_slots ? parseInt(max_slots) : 0 };
     if (req.files.image) {
       const webpName = await convertToWebP(req.files.image[0].path);
       updates.image = '/uploads/' + webpName;
@@ -355,6 +355,9 @@ router.post('/orders/mark-success/:id', auth, async (req, res) => {
   if (order.status === 'success') return res.json({ success: false, error: 'Order sudah berstatus success' });
 
   db.prepare("UPDATE orders SET status='success', paid_at=CURRENT_TIMESTAMP WHERE id=?").run(req.params.id);
+  if (order.product_id) {
+    db.prepare('UPDATE products SET sold_slots = sold_slots + 1 WHERE id = ?').run(order.product_id);
+  }
 
   try {
     const product = db.prepare('SELECT * FROM products WHERE id=?').get(order.product_id);
