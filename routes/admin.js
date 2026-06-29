@@ -113,26 +113,34 @@ router.get('/products/edit/:id', auth, (req, res) => {
   const product = db.prepare('SELECT * FROM products WHERE id=?').get(req.params.id);
   if (!product) return res.redirect('/admin/products');
   product.addons = db.prepare('SELECT addon_product_id, addon_price FROM product_addons WHERE product_id = ?').all(product.id);
+  product.bundleChildren = db.prepare('SELECT child_product_id FROM product_bundles WHERE bundle_product_id = ?').all(product.id).map(r => r.child_product_id);
   const allProducts = db.prepare('SELECT id, name, price, discount_price, image FROM products WHERE is_active = 1 AND id != ? ORDER BY name').all(req.params.id);
   res.render('admin/product-form', { settings, product, allProducts, admin: req.session.admin, error: null, success: req.query.saved });
 });
 
 router.post('/products/add', auth, upload.fields([{name:'image',maxCount:1},{name:'file',maxCount:1}]), async (req, res) => {
   try {
-    const { name, category, description, price, discount_price, badge, countdown_end, priority, product_link, social_proof, max_slots } = req.body;
+    const { name, category, description, price, discount_price, badge, countdown_end, priority, product_link, social_proof, max_slots, is_bundle } = req.body;
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') + '-' + Date.now();
     let imageFilename = null;
     if (req.files.image) imageFilename = await convertToWebP(req.files.image[0].path);
     const image = imageFilename ? '/uploads/' + imageFilename : null;
     const file_path = req.files.file ? req.files.file[0].filename : null;
-    const insertResult = db.prepare('INSERT INTO products (name,slug,category,description,price,discount_price,image,file_path,badge,countdown_end,priority,product_link,social_proof,max_slots) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
-    ).run(name, slug, category, description, parseInt(price), discount_price ? parseInt(discount_price) : null, image, file_path, badge||null, countdown_end||null, priority ? parseInt(priority) : 0, product_link||null, social_proof ? parseInt(social_proof) : 0, max_slots ? parseInt(max_slots) : 0);
+    const insertResult = db.prepare('INSERT INTO products (name,slug,category,description,price,discount_price,image,file_path,badge,countdown_end,priority,product_link,social_proof,max_slots,is_bundle) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
+    ).run(name, slug, category, description, parseInt(price), discount_price ? parseInt(discount_price) : null, image, file_path, badge||null, countdown_end||null, priority ? parseInt(priority) : 0, product_link||null, social_proof ? parseInt(social_proof) : 0, max_slots ? parseInt(max_slots) : 0, is_bundle ? 1 : 0);
     const newId = insertResult.lastInsertRowid;
     const rawAddonIds = req.body.addon_ids;
     const addonIds = rawAddonIds ? (Array.isArray(rawAddonIds) ? rawAddonIds : [rawAddonIds]) : [];
     for (const aid of addonIds) {
       const ap = req.body['addon_price_' + aid] ? parseInt(req.body['addon_price_' + aid]) : null;
       db.prepare('INSERT OR IGNORE INTO product_addons (product_id, addon_product_id, addon_price) VALUES (?,?,?)').run(newId, parseInt(aid), ap);
+    }
+    if (is_bundle) {
+      const rawBundleIds = req.body.bundle_child_ids;
+      const bundleIds = rawBundleIds ? (Array.isArray(rawBundleIds) ? rawBundleIds : [rawBundleIds]) : [];
+      for (const bid of bundleIds) {
+        db.prepare('INSERT OR IGNORE INTO product_bundles (bundle_product_id, child_product_id) VALUES (?,?)').run(newId, parseInt(bid));
+      }
     }
     res.redirect('/admin/products?saved=1');
   } catch(e) {
@@ -143,8 +151,8 @@ router.post('/products/add', auth, upload.fields([{name:'image',maxCount:1},{nam
 
 router.post('/products/edit/:id', auth, upload.fields([{name:'image',maxCount:1},{name:'file',maxCount:1}]), async (req, res) => {
   try {
-    const { name, category, description, price, discount_price, badge, countdown_end, is_active, social_proof, priority, product_link, max_slots } = req.body;
-    const updates = { name, category, description, price: parseInt(price), discount_price: discount_price ? parseInt(discount_price) : null, badge: badge||null, countdown_end: countdown_end||null, is_active: is_active ? 1 : 0, social_proof: social_proof ? parseInt(social_proof) : 0, priority: priority ? parseInt(priority) : 0, product_link: product_link||null, max_slots: max_slots ? parseInt(max_slots) : 0 };
+    const { name, category, description, price, discount_price, badge, countdown_end, is_active, social_proof, priority, product_link, max_slots, is_bundle } = req.body;
+    const updates = { name, category, description, price: parseInt(price), discount_price: discount_price ? parseInt(discount_price) : null, badge: badge||null, countdown_end: countdown_end||null, is_active: is_active ? 1 : 0, social_proof: social_proof ? parseInt(social_proof) : 0, priority: priority ? parseInt(priority) : 0, product_link: product_link||null, max_slots: max_slots ? parseInt(max_slots) : 0, is_bundle: is_bundle ? 1 : 0 };
     if (req.files.image) {
       const webpName = await convertToWebP(req.files.image[0].path);
       updates.image = '/uploads/' + webpName;
@@ -158,6 +166,14 @@ router.post('/products/edit/:id', auth, upload.fields([{name:'image',maxCount:1}
     for (const aid of addonIds) {
       const ap = req.body['addon_price_' + aid] ? parseInt(req.body['addon_price_' + aid]) : null;
       db.prepare('INSERT OR IGNORE INTO product_addons (product_id, addon_product_id, addon_price) VALUES (?,?,?)').run(parseInt(req.params.id), parseInt(aid), ap);
+    }
+    db.prepare('DELETE FROM product_bundles WHERE bundle_product_id = ?').run(req.params.id);
+    if (is_bundle) {
+      const rawBundleIds = req.body.bundle_child_ids;
+      const bundleIds = rawBundleIds ? (Array.isArray(rawBundleIds) ? rawBundleIds : [rawBundleIds]) : [];
+      for (const bid of bundleIds) {
+        db.prepare('INSERT OR IGNORE INTO product_bundles (bundle_product_id, child_product_id) VALUES (?,?)').run(parseInt(req.params.id), parseInt(bid));
+      }
     }
     res.redirect('/admin/products/edit/' + req.params.id + '?saved=1');
   } catch(e) {
@@ -223,10 +239,25 @@ router.get('/orders', auth, (req, res) => {
 
 router.get('/orders/export', auth, (req, res) => {
   const orders = db.prepare('SELECT * FROM orders ORDER BY created_at DESC').all();
-  const csv = ['ID,Ref,Produk,Nama,Email,HP,Amount,Metode,Status,Email Sent,WA Sent,Paid At,Tanggal',...orders.map(o=>`${o.id},${o.ref_kode},"${o.product_name}","${o.customer_name}",${o.customer_email},${o.customer_phone},${o.amount},${o.payment_method},${o.status},${o.email_sent},${o.wa_sent},${o.paid_at||''},${o.created_at}`)].join('\n');
+  const csv = ['ID,Ref,Produk,Nama,Email,HP,Amount,Metode,Status,Email Sent,WA Sent,Paid At,Tanggal',...orders.map(o=>`${o.id},${o.ref_kode},"${(o.product_name||'').replace(/"/g,'""')}","${(o.customer_name||'').replace(/"/g,'""')}",${o.customer_email},${o.customer_phone},${o.amount},${o.payment_method},${o.status},${o.email_sent},${o.wa_sent},${o.paid_at||''},${o.created_at}`)].join('\n');
   res.setHeader('Content-Type','text/csv');
   res.setHeader('Content-Disposition','attachment; filename=orders.csv');
   res.send(csv);
+});
+
+router.get('/leads/export', auth, (req, res) => {
+  const leads = db.prepare('SELECT * FROM leads ORDER BY created_at DESC').all();
+  const csv = ['ID,Nama,Email,HP,Domisili,Produk,Status,WA Sent,Notes,Tanggal',
+    ...leads.map(l => `${l.id},"${(l.customer_name||'').replace(/"/g,'""')}",${l.customer_email},${l.customer_phone},"${(l.domisili||'').replace(/"/g,'""')}","${(l.product_name||'').replace(/"/g,'""')}",${l.status||'new'},${l.wa_sent||0},"${(l.notes||'').replace(/"/g,'""')}",${l.created_at}`)
+  ].join('\n');
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', 'attachment; filename=leads.csv');
+  res.send(csv);
+});
+
+router.get('/api/orders/latest', auth, (req, res) => {
+  const latest = db.prepare('SELECT id, ref_kode, product_name, customer_name, amount, status FROM orders ORDER BY id DESC LIMIT 1').get();
+  res.json({ latestId: latest ? latest.id : 0, latest: latest || null });
 });
 
 // Settings
@@ -236,7 +267,7 @@ router.get('/settings', auth, (req, res) => {
 });
 
 router.post('/settings', auth, (req, res) => {
-  const allowed = ['store_name','store_domain','meta_pixel_id','meta_capi_token','ga4_id','wa_number','wa_followup_msg','wa_pending_msg','wa_leads_msg'];
+  const allowed = ['store_name','store_domain','meta_pixel_id','meta_capi_token','ga4_id','wa_number','wa_followup_msg','wa_pending_msg','wa_leads_msg','resend_api_key'];
   for (const key of allowed) {
     if (req.body[key] !== undefined) {
       db.prepare('INSERT OR REPLACE INTO settings (key,value) VALUES (?,?)').run(key, req.body[key]);
@@ -305,10 +336,20 @@ router.get('/analytics', auth, (req, res) => {
     ORDER BY visits DESC LIMIT 20
   `).all();
 
+  const revenueStats = db.prepare(`
+    SELECT p.name,
+      COALESCE(SUM(CASE WHEN o.status='success' THEN o.amount ELSE 0 END), 0) as revenue,
+      COALESCE(COUNT(CASE WHEN o.status='success' THEN 1 END), 0) as orders
+    FROM products p LEFT JOIN orders o ON o.product_id = p.id
+    WHERE p.is_active = 1
+    GROUP BY p.id, p.name
+    ORDER BY revenue DESC LIMIT 10
+  `).all();
+
   res.render('admin/analytics', {
     admin: req.session.admin,
     stats: { todayViews, weekViews, monthViews, totalViews, convRate, successOrders },
-    topPages, topRefs, daily, productStats, utmStats, period
+    topPages, topRefs, daily, productStats, utmStats, period, revenueStats
   });
 });
 

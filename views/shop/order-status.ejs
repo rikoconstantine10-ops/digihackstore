@@ -50,6 +50,25 @@
     <% } %>
     <a href="/catalog" style="display:block;text-align:center;margin-top:20px;color:var(--primary);font-weight:600">Belanja lagi →</a>
   </div>
+
+  <% if(typeof upsells !== 'undefined' && upsells.length > 0) { %>
+  <div style="margin-top:24px">
+    <div style="font-size:0.82rem;font-weight:700;color:var(--text-light);text-align:center;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px">✨ Produk yang mungkin kamu suka</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px">
+      <% upsells.forEach(u => { %>
+      <a href="/product/<%= u.slug %>" style="background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 10px rgba(108,99,255,.1);display:block;text-decoration:none;color:inherit;transition:transform .2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+        <% if(u.image) { %><img src="<%= u.image %>" alt="<%= u.name %>" style="width:100%;aspect-ratio:1/1;object-fit:cover">
+        <% } else { %><div style="width:100%;aspect-ratio:1/1;background:linear-gradient(135deg,#e0e7ff,#c7d2fe);display:flex;align-items:center;justify-content:center;font-size:2rem">📦</div><% } %>
+        <div style="padding:10px">
+          <div style="font-size:0.8rem;font-weight:700;margin-bottom:4px;line-height:1.3"><%= u.name %></div>
+          <div style="font-size:0.85rem;font-weight:800;color:var(--primary)">Rp <%= (u.discount_price||u.price).toLocaleString('id-ID') %></div>
+        </div>
+      </a>
+      <% }) %>
+    </div>
+  </div>
+  <% } %>
+
   <% } else if(order.status === 'pending') { %>
   <div class="status-icon">⏳</div>
   <div class="status-card">

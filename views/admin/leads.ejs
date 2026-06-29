@@ -43,6 +43,7 @@
       <h1>🎯 Leads <span style="font-size:0.85rem;color:var(--text-light);font-weight:500">(<%= leads.length %> leads)</span></h1>
       <div class="leads-topbar-actions">
         <span style="color:var(--text-light);font-size:0.85rem">Halo, <strong><%= admin.username %></strong></span>
+        <a href="/admin/leads/export"><button class="admin-btn admin-btn-success">💾 Export CSV</button></a>
         <button onclick="toggleBlast()" id="blastToggleBtn" class="admin-btn" style="background:#25d366;color:#fff;border:none;display:flex;align-items:center;gap:6px;padding:9px 16px">
           📣 WA Blast
         </button>

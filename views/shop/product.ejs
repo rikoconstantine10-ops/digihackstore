@@ -91,19 +91,36 @@
       ✅ <%= t.payment_methods %>
     </div>
 
-    <% if(slotsFull) { %>
-    <button class="btn-buy-disabled" disabled>🚫 <%= t.slot_full %></button>
-    <% } else { %>
-    <a href="/checkout/<%= product.slug %>">
-      <button class="btn-buy">💎 <%= t.buy_now %> - Rp <%= (product.discount_price || product.price).toLocaleString('id-ID') %></button>
-    </a>
-    <% } %>
+    <div style="display:flex;gap:10px">
+      <% if(slotsFull) { %>
+      <button class="btn-buy-disabled" disabled style="flex:1">🚫 <%= t.slot_full %></button>
+      <% } else { %>
+      <a href="/checkout/<%= product.slug %>" style="flex:1">
+        <button class="btn-buy" style="width:100%">💎 <%= t.buy_now %> - Rp <%= (product.discount_price || product.price).toLocaleString('id-ID') %></button>
+      </a>
+      <% } %>
+      <button id="wlBtn" onclick="toggleWishlistProduct()" style="width:52px;height:52px;border:2px solid var(--border);border-radius:12px;background:#fff;cursor:pointer;font-size:1.4rem;transition:all .2s;flex-shrink:0">🤍</button>
+    </div>
   </div>
 </div>
 
 <footer style="margin-top:60px">
   <p>&copy; 2026 <strong><%= settings.store_name %></strong>. <%= t.footer_rights %></p>
 </footer>
+
+<script>
+const _pid = '<%= product.id %>', _pname = '<%= product.name.replace(/'/g,"\\'") %>', _pimage = '<%= product.image || "" %>', _pprice = <%= product.discount_price || product.price %>, _pslug = '<%= product.slug %>';
+function getWishlist() { try { return JSON.parse(localStorage.getItem('dg_wishlist')||'[]'); } catch(e) { return []; } }
+function toggleWishlistProduct() {
+  let wl = getWishlist();
+  const idx = wl.findIndex(x => x.id == _pid);
+  const btn = document.getElementById('wlBtn');
+  if (idx >= 0) { wl.splice(idx,1); btn.textContent='🤍'; btn.style.borderColor='var(--border)'; }
+  else { wl.push({id:_pid,name:_pname,image:_pimage,price:_pprice,slug:_pslug}); btn.textContent='❤️'; btn.style.borderColor='#e879b0'; }
+  localStorage.setItem('dg_wishlist', JSON.stringify(wl));
+}
+(function(){ const wl=getWishlist(); const btn=document.getElementById('wlBtn'); if(btn&&wl.find(x=>x.id==_pid)){btn.textContent='❤️';btn.style.borderColor='#e879b0';} })();
+</script>
 
 <% if(product.countdown_end) { %>
 <script>

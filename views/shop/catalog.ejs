@@ -22,8 +22,15 @@
 </nav>
 
 <div class="section">
-  <h1 class="section-title">📦 <%= t.catalog_title %></h1>
-  <p class="section-sub"><%= t.catalog_sub %></p>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:8px">
+    <div>
+      <h1 class="section-title" style="margin-bottom:4px">📦 <%= t.catalog_title %></h1>
+      <p class="section-sub" style="margin-bottom:0"><%= t.catalog_sub %></p>
+    </div>
+    <a href="/wishlist" id="wishlistNavBtn" style="display:flex;align-items:center;gap:6px;background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:8px 16px;font-size:0.85rem;font-weight:600;color:var(--text);text-decoration:none;transition:all .2s" onmouseover="this.style.borderColor='#e879b0'" onmouseout="this.style.borderColor='var(--border)'">
+      ❤️ Wishlist <span id="wishlistCount" style="background:#e879b0;color:white;border-radius:20px;padding:1px 8px;font-size:0.72rem;display:none">0</span>
+    </a>
+  </div>
 
   <form method="GET" action="/catalog" class="filter-bar">
     <input type="hidden" name="lang" value="<%= lang %>">
@@ -97,11 +104,14 @@
         <% } else if(p.total_sold > 0) { %>
         <div style="font-size:0.75rem;color:#16a34a;font-weight:600;margin-bottom:8px">🔥 <%= p.total_sold %> <%= t.sold %></div>
         <% } %>
-        <% if(isFull) { %>
-        <button class="btn-card-disabled" disabled><%= t.slot_full %></button>
-        <% } else { %>
-        <button class="btn-card"><%= t.buy_now %></button>
-        <% } %>
+        <div style="display:flex;gap:8px">
+          <% if(isFull) { %>
+          <button class="btn-card-disabled" disabled style="flex:1"><%= t.slot_full %></button>
+          <% } else { %>
+          <button class="btn-card" style="flex:1"><%= t.buy_now %></button>
+          <% } %>
+          <button class="btn-wishlist" onclick="event.preventDefault();toggleWishlist('<%= p.id %>','<%= p.name.replace(/'/g,"\\'") %>','<%= p.image || '' %>',<%= p.discount_price || p.price %>,'<%= p.slug %>')" id="wl-<%= p.id %>" style="width:40px;border:1.5px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:1.1rem;transition:all .2s;padding:0">🤍</button>
+        </div>
       </div>
     </a>
     <% }) %>
@@ -121,6 +131,29 @@
 <footer>
   <p>&copy; 2026 <strong><%= settings.store_name %></strong>. <%= t.footer_rights %></p>
 </footer>
+<script>
+function getWishlist() { try { return JSON.parse(localStorage.getItem('dg_wishlist') || '[]'); } catch(e) { return []; } }
+function saveWishlist(wl) { localStorage.setItem('dg_wishlist', JSON.stringify(wl)); }
+function updateWishlistUI() {
+  const wl = getWishlist();
+  const cnt = document.getElementById('wishlistCount');
+  if (cnt) { if (wl.length > 0) { cnt.textContent = wl.length; cnt.style.display='inline'; } else { cnt.style.display='none'; } }
+  wl.forEach(item => {
+    const btn = document.getElementById('wl-' + item.id);
+    if (btn) btn.textContent = '❤️';
+  });
+}
+function toggleWishlist(id, name, image, price, slug) {
+  let wl = getWishlist();
+  const idx = wl.findIndex(x => x.id == id);
+  const btn = document.getElementById('wl-' + id);
+  if (idx >= 0) { wl.splice(idx, 1); if (btn) btn.textContent = '🤍'; }
+  else { wl.push({ id, name, image, price, slug }); if (btn) btn.textContent = '❤️'; }
+  saveWishlist(wl);
+  updateWishlistUI();
+}
+updateWishlistUI();
+</script>
 <% if(settings.meta_pixel_id) { %>
 <script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','<%= settings.meta_pixel_id %>');fbq('track','PageView');</script>
 <% } %>

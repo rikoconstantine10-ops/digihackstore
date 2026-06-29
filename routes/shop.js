@@ -101,6 +101,11 @@ ${allUrls.map(u => `  <url>
   res.send(xml);
 });
 
+router.get('/wishlist', (req, res) => {
+  const settings = getSettings();
+  res.render('shop/wishlist', { settings });
+});
+
 router.get('/robots.txt', (req, res) => {
   const settings = getSettings();
   const base = (settings.store_domain || 'https://digihackstore.com').replace(/\/$/, '');

@@ -95,6 +95,18 @@
           </div>
         </div>
 
+        <div class="form-admin">
+          <h3>📧 Resend Email API (Opsional)</h3>
+          <div class="form-group">
+            <label>Resend API Key</label>
+            <input type="text" name="resend_api_key" value="<%= settings.resend_api_key || '' %>" placeholder="re_xxxxxxxxxxxxxxxxxxxxxxxxxx">
+            <div style="font-size:0.8rem;color:var(--text-light);margin-top:4px">Jika diisi, email akan dikirim via <strong>Resend.com</strong> (delivery lebih baik, gratis 3000 email/bulan). Didapat dari resend.com → API Keys. Kosongkan untuk tetap pakai SMTP.</div>
+          </div>
+          <% if(settings.resend_api_key) { %>
+          <div style="background:#dcfce7;border:1px solid #bbf7d0;border-radius:8px;padding:10px;font-size:0.82rem;color:#166534">✅ Resend API aktif — email dikirim via Resend.com</div>
+          <% } %>
+        </div>
+
         <button type="submit" class="admin-btn admin-btn-primary" style="padding:12px 32px">Simpan Pengaturan</button>
       </form>
     </div>

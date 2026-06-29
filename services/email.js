@@ -1,7 +1,30 @@
 
 const nodemailer = require('nodemailer');
+const https = require('https');
 const path = require('path');
 const fs = require('fs');
+
+function sendViaResend(apiKey, { from, to, subject, html }) {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify({ from, to: [to], subject, html });
+    const req = https.request({
+      hostname: 'api.resend.com',
+      path: '/emails',
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
+    }, (res) => {
+      let d = '';
+      res.on('data', chunk => d += chunk);
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) resolve(JSON.parse(d));
+        else reject(new Error('Resend ' + res.statusCode + ': ' + d));
+      });
+    });
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.sumopod.com',
@@ -13,13 +36,21 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-async function sendProductEmail(order, product, addonProduct = null) {
+async function sendProductEmail(order, product, addonProduct = null, bundleProducts = []) {
   const storeName = process.env.STORE_NAME || 'Digihack Store';
   const filePath = path.join(__dirname, '../public/uploads', product.file_path || '');
   const fileExists = product.file_path && fs.existsSync(filePath);
 
   const addonFilePath = addonProduct ? path.join(__dirname, '../public/uploads', addonProduct.file_path || '') : null;
   const addonFileExists = addonProduct && addonProduct.file_path && fs.existsSync(addonFilePath);
+
+  const bundleSection = bundleProducts.length ? bundleProducts.map(bp => {
+    const bpLink = bp.product_link || (bp.file_path ? '${bp.file_path}' : '');
+    return `<div class='product-card' style='border-color:#e0e7ff;background:#f5f3ff;margin-top:10px'>
+      <h3 style='margin:0 0 6px;color:#4c1d95;font-size:0.95rem'>📦 ${bp.name}</h3>
+      ${bp.product_link ? `<p><a href='${bp.product_link}' style='color:#667eea;font-weight:600'>⬇️ Download ${bp.name}</a></p>` : bp.file_path ? `<p>📂 File terlampir.</p>` : ''}
+    </div>`;
+  }).join('') : '';
 
   const addonSection = addonProduct ? `
     <div class='product-card' style='border-color:#d1fae5;background:#f0fdf4;margin-top:10px'>
@@ -71,6 +102,7 @@ async function sendProductEmail(order, product, addonProduct = null) {
         <p><strong>Metode:</strong> ${order.payment_method}</p>
       </div>
       ${downloadSection}
+      ${bundleSection}
       ${addonSection}
       <p>Jika ada pertanyaan, balas email ini atau hubungi kami.</p>
       <p>Salam,<br><strong>${storeName}</strong></p>
@@ -96,6 +128,23 @@ async function sendProductEmail(order, product, addonProduct = null) {
   }
   if (addonFileExists) {
     mailOptions.attachments.push({ filename: path.basename(addonFilePath), path: addonFilePath });
+  }
+
+  let resendKey = process.env.RESEND_API_KEY;
+  if (!resendKey) {
+    try {
+      const db = require('../db/database');
+      const row = db.prepare("SELECT value FROM settings WHERE key='resend_api_key'").get();
+      if (row && row.value) resendKey = row.value;
+    } catch(e) {}
+  }
+  if (resendKey && !mailOptions.attachments.length) {
+    return sendViaResend(resendKey, {
+      from: mailOptions.from,
+      to: mailOptions.to,
+      subject: mailOptions.subject,
+      html: mailOptions.html
+    });
   }
 
   return transporter.sendMail(mailOptions);
