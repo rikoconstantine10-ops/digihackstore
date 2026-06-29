@@ -79,7 +79,7 @@ img { max-width: 100%; }
 
 /* PRODUCT DETAIL */
 .product-detail { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; max-width: 1000px; margin: 40px auto; padding: 0 24px; }
-.product-detail img { border-radius: var(--radius); box-shadow: var(--shadow); }
+.product-detail img { border-radius: var(--radius); box-shadow: var(--shadow); width: 100%; aspect-ratio: 1/1; object-fit: cover; }
 .product-info .category { color: var(--primary); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 .product-info h1 { font-size: 2rem; font-weight: 800; margin: 10px 0; }
 .product-info .desc { color: var(--text-light); line-height: 1.8; margin-bottom: 24px; }
