@@ -4,7 +4,7 @@ const router = express.Router();
 const db = require('../db/database');
 const { createTransaction } = require('../services/payment');
 const { trackPage } = require('../middleware/analytics');
-const { capiInitiateCheckout, genEventId } = require('../services/capi');
+const { capiInitiateCheckout, capiAddPaymentInfo, genEventId } = require('../services/capi');
 
 function getSettings() {
   const rows = db.prepare('SELECT key, value FROM settings').all();
@@ -139,7 +139,9 @@ router.get('/:slug/payment', (req, res) => {
   const pending = req.session.pendingCheckout;
   if (!pending || pending.productId !== product.id) return res.redirect('/checkout/' + req.params.slug);
 
-  res.render('shop/payment-method', { product, settings, pending, error: null });
+  const apEventId = genEventId('ap');
+  try { capiAddPaymentInfo(settings, product, pending, req, apEventId); } catch(e) {}
+  res.render('shop/payment-method', { product, settings, pending, error: null, apEventId });
 });
 
 router.post('/:slug/payment', async (req, res) => {

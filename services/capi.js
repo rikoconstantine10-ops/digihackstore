@@ -101,4 +101,33 @@ function capiViewContent(settings, product, req, eventId) {
   return evId;
 }
 
-module.exports = { capiPurchase, capiInitiateCheckout, capiViewContent, genEventId };
+function capiAddPaymentInfo(settings, product, pending, req, eventId) {
+  if (!settings.meta_pixel_id || !settings.meta_capi_token) return;
+  const evId = eventId || genEventId("ap");
+  const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || "").split(",")[0].trim();
+  const ua = req.headers["user-agent"] || "";
+  sendCapiEvent(settings.meta_pixel_id, settings.meta_capi_token, [{
+    event_name: "AddPaymentInfo",
+    event_id: evId,
+    event_time: Math.floor(Date.now() / 1000),
+    action_source: "website",
+    event_source_url: (settings.store_domain || "https://digihackstore.com") + "/checkout/" + product.slug + "/payment",
+    user_data: {
+      client_ip_address: ip,
+      client_user_agent: ua,
+      em: pending && pending.email ? [hashSha256(pending.email)] : undefined,
+      ph: pending && pending.phone ? [hashSha256(pending.phone)] : undefined,
+    },
+    custom_data: {
+      currency: "IDR",
+      value: (pending && pending.amount) || product.discount_price || product.price,
+      content_name: product.name,
+      content_ids: [String(product.id)],
+      content_type: "product",
+      num_items: 1
+    }
+  }]);
+  return evId;
+}
+
+module.exports = { capiPurchase, capiInitiateCheckout, capiViewContent, capiAddPaymentInfo, genEventId };
