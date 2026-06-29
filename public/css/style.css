@@ -165,7 +165,7 @@ footer strong { color: white; }
   /* Hamburger */
   .hamburger { display: flex; }
   .navbar { position: relative; }
-  .navbar-links { display: none; position: absolute; top: 64px; left: 0; right: 0; background: var(--white); flex-direction: column; padding: 8px 0; box-shadow: 0 8px 24px rgba(0,0,0,.12); z-index: 99; }
+  .navbar-links { display: none; position: absolute; top: 64px; left: 0; right: 0; background: var(--white); flex-direction: column; padding: 8px 0; box-shadow: 0 8px 24px rgba(0,0,0,.12); z-index: 99; gap: 0; align-items: stretch; }
   .navbar-links.open { display: flex; }
   .navbar-links a { padding:13px 20px!important; font-size:.92rem!important; border:none!important; border-bottom:1px solid #f5f5f5!important; color:#2d3748!important; background:transparent!important; border-radius:0!important; margin:0!important; text-align:left!important; display:block; font-weight:500!important; }
   .navbar-links a:hover { background:#f8f9ff!important; color:var(--primary)!important; }
