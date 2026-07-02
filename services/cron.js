@@ -52,7 +52,7 @@ function sendWAAutoReminder() {
 function sendLeadsReminder() {
   try {
     const settings = Object.fromEntries(db.prepare('SELECT key, value FROM settings').all().map(r => [r.key, r.value]));
-    const template = settings.wa_leads_msg;
+    const template = settings.wa_pending_lead_msg;
     if (!template) return;
 
     // Leads older than 15 min, wa_sent=0, and no successful order exists for same email
