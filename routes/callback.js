@@ -32,12 +32,16 @@ router.post('/', express.json(), async (req, res) => {
 
     if (status === 'success') {
       db.prepare('UPDATE orders SET status=?, id_reference=?, paid_at=CURRENT_TIMESTAMP WHERE ref_kode=?').run('success', id_reference, String(ref));
+      db.prepare('UPDATE products SET sold_slots = sold_slots + 1 WHERE id = ?').run(order.product_id);
 
       if (!order.email_sent) {
         const product = db.prepare('SELECT * FROM products WHERE id=?').get(order.product_id);
         const addonProduct = order.addon_product_id ? db.prepare('SELECT * FROM products WHERE id=?').get(order.addon_product_id) : null;
+        const bundleProducts = product && product.is_bundle
+          ? db.prepare('SELECT p.* FROM product_bundles pb JOIN products p ON p.id = pb.child_product_id WHERE pb.bundle_product_id = ?').all(order.product_id)
+          : [];
         try {
-          await sendProductEmail(order, product || { name: order.product_name, file_path: null }, addonProduct);
+          await sendProductEmail(order, product || { name: order.product_name, file_path: null }, addonProduct, bundleProducts);
           db.prepare('UPDATE orders SET email_sent=1 WHERE ref_kode=?').run(String(ref));
         } catch(e) { console.error('Email failed:', e.message); }
       }

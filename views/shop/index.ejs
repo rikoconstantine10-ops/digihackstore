@@ -1,12 +1,12 @@
 
 <!DOCTYPE html>
-<html lang="id">
+<html lang="<%= t.lang %>">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title><%= settings.store_name || 'Digihack Store' %> - Digital Products</title>
   <meta name="description" content="<%= settings.store_name || 'Digihack Store' %> - Toko produk digital terpercaya. Temukan berbagai produk digital berkualitas dengan harga terjangkau.">
   <% if(lcpImage) { %><link rel="preload" href="<%= lcpImage %>" as="image" fetchpriority="high"><% } %>
-  <style>:root{--primary:#6c63ff;--primary-dark:#5a52d5;--secondary:#f8f9ff;--accent:#ff6584;--text:#2d3748;--text-light:#718096;--border:#e2e8f0;--white:#fff;--radius:12px;--shadow:0 4px 20px rgba(108,99,255,.12)}*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Inter',-apple-system,sans-serif;background:#f7f8fc;color:var(--text)}a{text-decoration:none;color:inherit}img{max-width:100%}.navbar{background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.08);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}.navbar-brand{font-size:1.4rem;font-weight:800;color:var(--primary)}.navbar-brand span{color:var(--accent)}.navbar-links{display:flex;gap:24px;align-items:center}.navbar-links a{font-size:.9rem;font-weight:500;color:var(--text-light);transition:color .2s}.navbar-links a:hover{color:var(--primary)}.btn-nav{background:var(--primary);color:#fff!important;padding:8px 20px;border-radius:25px;font-weight:600!important}.hero{background:linear-gradient(135deg,#6c63ff 0%,#a78bfa 50%,#f8f9ff 100%);padding:80px 24px;text-align:center;color:#fff}.hero h1{font-size:clamp(2rem,5vw,3.5rem);font-weight:800;margin-bottom:16px}.hero p{font-size:1.15rem;opacity:.9;max-width:500px;margin:0 auto 32px}.btn-primary{display:inline-block;background:#fff;color:var(--primary);padding:14px 36px;border-radius:50px;font-weight:700;font-size:1rem;box-shadow:0 4px 20px rgba(0,0,0,.15);transition:transform .2s,box-shadow .2s}.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.2)}.section{padding:60px 24px;max-width:1200px;margin:0 auto}.section-title{font-size:1.8rem;font-weight:700;margin-bottom:8px}.section-sub{color:var(--text-light);margin-bottom:32px}.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:24px}.product-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;transition:transform .2s,box-shadow .2s;display:flex;flex-direction:column}.product-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(108,99,255,.18)}.card-img{aspect-ratio:1/1;object-fit:cover;width:100%;background:var(--secondary)}.card-img-placeholder{aspect-ratio:1/1;background:linear-gradient(135deg,#e0e7ff,#c7d2fe);display:flex;align-items:center;justify-content:center;font-size:3rem}.card-body{padding:16px;flex:1;display:flex;flex-direction:column}.card-category{font-size:.75rem;text-transform:uppercase;letter-spacing:1px;color:var(--primary);font-weight:600;margin-bottom:6px}.card-title{font-size:1rem;font-weight:700;margin-bottom:8px;color:var(--text);line-height:1.4}.card-desc{font-size:.85rem;color:var(--text-light);margin-bottom:12px;flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.card-price{display:flex;align-items:center;gap:8px;margin-bottom:14px}.price-main{font-size:1.2rem;font-weight:800;color:var(--primary)}.price-old{font-size:.85rem;text-decoration:line-through;color:var(--text-light)}.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}.badge-new{background:#e0f2fe;color:#0284c7}.badge-hot{background:#fee2e2;color:#dc2626}.badge-sale{background:#fef3c7;color:#d97706}.badge-best{background:#dcfce7;color:#16a34a}.btn-card{width:100%;padding:10px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:.9rem;transition:background .2s}.btn-card:hover{background:var(--primary-dark)}.filter-bar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px;align-items:center}.filter-btn{padding:9px 18px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:.85rem;transition:all .2s}.filter-btn.active,.filter-btn:hover{background:var(--primary);color:#fff;border-color:var(--primary)}footer{background:var(--text);color:#a0aec0;padding:40px 24px;text-align:center;margin-top:60px}footer strong{color:#fff}</style>
+  <style>:root{--primary:#6c63ff;--primary-dark:#5a52d5;--secondary:#f8f9ff;--accent:#ff6584;--text:#2d3748;--text-light:#718096;--border:#e2e8f0;--white:#fff;--radius:12px;--shadow:0 4px 20px rgba(108,99,255,.12)}*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Inter',-apple-system,sans-serif;background:#f7f8fc;color:var(--text)}a{text-decoration:none;color:inherit}img{max-width:100%}.navbar{background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.08);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}.navbar-brand{font-size:1.4rem;font-weight:800;color:var(--primary)}.navbar-brand span{color:var(--accent)}.navbar-links{display:flex;gap:24px;align-items:center}.navbar-links a{font-size:.9rem;font-weight:500;color:var(--text-light);transition:color .2s}.navbar-links a:hover{color:var(--primary)}.btn-nav{background:var(--primary);color:#fff!important;padding:8px 20px;border-radius:25px;font-weight:600!important}.btn-lang{background:transparent;color:var(--primary)!important;border:1px solid var(--primary);padding:6px 14px;border-radius:20px;font-size:.8rem;font-weight:600!important;cursor:pointer}.hero{background:linear-gradient(135deg,#6c63ff 0%,#a78bfa 50%,#f8f9ff 100%);padding:80px 24px;text-align:center;color:#fff}.hero h1{font-size:clamp(2rem,5vw,3.5rem);font-weight:800;margin-bottom:16px}.hero p{font-size:1.15rem;opacity:.9;max-width:500px;margin:0 auto 32px}.btn-primary{display:inline-block;background:#fff;color:var(--primary);padding:14px 36px;border-radius:50px;font-weight:700;font-size:1rem;box-shadow:0 4px 20px rgba(0,0,0,.15);transition:transform .2s,box-shadow .2s}.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.2)}.section{padding:60px 24px;max-width:1200px;margin:0 auto}.section-title{font-size:1.8rem;font-weight:700;margin-bottom:8px}.section-sub{color:var(--text-light);margin-bottom:32px}.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:24px}.product-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;transition:transform .2s,box-shadow .2s;display:flex;flex-direction:column}.product-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(108,99,255,.18)}.card-img{aspect-ratio:1/1;object-fit:cover;width:100%;background:var(--secondary)}.card-img-placeholder{aspect-ratio:1/1;background:linear-gradient(135deg,#e0e7ff,#c7d2fe);display:flex;align-items:center;justify-content:center;font-size:3rem}.card-body{padding:16px;flex:1;display:flex;flex-direction:column}.card-category{font-size:.75rem;text-transform:uppercase;letter-spacing:1px;color:var(--primary);font-weight:600;margin-bottom:6px}.card-title{font-size:1rem;font-weight:700;margin-bottom:8px;color:var(--text);line-height:1.4}.card-desc{font-size:.85rem;color:var(--text-light);margin-bottom:12px;flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.card-price{display:flex;align-items:center;gap:8px;margin-bottom:14px}.price-main{font-size:1.2rem;font-weight:800;color:var(--primary)}.price-old{font-size:.85rem;text-decoration:line-through;color:var(--text-light)}.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}.badge-new{background:#e0f2fe;color:#0284c7}.badge-hot{background:#fee2e2;color:#dc2626}.badge-sale{background:#fef3c7;color:#d97706}.badge-best{background:#dcfce7;color:#16a34a}.btn-card{width:100%;padding:10px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:.9rem;transition:background .2s}.btn-card:hover{background:var(--primary-dark)}.btn-card-disabled{width:100%;padding:10px;background:#e5e7eb;color:#9ca3af;border:none;border-radius:8px;font-weight:600;font-size:.9rem;cursor:not-allowed}.filter-bar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px;align-items:center}.filter-btn{padding:9px 18px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:.85rem;transition:all .2s}.filter-btn.active,.filter-btn:hover{background:var(--primary);color:#fff;border-color:var(--primary)}footer{background:var(--text);color:#a0aec0;padding:40px 24px;text-align:center;margin-top:60px}footer strong{color:#fff}.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px;z-index:200}.hamburger span{display:block;width:24px;height:2.5px;background:var(--text);border-radius:2px;transition:transform .3s,opacity .3s}.hamburger.open span:nth-child(1){transform:translateY(7.5px) rotate(45deg)}.hamburger.open span:nth-child(2){opacity:0}.hamburger.open span:nth-child(3){transform:translateY(-7.5px) rotate(-45deg)}.mobile-menu{display:none}@media(max-width:1024px){.hamburger{display:flex}.navbar-links{display:none!important}.mobile-menu{position:fixed;top:64px;left:0;right:0;background:#fff;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.15);border-top:2px solid var(--primary)}.mobile-menu.open{display:block}.mobile-menu a{display:block;padding:15px 20px;font-size:.95rem;font-weight:500;color:#2d3748;border-bottom:1px solid #f0f4f8;text-decoration:none}.mobile-menu a:last-child{border-bottom:none}.section{padding:32px 16px}.products-grid{grid-template-columns:repeat(3,1fr);gap:14px}.filter-btn{padding:8px 12px;font-size:.82rem}}@media(max-width:640px){.hero{padding:40px 16px}.section{padding:20px 14px}.products-grid{grid-template-columns:repeat(2,1fr);gap:10px}}@media(max-width:400px){.products-grid{grid-template-columns:1fr}}</style>
   <link rel="preload" href="/css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="/css/style.css"></noscript>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
@@ -15,25 +15,33 @@
 <nav class="navbar">
   <a href="/" class="navbar-brand">Digi<span>hack</span></a>
   <div class="navbar-links">
-    <a href="/catalog">Catalog</a>
-    <a href="/order/status">Cek Order</a>
-    <a href="/catalog" class="btn-nav">Belanja Sekarang</a>
+    <a href="/catalog"><%= t.nav_catalog %></a>
+    <a href="/order/status"><%= t.nav_check_order %></a>
+    <a href="?lang=<%= t.lang_toggle_url %>" class="btn-lang"><%= t.lang_toggle %></a>
+    <a href="/catalog" class="btn-nav"><%= t.nav_shop %></a>
   </div>
+  <button class="hamburger" id="hamburger" aria-label="Menu" onclick="toggleMenu()"><span></span><span></span><span></span></button>
 </nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="/catalog"><%= t.nav_catalog %></a>
+  <a href="/order/status"><%= t.nav_check_order %></a>
+  <a href="?lang=<%= t.lang_toggle_url %>"><%= t.lang_toggle %></a>
+  <a href="/catalog"><%= t.nav_shop %></a>
+</div>
 
 <div class="hero">
-  <h1>🚀 Produk Digital<br>Terbaik & Terpercaya</h1>
-  <p>Ribuan produk digital berkualitas tinggi. Bayar sekali, dapat selamanya.</p>
-  <a href="/catalog" class="btn-primary">Lihat Semua Produk →</a>
+  <h1>🚀 <%- t.hero_title %></h1>
+  <p><%= t.hero_sub %></p>
+  <a href="/catalog" class="btn-primary"><%= t.hero_cta %></a>
 </div>
 
 <div class="section">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px">
     <div>
-      <h2 class="section-title">Produk Terbaru</h2>
-      <p class="section-sub">Koleksi terbaru pilihan kami</p>
+      <h2 class="section-title"><%= t.latest_products %></h2>
+      <p class="section-sub"><%= t.latest_sub %></p>
     </div>
-    <a href="/catalog" style="color:var(--primary);font-weight:600;font-size:0.9rem">Lihat semua →</a>
+    <a href="/catalog" style="color:var(--primary);font-weight:600;font-size:0.9rem"><%= t.see_all %></a>
   </div>
 
   <% if(categories.length > 0) { %>
@@ -46,7 +54,8 @@
 
   <div class="products-grid">
     <% products.forEach((p, i) => { %>
-    <a href="/product/<%= p.slug %>" class="product-card">
+    <% const isFull = p.max_slots > 0 && (p.sold_slots || 0) >= p.max_slots; %>
+    <a href="/product/<%= p.slug %>" class="product-card" style="<%= isFull ? 'opacity:0.75' : '' %>">
       <% if(p.image) { %>
       <img class="card-img" src="<%= p.image %>" alt="<%= p.name %>"<% if(i === 0) { %> fetchpriority="high"<% } else { %> loading="lazy" decoding="async"<% } %>>
       <% } else { %>
@@ -63,10 +72,18 @@
           <span class="price-main">Rp <%= (p.discount_price || p.price).toLocaleString('id-ID') %></span>
           <% if(p.discount_price) { %><span class="price-old">Rp <%= p.price.toLocaleString('id-ID') %></span><% } %>
         </div>
-        <% if(p.total_sold > 0) { %>
-        <div style="font-size:0.75rem;color:#16a34a;font-weight:600;margin-bottom:8px">🔥 <%= p.total_sold %> terjual</div>
+        <% if(p.max_slots > 0 && isFull) { %>
+        <div style="font-size:0.75rem;color:#9ca3af;font-weight:600;margin-bottom:8px">🚫 <%= t.slot_full %></div>
+        <% } else if(p.max_slots > 0) { %>
+        <div style="font-size:0.75rem;color:#16a34a;font-weight:600;margin-bottom:8px">🎟️ <%= t.slot_remaining %>: <%= p.max_slots - (p.sold_slots||0) %></div>
+        <% } else if(p.total_sold > 0) { %>
+        <div style="font-size:0.75rem;color:#16a34a;font-weight:600;margin-bottom:8px">🔥 <%= p.total_sold %> <%= t.sold %></div>
         <% } %>
-        <button class="btn-card">Beli Sekarang</button>
+        <% if(isFull) { %>
+        <button class="btn-card-disabled" disabled><%= t.slot_full %></button>
+        <% } else { %>
+        <button class="btn-card"><%= t.buy_now %></button>
+        <% } %>
       </div>
     </a>
     <% }) %>
@@ -74,11 +91,16 @@
 </div>
 
 <footer>
-  <p>&copy; 2026 <strong><%= settings.store_name %></strong>. All rights reserved.</p>
-  <p style="margin-top:8px;font-size:0.8rem">Produk digital berkualitas tinggi</p>
+  <p>&copy; 2026 <strong><%= settings.store_name %></strong>. <%= t.footer_rights %></p>
+  <p style="margin-top:8px;font-size:0.8rem"><%= t.hero_sub %></p>
 </footer>
 <% if(settings.meta_pixel_id) { %>
 <script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','<%= settings.meta_pixel_id %>');fbq('track','PageView');</script>
 <% } %>
 <% if(settings && settings.ga4_id) { %><script async src="https://www.googletagmanager.com/gtag/js?id=<%= settings.ga4_id %>"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","<%= settings.ga4_id %>");</script><% } %>
+<script>
+function toggleMenu(){const h=document.getElementById('hamburger'),m=document.getElementById('mobileMenu');h.classList.toggle('open');m.classList.toggle('open');}
+document.addEventListener('click',function(e){const h=document.getElementById('hamburger'),m=document.getElementById('mobileMenu');if(h&&m&&!h.contains(e.target)&&!m.contains(e.target)){h.classList.remove('open');m.classList.remove('open');}});
+window.addEventListener('scroll',function(){const h=document.getElementById('hamburger'),m=document.getElementById('mobileMenu');if(h)h.classList.remove('open');if(m)m.classList.remove('open');},{passive:true});
+</script>
 </body></html>

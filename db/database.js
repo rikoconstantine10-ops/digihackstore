@@ -85,6 +85,7 @@ const defaults = [
   ['wa_pending_msg', 'Halo {name}! Pesanan {product} kamu belum dibayar. Selesaikan pembayaran sebelum {expired}. Link: {url}'],
   ['ga4_id', ''],
   ['wa_pending_lead_msg', 'Halo {name}! Kamu tadi sempat mau beli {product} di {store}. Yuk selesaikan pembelianmu sekarang sebelum kehabisan! 😊'],
+  ['resend_api_key', ''],
 ];
 for (const [k, v] of defaults) {
   db.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)').run(k, v);
@@ -98,6 +99,17 @@ try { db.exec("ALTER TABLE products ADD COLUMN social_proof INTEGER DEFAULT 0");
 try { db.exec("ALTER TABLE products ADD COLUMN priority INTEGER DEFAULT 0"); } catch(e) {}
 try { db.exec("ALTER TABLE products ADD COLUMN product_link TEXT DEFAULT NULL"); } catch(e) {}
 try { db.exec("ALTER TABLE products ADD COLUMN is_pinned INTEGER DEFAULT 0"); } catch(e) {}
+try { db.exec("ALTER TABLE products ADD COLUMN max_slots INTEGER DEFAULT 0"); } catch(e) {}
+try { db.exec("ALTER TABLE products ADD COLUMN sold_slots INTEGER DEFAULT 0"); } catch(e) {}
+try { db.exec("ALTER TABLE products ADD COLUMN is_bundle INTEGER DEFAULT 0"); } catch(e) {}
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS product_bundles (
+    bundle_product_id INTEGER NOT NULL,
+    child_product_id INTEGER NOT NULL,
+    PRIMARY KEY (bundle_product_id, child_product_id)
+  );
+`);
 try { db.exec("ALTER TABLE page_views ADD COLUMN utm_source TEXT DEFAULT ''"); } catch(e) {}
 try { db.exec("ALTER TABLE page_views ADD COLUMN utm_medium TEXT DEFAULT ''"); } catch(e) {}
 try { db.exec("ALTER TABLE page_views ADD COLUMN utm_campaign TEXT DEFAULT ''"); } catch(e) {}

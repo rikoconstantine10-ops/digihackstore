@@ -99,6 +99,17 @@
     </div>
   </main>
 </div>
+<style>
+.order-toast{position:fixed;top:20px;right:20px;background:#fff;border-left:4px solid #10b981;border-radius:10px;padding:14px 18px;box-shadow:0 8px 30px rgba(0,0,0,0.15);z-index:9999;max-width:320px;font-size:0.88rem;transform:translateX(400px);transition:transform .3s ease;display:none}
+.order-toast.show{transform:translateX(0);display:block}
+.order-toast-title{font-weight:700;color:#064e3b;margin-bottom:4px;font-size:0.92rem}
+.order-toast-close{position:absolute;top:8px;right:12px;cursor:pointer;color:#94a3b8;font-size:1rem;background:none;border:none;padding:0}
+</style>
+<div class="order-toast" id="orderToast">
+  <button class="order-toast-close" onclick="closeToast()">✕</button>
+  <div class="order-toast-title">🛎️ Order Baru!</div>
+  <div id="toastMsg"></div>
+</div>
 <script>
 const revenueData = <%- JSON.stringify(revenueDaily) %>;
 new Chart(document.getElementById('revenueChart').getContext('2d'), {
@@ -113,5 +124,30 @@ new Chart(document.getElementById('revenueChart').getContext('2d'), {
     scales: { y: { beginAtZero: true, ticks: { callback: v => 'Rp ' + Number(v).toLocaleString('id-ID') } } }
   }
 });
+
+// Real-time order polling
+let lastSeenId = parseInt(sessionStorage.getItem('lastOrderId') || '0');
+function closeToast() { document.getElementById('orderToast').classList.remove('show'); }
+async function pollOrders() {
+  try {
+    const r = await fetch('/admin/api/orders/latest');
+    if (!r.ok) return;
+    const d = await r.json();
+    if (d.latestId && d.latestId > lastSeenId) {
+      if (lastSeenId > 0 && d.latest) {
+        const o = d.latest;
+        document.getElementById('toastMsg').innerHTML = `<strong>${o.customer_name}</strong> membeli <strong>${o.product_name}</strong><br><span style="color:#10b981;font-weight:700">Rp ${Number(o.amount).toLocaleString('id-ID')}</span> · <span class="badge badge-${o.status}">${o.status}</span>`;
+        const toast = document.getElementById('orderToast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 8000);
+        try { new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2ozLS5sr8fXp2g3LS543dTRp2o6KCBzsdPUtWw5JyF1q8/Qsm88JiN4pc3OsHI').play().catch(()=>{}); } catch(e) {}
+      }
+      lastSeenId = d.latestId;
+      sessionStorage.setItem('lastOrderId', lastSeenId);
+    }
+  } catch(e) {}
+}
+setTimeout(pollOrders, 2000);
+setInterval(pollOrders, 30000);
 </script>
 </body></html>

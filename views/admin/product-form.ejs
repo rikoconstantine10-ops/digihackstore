@@ -144,6 +144,18 @@
               <div class="hint">Angka yang ditambahkan ke jumlah penjualan nyata saat ditampilkan ke calon pembeli.</div>
             </div>
           </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Max Slot (0 = tidak terbatas)</label>
+              <input type="number" name="max_slots" value="<%= product ? (product.max_slots||0) : 0 %>" min="0" placeholder="0">
+              <div class="hint">Batasi jumlah penjualan. Jika 0, produk tidak memiliki batas slot.</div>
+            </div>
+            <div class="form-group">
+              <label>Slot Terjual</label>
+              <input type="number" value="<%= product ? (product.sold_slots||0) : 0 %>" disabled style="background:#f5f5f5;cursor:not-allowed">
+              <div class="hint">Dihitung otomatis setiap order berhasil. Tidak bisa diedit manual.</div>
+            </div>
+          </div>
           <% if(product) { %>
           <div class="form-group">
             <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
@@ -184,6 +196,36 @@
             <div class="hint" style="color:#0284c7">Jika diisi, customer akan mendapat tombol download langsung di halaman sukses & email — tanpa perlu upload file. Jika keduanya diisi, link ini yang diutamakan.</div>
           </div>
         </div>
+
+        <% if(allProducts && allProducts.length > 0) { %>
+        <div class="form-admin">
+          <h3>📦 Bundle Produk</h3>
+          <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:14px">Tandai produk ini sebagai bundle yang berisi beberapa produk lain. Email akan berisi link download semua produk di bundle.</p>
+          <div class="form-group">
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+              <input type="checkbox" name="is_bundle" value="1" id="isBundleCheck" <%= product && product.is_bundle ? 'checked' : '' %> style="width:18px;height:18px;accent-color:var(--primary)" onchange="toggleBundleSection()">
+              <span>Tandai sebagai Bundle (produk ini berisi produk-produk di bawah)</span>
+            </label>
+          </div>
+          <div id="bundleChildSection" style="display:<%= product && product.is_bundle ? 'block' : 'none' %>">
+            <p style="font-size:0.82rem;color:var(--text-light);margin-bottom:10px">Pilih produk yang termasuk dalam bundle ini:</p>
+            <% const bundleChildIds = product && product.bundleChildren ? product.bundleChildren : []; %>
+            <% allProducts.forEach(bp => { %>
+            <% const isBundled = bundleChildIds.includes(bp.id); %>
+            <div class="addon-card <%= isBundled ? 'checked' : '' %>" style="margin-bottom:8px">
+              <input type="checkbox" name="bundle_child_ids" value="<%= bp.id %>" id="bundle-cb-<%= bp.id %>" <%= isBundled ? 'checked' : '' %> style="width:18px;height:18px;accent-color:var(--primary);flex-shrink:0" onchange="this.closest('.addon-card').classList.toggle('checked',this.checked)">
+              <label for="bundle-cb-<%= bp.id %>" style="display:flex;align-items:center;gap:10px;cursor:pointer;min-width:0;flex:1">
+                <% if(bp.image) { %><img src="<%= bp.image %>" class="addon-thumb" alt=""><% } else { %><div class="addon-thumb-placeholder">📦</div><% } %>
+                <div class="addon-info">
+                  <div class="addon-name"><%= bp.name %></div>
+                  <div class="addon-base">Harga: Rp <%= (bp.discount_price||bp.price).toLocaleString('id-ID') %></div>
+                </div>
+              </label>
+            </div>
+            <% }) %>
+          </div>
+        </div>
+        <% } %>
 
         <% if(allProducts && allProducts.length > 0) { %>
         <div class="form-admin">
@@ -259,6 +301,11 @@ function setBadge(val) {
   document.getElementById('badge-val').value = val;
   document.querySelectorAll('.badge-opt').forEach(el => el.classList.remove('sel'));
   event.target.classList.add('sel');
+}
+
+function toggleBundleSection() {
+  const checked = document.getElementById('isBundleCheck').checked;
+  document.getElementById('bundleChildSection').style.display = checked ? 'block' : 'none';
 }
 
 function toggleAddon(id) {

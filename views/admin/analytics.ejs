@@ -41,8 +41,15 @@
       </div>
 
       <div class="admin-table" style="margin-bottom:24px">
-        <div style="padding:16px 20px;font-weight:700;border-bottom:1px solid var(--border)">📦 Performa Per Produk</div>
-        <div style="padding:8px 16px;font-size:0.8rem;color:var(--text-light);border-bottom:1px solid var(--border)">Views = kunjungan halaman produk &nbsp;|&nbsp; Checkout = klik beli &nbsp;|&nbsp; Terjual = order sukses &nbsp;|&nbsp; Conv = checkout → sukses</div>
+        <div style="padding:16px 20px;font-weight:700;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+          <span>📦 Performa Per Produk</span>
+          <div style="display:flex;gap:6px">
+            <a href="?period=7d" style="padding:5px 12px;border-radius:20px;font-size:0.78rem;font-weight:600;text-decoration:none;border:1.5px solid <%= period==='7d'?'#6c63ff':'#e2e8f0' %>;background:<%= period==='7d'?'#6c63ff':'transparent' %>;color:<%= period==='7d'?'white':'#718096' %>">7 Hari</a>
+            <a href="?period=30d" style="padding:5px 12px;border-radius:20px;font-size:0.78rem;font-weight:600;text-decoration:none;border:1.5px solid <%= period==='30d'?'#6c63ff':'#e2e8f0' %>;background:<%= period==='30d'?'#6c63ff':'transparent' %>;color:<%= period==='30d'?'white':'#718096' %>">30 Hari</a>
+            <a href="?period=all" style="padding:5px 12px;border-radius:20px;font-size:0.78rem;font-weight:600;text-decoration:none;border:1.5px solid <%= period==='all'?'#6c63ff':'#e2e8f0' %>;background:<%= period==='all'?'#6c63ff':'transparent' %>;color:<%= period==='all'?'white':'#718096' %>">Semua</a>
+          </div>
+        </div>
+        <div style="padding:8px 16px;font-size:0.8rem;color:var(--text-light);border-bottom:1px solid var(--border)">Views & Checkout = Unique IP &nbsp;|&nbsp; Terjual = order sukses &nbsp;|&nbsp; Conv = checkout → sukses</div>
         <table>
           <thead>
             <tr>
@@ -110,6 +117,11 @@
         </table>
       </div>
 
+      <div class="admin-table" style="margin-bottom:24px">
+        <div style="padding:16px 20px;font-weight:700;border-bottom:1px solid var(--border)">💰 Revenue Per Produk (Top 10)</div>
+        <div style="padding:20px"><canvas id="revenueProductChart" height="80"></canvas></div>
+      </div>
+
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
         <div class="admin-table">
           <div style="padding:16px 20px;font-weight:700;border-bottom:1px solid var(--border)">🔥 Top Pages</div>
@@ -142,6 +154,7 @@
 </div>
 <script>
 const daily = <%- JSON.stringify(daily) %>;
+const revenueStats = <%- JSON.stringify(revenueStats || []) %>;
 const ctx = document.getElementById('visitorChart').getContext('2d');
 new Chart(ctx, {
   type: 'line',
@@ -158,5 +171,20 @@ new Chart(ctx, {
   },
   options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
 });
+
+if (revenueStats.length) {
+  new Chart(document.getElementById('revenueProductChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: revenueStats.map(r => r.name.length > 22 ? r.name.slice(0,22)+'…' : r.name),
+      datasets: [{ label: 'Revenue', data: revenueStats.map(r => r.revenue), backgroundColor: 'rgba(16,185,129,0.7)', borderColor: '#10b981', borderWidth: 1, borderRadius: 6 }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => 'Rp ' + Number(ctx.raw).toLocaleString('id-ID') + ' (' + (revenueStats[ctx.dataIndex]?.orders||0) + ' order)' } } },
+      scales: { y: { beginAtZero: true, ticks: { callback: v => 'Rp ' + Number(v).toLocaleString('id-ID') } } }
+    }
+  });
+}
 </script>
 </body></html>

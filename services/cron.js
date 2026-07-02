@@ -52,7 +52,7 @@ function sendWAAutoReminder() {
 function sendLeadsReminder() {
   try {
     const settings = Object.fromEntries(db.prepare('SELECT key, value FROM settings').all().map(r => [r.key, r.value]));
-    const template = settings.wa_leads_msg;
+    const template = settings.wa_pending_lead_msg;
     if (!template) return;
 
     // Leads older than 15 min, wa_sent=0, and no successful order exists for same email
@@ -83,10 +83,43 @@ function sendLeadsReminder() {
   }
 }
 
+// Alert admin when an order first crosses 2-hour pending threshold
+function notifyAdminStalePending() {
+  try {
+    const settings = Object.fromEntries(db.prepare('SELECT key, value FROM settings').all().map(r => [r.key, r.value]));
+    if (!settings.wa_number) return;
+
+    // Orders that entered the stale window in this cron cycle (2h–2.5h old, still pending)
+    const staleOrders = db.prepare(`
+      SELECT * FROM orders
+      WHERE status = 'pending'
+        AND created_at <= datetime('now', '-2 hours')
+        AND created_at >= datetime('now', '-2 hours', '-30 minutes')
+    `).all();
+
+    if (staleOrders.length === 0) return;
+
+    const lines = staleOrders.map(o =>
+      `• ${o.customer_name} | Rp ${Number(o.amount).toLocaleString('id-ID')} | ${o.payment_method} | Ref: ${o.ref_kode}`
+    ).join('\n');
+
+    const domain = (settings.store_domain || 'https://digihackstore.com').replace(/\/$/, '');
+    const msg = `⚠️ *${staleOrders.length} Order Pending > 2 Jam*\n\nOrder berikut belum ada konfirmasi callback dari VMP:\n\n${lines}\n\nCek dashboard VMP lalu konfirmasi di:\n${domain}/admin/orders`;
+
+    sendWA(settings.wa_number, msg).catch(() => {});
+    console.log(`[cron] Admin notified: ${staleOrders.length} stale pending order(s)`);
+  } catch (e) {
+    console.error('[cron] Admin stale pending notification error:', e.message);
+  }
+}
+
 // Pending orders: every 30 minutes
 setInterval(sendWAAutoReminder, 30 * 60 * 1000);
 
 // Leads reminder: every 5 minutes
 setInterval(sendLeadsReminder, 5 * 60 * 1000);
 
-module.exports = { sendWAAutoReminder, sendLeadsReminder };
+// Admin alert for stale pending orders: every 30 minutes
+setInterval(notifyAdminStalePending, 30 * 60 * 1000);
+
+module.exports = { sendWAAutoReminder, sendLeadsReminder, notifyAdminStalePending };

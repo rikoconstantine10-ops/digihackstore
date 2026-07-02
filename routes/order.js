@@ -11,13 +11,21 @@ function getSettings() {
 router.get('/status', (req, res) => {
   const settings = getSettings();
   const { ref } = req.query;
-  let order = null;
-  let product = null;
+  let order = null, product = null, upsells = [];
   if (ref) {
     order = db.prepare('SELECT * FROM orders WHERE ref_kode=?').get(ref);
-    if (order) product = db.prepare('SELECT product_link, file_path FROM products WHERE id=?').get(order.product_id);
+    if (order) {
+      product = db.prepare('SELECT product_link, file_path FROM products WHERE id=?').get(order.product_id);
+      if (order.status === 'success') {
+        upsells = db.prepare(`
+          SELECT id, name, slug, image, price, discount_price, badge
+          FROM products WHERE is_active=1 AND id != ?
+          ORDER BY COALESCE(is_pinned,0) DESC, COALESCE(priority,0) DESC, RANDOM() LIMIT 3
+        `).all(order.product_id);
+      }
+    }
   }
-  res.render('shop/order-status', { order, settings, ref, product });
+  res.render('shop/order-status', { order, settings, ref, product, upsells });
 });
 
 router.post('/check', (req, res) => {
